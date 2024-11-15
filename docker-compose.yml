@@ -1,0 +1,13 @@
+
+services:
+  tensorflow:
+    container_name: bird-identification
+    build: .
+    volumes:
+      - ./app:/app/app
+      - ./models:/app/models
+      - ./input:/app/input
+      - ./output:/app/output
+    command: tail -f /dev/null          # Keeps the container running
+    stdin_open: true
+    tty: true

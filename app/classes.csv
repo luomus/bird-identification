@@ -1,0 +1,266 @@
+"species_code","common_name","scientific_name","luomus_name","suomenkielinen_nimi","class"
+"nobird","No bird","No bird",,"ei lintu",0
+"human","Human","Human",,"ihminen",1
+"lotduc","Long-tailed Duck","Clangula hyemalis","Clangula hyemalis","alli",2
+"merlin","Merlin","Falco columbarius","Falco columbarius","ampuhaukka",3
+"palhar1","Pallid Harrier","Circus macrourus","Circus macrourus","arosuohaukka",4
+"commur","Common Murre","Uria aalge","Uria aalge","etelänkiisla",5
+"rinphe","Ring-necked Pheasant","Phasianus colchicus","Phasianus colchicus","fasaani",6
+"comeid","Common Eider","Somateria mollissima","Somateria mollissima","haahka",7
+"eurwig","Eurasian Wigeon","Mareca penelope","Anas penelope","haapana",8
+"blakit1","Black Kite","Milvus migrans","Milvus migrans","haarahaukka",9
+"barswa","Barn Swallow","Hirundo rustica","Hirundo rustica","haarapääsky",10
+"eurmag1","Eurasian Magpie","Pica pica","Pica pica","harakka",11
+"hoopoe","Eurasian Hoopoe","Upupa epops","Upupa epops","harjalintu",12
+"graher1","Gray Heron","Ardea cinerea","Ardea cinerea","harmaahaikara",13
+"hergul","Herring Gull","Larus argentatus","Larus argentatus","harmaalokki",14
+"gyfwoo1","Gray-headed Woodpecker","Picus canus","Picus canus","harmaapäätikka",15
+"spofly1","Spotted Flycatcher","Muscicapa striata","Muscicapa striata","harmaasieppo",16
+"gadwal","Gadwall","Mareca strepera","Anas strepera","harmaasorsa",17
+"gresni1","Great Snipe","Gallinago media","Gallinago media","heinäkurppa",18
+"gargan","Garganey","Spatula querquedula","Anas querquedula","heinätavi",19
+"borowl","Boreal Owl","Aegolius funereus","Aegolius funereus","helmipöllö",20
+"eurlin1","Eurasian Linnet","Linaria cannabina","Carduelis cannabina","hemppo",21
+"leswhi4","Lesser Whitethroat","Sylvia curruca","Sylvia curruca","hernekerttu",22
+"combuz1","Common Buzzard","Buteo buteo","Buteo buteo","hiirihaukka",23
+"nohowl","Northern Hawk Owl","Surnia ulula","Surnia ulula","hiiripöllö",24
+"goldcr1","Goldcrest","Regulus regulus","Regulus regulus","hippiäinen",25
+"palwar5","Pallas's Leaf Warbler","Phylloscopus proregulus","Phylloscopus proregulus","hippiäisuunilintu",26
+"eueowl1","Eurasian Eagle-Owl","Bubo bubo","Bubo bubo","huuhkaja",27
+"rengre","Red-necked Grebe","Podiceps grisegena","Podiceps grisegena","härkälintu",28
+"wiltit1","Willow Tit","Poecile montanus","Parus montanus","hömötiainen",29
+"grewar3","Greenish Warbler","Phylloscopus trochiloides","Phylloscopus trochiloides","idänuunilintu",30
+"commer","Common Merganser","Mergus merganser","Mergus merganser","isokoskelo",31
+"parcro2","Parrot Crossbill","Loxia pytyopsittacus","Loxia pytyopsittacus","isokäpylintu",32
+"norshr1","Great Gray Shrike","Lanius excubitor","Lanius excubitor","isolepinkäinen",33
+"redkno","Red Knot","Calidris canutus","Calidris canutus","isosirri",34
+"greegr","Great Egret","Ardea alba","Ardea alba","jalohaikara",35
+"norpin","Northern Pintail","Anas acuta","Anas acuta","jouhisorsa",36
+"jacsni","Jack Snipe","Lymnocryptes minimus","Lymnocryptes minimus","jänkäkurppa",37
+"brbsan","Broad-billed Sandpiper","Calidris falcinellus","Limicola falcinellus","jänkäsirriäinen",38
+"brambl","Brambling","Fringilla montifringilla","Fringilla montifringilla","järripeippo",39
+"retloo","Red-throated Loon","Gavia stellata","Gavia stellata","kaakkuri",40
+"mewgul","Mew Gull","Larus canus","Larus canus","kalalokki",41
+"comter","Common Tern","Sterna hirundo","Sterna hirundo","kalatiira",42
+"cangoo","Canada Goose","Branta canadensis","Branta canadensis","kanadanhanhi",43
+"norgos","Northern Goshawk","Accipiter gentilis","Accipiter gentilis","kanahaukka",44
+"woolar1","Wood Lark","Lullula arborea","Lullula arborea","kangaskiuru",45
+"eugplo","European Golden-Plover","Pluvialis apricaria","Pluvialis apricaria","kapustarinta",46
+"rudtur","Ruddy Turnstone","Arenaria interpres","Arenaria interpres","karikukko",47
+"grebit1","Great Bittern","Botaurus stellaris","Botaurus stellaris","kaulushaikara",48
+"eurnig1","Eurasian Nightjar","Caprimulgus europaeus","Caprimulgus europaeus","kehrääjä",49
+"eurser1","European Serin","Serinus serinus","Serinus serinus","keltahemppo",50
+"yellow2","Yellowhammer","Emberiza citrinella","Emberiza citrinella","keltasirkku",51
+"eaywag1","Western Yellow Wagtail","Motacilla flava","Motacilla flava","keltavästäräkki",52
+"eurdot","Eurasian Dotterel","Charadrius morinellus","Charadrius morinellus","keräkurmitsa",53
+"rocpig","Rock Pigeon","Columba livia","Columba livia","kesykyyhky",54
+"rocpta1","Rock Ptarmigan","Lagopus muta","Lagopus muta","kiiruna",55
+"lwfgoo","Lesser White-fronted Goose","Anser erythropus","Anser erythropus","kiljuhanhi",56
+"grseag1","Greater Spotted Eagle","Clanga clanga","Aquila clanga","kiljukotka",57
+"barwar1","Barred Warbler","Sylvia nisoria","Sylvia nisoria","kirjokerttu",58
+"eupfly1","European Pied Flycatcher","Ficedula hypoleuca","Ficedula hypoleuca","kirjosieppo",59
+"whwcro","White-winged Crossbill","Loxia leucoptera","Loxia leucoptera","kirjosiipikäpylintu",60
+"skylar","Eurasian Skylark","Alauda arvensis","Alauda arvensis","kiuru",61
+"norwhe","Northern Wheatear","Oenanthe oenanthe","Oenanthe oenanthe","kivitasku",62
+"comrav","Common Raven","Corvus corax","Corvus corax","korppi",63
+"whtdip1","White-throated Dipper","Cinclus cinclus","Cinclus cinclus","koskikara",64
+"eursta","European Starling","Sturnus vulgaris","Sturnus vulgaris","kottarainen",65
+"eugori2","Eurasian Golden Oriole","Oriolus oriolus","Oriolus oriolus","kuhankeittäjä",66
+"arcloo","Arctic Loon","Gavia arctica","Gavia arctica","kuikka",67
+"misthr1","Mistle Thrush","Turdus viscivorus","Turdus viscivorus","kulorastas",68
+"ictwar1","Icterine Warbler","Hippolais icterina","Hippolais icterina","kultarinta",69
+"comkin1","Common Kingfisher","Alcedo atthis","Alcedo atthis","kuningaskalastaja",70
+"eurcur","Eurasian Curlew","Numenius arquata","Numenius arquata","kuovi",71
+"cursan","Curlew Sandpiper","Calidris ferruginea","Calidris ferruginea","kuovisirri",72
+"comcra","Common Crane","Grus grus","Grus grus","kurki",73
+"sibjay1","Siberian Jay","Perisoreus infaustus","Perisoreus infaustus","kuukkeli",74
+"coatit2","Coal Tit","Periparus ater","Parus ater","kuusitiainen",75
+"mutswa","Mute Swan","Cygnus olor","Cygnus olor","kyhmyjoutsen",76
+"eurwry","Eurasian Wryneck","Jynx torquilla","Jynx torquilla","käenpiika",77
+"comcuc","Common Cuckoo","Cuculus canorus","Cuculus canorus","käki",78
+"grswoo","Great Spotted Woodpecker","Dendrocopos major","Dendrocopos major","käpytikka",79
+"marsan","Marsh Sandpiper","Tringa stagnatilis","Tringa stagnatilis","lampiviklo",80
+"norsho","Northern Shoveler","Spatula clypeata","Anas clypeata","lapasorsa",81
+"gresca","Greater Scaup","Aythya marila","Aythya marila","lapasotka",82
+"retpip","Red-throated Pipit","Anthus cervinus","Anthus cervinus","lapinkirvinen",83
+"grgowl","Great Gray Owl","Strix nebulosa","Strix nebulosa","lapinpöllö",84
+"laplon","Lapland Longspur","Calcarius lapponicus","Calcarius lapponicus","lapinsirkku",85
+"temsti","Temminck's Stint","Calidris temminckii","Calidris temminckii","lapinsirri",86
+"gyhchi","Gray-headed Chickadee","Poecile cinctus","Parus cinctus","lapintiainen",87
+"arcter","Arctic Tern","Sterna paradisaea","Sterna paradisaea","lapintiira",88
+"arcwar1","Arctic Warbler","Phylloscopus borealis","Phylloscopus borealis","lapinuunilintu",89
+"whoswa","Whooper Swan","Cygnus cygnus","Cygnus cygnus","laulujoutsen",90
+"sonthr1","Song Thrush","Turdus philomelos","Turdus philomelos","laulurastas",91
+"garwar1","Garden Warbler","Sylvia borin","Sylvia borin","lehtokerttu",92
+"eurwoo","Eurasian Woodcock","Scolopax rusticola","Scolopax rusticola","lehtokurppa",93
+"tawowl1","Tawny Owl","Strix aluco","Strix aluco","lehtopöllö",94
+"comred2","Common Redstart","Phoenicurus phoenicurus","Phoenicurus phoenicurus","leppälintu",95
+"commoo3","Eurasian Moorhen","Gallinula chloropus","Gallinula chloropus","liejukana",96
+"woosan","Wood Sandpiper","Tringa glareola","Tringa glareola","liro",97
+"spocra1","Spotted Crake","Porzana porzana","Porzana porzana","luhtahuitti",98
+"watrai1","Water Rail","Rallus aquaticus","Rallus aquaticus","luhtakana",99
+"marwar3","Marsh Warbler","Acrocephalus palustris","Acrocephalus palustris","luhtakerttunen",100
+"rocpip1","Rock Pipit","Anthus petrosus","Anthus petrosus","luotokirvinen",101
+"pifgoo","Pink-footed Goose","Anser brachyrhynchus","Anser brachyrhynchus","lyhytnokkahanhi",102
+"goleag","Golden Eagle","Aquila chrysaetos","Aquila chrysaetos","maakotka",103
+"euhbuz1","European Honey-buzzard","Pernis apivorus","Pernis apivorus","mehiläishaukka",104
+"eubeat1","European Bee-eater","Merops apiaster","Merops apiaster","mehiläissyöjä",105
+"gragoo","Graylag Goose","Anser anser","Anser anser","merihanhi",106
+"euroys1","Eurasian Oystercatcher","Haematopus ostralegus","Haematopus ostralegus","meriharakka",107
+"parjae","Parasitic Jaeger","Stercorarius parasiticus","Stercorarius parasiticus","merikihu",108
+"whteag","White-tailed Eagle","Haliaeetus albicilla","Haliaeetus albicilla","merikotka",109
+"gbbgul","Great Black-backed Gull","Larus marinus","Larus marinus","merilokki",110
+"grecor","Great Cormorant","Phalacrocorax carbo","Phalacrocorax carbo","merimetso",111
+"pursan","Purple Sandpiper","Calidris maritima","Calidris maritima","merisirri",112
+"wescap1","Western Capercaillie","Tetrao urogallus","Tetrao urogallus","metso",113
+"taibeg1","Taiga Bean-Goose","Anser fabalis","Anser fabalis","metsähanhi",114
+"trepip","Tree Pipit","Anthus trivialis","Anthus trivialis","metsäkirvinen",115
+"grnsan","Green Sandpiper","Tringa ochropus","Tringa ochropus","metsäviklo",116
+"horgre","Horned Grebe","Podiceps auritus","Podiceps auritus","mustakurkku-uikku",117
+"blared1","Black Redstart","Phoenicurus ochruros","Phoenicurus ochruros","mustaleppälintu",118
+"blksco1","Common Scoter","Melanitta nigra","Melanitta nigra","mustalintu",119
+"bktgod","Black-tailed Godwit","Limosa limosa","Limosa limosa","mustapyrstökuiri",120
+"blackc1","Eurasian Blackcap","Sylvia atricapilla","Sylvia atricapilla","mustapääkerttu",121
+"eurbla","Eurasian Blackbird","Turdus merula","Turdus merula","mustarastas",122
+"blkter","Black Tern","Chlidonias niger","Chlidonias niger","mustatiira",123
+"rook1","Rook","Corvus frugilegus","Corvus frugilegus","mustavaris",124
+"spored","Spotted Redshank","Tringa erythropus","Tringa erythropus","mustaviklo",125
+"perfal","Peregrine Falcon","Falco peregrinus","Falco peregrinus","muuttohaukka",126
+"eurjac","Eurasian Jackdaw","Corvus monedula","Corvus monedula","naakka",127
+"bkhgul","Black-headed Gull","Chroicocephalus ridibundus","Larus ridibundus","naurulokki",128
+"meapip1","Meadow Pipit","Anthus pratensis","Anthus pratensis","niittykirvinen",129
+"monhar1","Montagu's Harrier","Circus pygargus","Circus pygargus","niittysuohaukka",130
+"eurcoo","Eurasian Coot","Fulica atra","Fulica atra","nokikana",131
+"hawfin","Hawfinch","Coccothraustes coccothraustes","Coccothraustes coccothraustes","nokkavarpunen",132
+"tawpip1","Tawny Pipit","Anthus campestris","Anthus campestris","nummikirvinen",133
+"eurhob","Eurasian Hobby","Falco subbuteo","Falco subbuteo","nuolihaukka",134
+"eurjay1","Eurasian Jay","Garrulus glandarius","Garrulus glandarius","närhi",135
+"wlwwar","Willow Warbler","Phylloscopus trochilus","Phylloscopus trochilus","pajulintu",136
+"reebun","Reed Bunting","Emberiza schoeniclus","Emberiza schoeniclus","pajusirkku",137
+"blawoo1","Black Woodpecker","Dryocopus martius","Dryocopus martius","palokärki",138
+"comcha","Common Chaffinch","Fringilla coelebs","Fringilla coelebs","peippo",139
+"grypar","Gray Partridge","Perdix perdix","Perdix perdix","peltopyy",140
+"ortbun1","Ortolan Bunting","Emberiza hortulana","Emberiza hortulana","peltosirkku",141
+"grewhi1","Greater Whitethroat","Sylvia communis","Sylvia communis","pensaskerttu",142
+"cogwar1","Common Grasshopper-Warbler","Locustella naevia","Locustella naevia","pensassirkkalintu",143
+"whinch1","Whinchat","Saxicola rubetra","Saxicola rubetra","pensastasku",144
+"winwre4","Eurasian Wren","Troglodytes troglodytes","Troglodytes troglodytes","peukaloinen",145
+"rolhaw","Rough-legged Hawk","Buteo lagopus","Buteo lagopus","piekana",146
+"litgre1","Little Grebe","Tachybaptus ruficollis","Tachybaptus ruficollis","pikku-uikku",147
+"litcra1","Little Crake","Zapornia parva","Porzana parva","pikkuhuitti",148
+"tunswa","Tundra Swan","Cygnus columbianus","Cygnus columbianus","pikkujoutsen",149
+"boowar1","Booted Warbler","Iduna caligata","Hippolais caligata","pikkukultarinta",150
+"whimbr","Whimbrel","Numenius phaeopus","Numenius phaeopus","pikkukuovi",151
+"redcro","Red Crossbill","Loxia curvirostra","Loxia curvirostra","pikkukäpylintu",152
+"rebshr1","Red-backed Shrike","Lanius collurio","Lanius collurio","pikkulepinkäinen",153
+"litgul","Little Gull","Hydrocoloeus minutus","Hydrocoloeus minutus","pikkulokki",154
+"rebfly","Red-breasted Flycatcher","Ficedula parva","Ficedula parva","pikkusieppo",155
+"litbun","Little Bunting","Emberiza pusilla","Emberiza pusilla","pikkusirkku",156
+"litsti","Little Stint","Calidris minuta","Calidris minuta","pikkusirri",157
+"litter1","Little Tern","Sternula albifrons","Sternula albifrons","pikkutiira",158
+"leswoo1","Lesser Spotted Woodpecker","Dryobates minor","Dendrocopos minor","pikkutikka",159
+"lirplo","Little Ringed Plover","Charadrius dubius","Charadrius dubius","pikkutylli",160
+"eutspa","Eurasian Tree Sparrow","Passer montanus","Passer montanus","pikkuvarpunen",161
+"whwsco3","Velvet Scoter","Melanitta fusca","Melanitta fusca","pilkkasiipi",162
+"rusbun","Rustic Bunting","Emberiza rustica","Emberiza rustica","pohjansirkku",163
+"ettwoo1","Eurasian Three-toed Woodpecker","Picoides tridactylus","Picoides tridactylus","pohjantikka",164
+"snobun","Snow Bunting","Plectrophenax nivalis","Plectrophenax nivalis","pulmunen",165
+"sander","Sanderling","Calidris alba","Calidris alba","pulmussirri",166
+"comred1","Common Redshank","Tringa totanus","Tringa totanus","punajalkaviklo",167
+"batgod","Bar-tailed Godwit","Limosa lapponica","Limosa lapponica","punakuiri",168
+"redwin","Redwing","Turdus iliacus","Turdus iliacus","punakylkirastas",169
+"eurrob1","European Robin","Erithacus rubecula","Erithacus rubecula","punarinta",170
+"compoc","Common Pochard","Aythya ferina","Aythya ferina","punasotka",171
+"eurbul","Eurasian Bullfinch","Pyrrhula pyrrhula","Pyrrhula pyrrhula","punatulkku",172
+"comros","Common Rosefinch","Carpodacus erythrinus","Carpodacus erythrinus","punavarpunen",173
+"euptit1","Eurasian Penduline-Tit","Remiz pendulinus","Remiz pendulinus","pussitiainen",174
+"eurtre1","Eurasian Treecreeper","Certhia familiaris","Certhia familiaris","puukiipijä",175
+"lottit1","Long-tailed Tit","Aegithalos caudatus","Aegithalos caudatus","pyrstötiainen",176
+"hazgro1","Hazel Grouse","Tetrastes bonasia","Bonasa bonasia","pyy",177
+"eurnut1","Eurasian Nutcracker","Nucifraga caryocatactes","Nucifraga caryocatactes","pähkinähakki",178
+"eurnut2","Eurasian Nuthatch","Sitta europaea","Sitta europaea","pähkinänakkeli",179
+"tersan","Terek Sandpiper","Xenus cinereus","Xenus cinereus","rantakurvi",180
+"comsan","Common Sandpiper","Actitis hypoleucos","Actitis hypoleucos","rantasipi",181
+"grrwar1","Great Reed Warbler","Acrocephalus arundinaceus","Acrocephalus arundinaceus","rastaskerttunen",182
+"dunnoc1","Dunnock","Prunella modularis","Prunella modularis","rautiainen",183
+"wilpta","Willow Ptarmigan","Lagopus lagopus","Lagopus lagopus","riekko",184
+"blkgui","Black Guillemot","Cepphus grylle","Cepphus grylle","riskilä",185
+"comshe","Common Shelduck","Tadorna tadorna","Tadorna tadorna","ristisorsa",186
+"santer1","Sandwich Tern","Thalasseus sandvicensis","Thalasseus sandvicensis","riuttatiira",187
+"corcra","Corn Crake","Crex crex","Crex crex","ruisrääkkä",188
+"razorb","Razorbill","Alca torda","Alca torda","ruokki",189
+"sedwar1","Sedge Warbler","Acrocephalus schoenobaenus","Acrocephalus schoenobaenus","ruokokerttunen",190
+"savwar1","Savi's Warbler","Locustella luscinioides","Locustella luscinioides","ruokosirkkalintu",191
+"wemhar1","Eurasian Marsh-Harrier","Circus aeruginosus","Circus aeruginosus","ruskosuohaukka",192
+"eurwar1","Eurasian Reed Warbler","Acrocephalus scirpaceus","Acrocephalus scirpaceus","rytikerttunen",193
+"fieldf","Fieldfare","Turdus pilaris","Turdus pilaris","räkättirastas",194
+"caster1","Caspian Tern","Hydroprogne caspia","Hydroprogne caspia","räyskä",195
+"cohmar1","Common House-Martin","Delichon urbicum","Delichon urbicum","räystäspääsky",196
+"loeowl","Long-eared Owl","Asio otus","Asio otus","sarvipöllö",197
+"thrnig1","Thrush Nightingale","Luscinia luscinia","Luscinia luscinia","satakieli",198
+"lbbgul","Lesser Black-backed Gull","Larus fuscus","Larus fuscus","selkälokki",199
+"brant","Brant","Branta bernicla","Branta bernicla","sepelhanhi",200
+"cowpig1","Common Wood-Pigeon","Columba palumbus","Columba palumbus","sepelkyyhky",201
+"rinouz1","Ring Ouzel","Turdus torquatus","Turdus torquatus","sepelrastas",202
+"colfly1","Collared Flycatcher","Ficedula albicollis","Ficedula albicollis","sepelsieppo",203
+"grcgre1","Great Crested Grebe","Podiceps cristatus","Podiceps cristatus","silkkiuikku",204
+"refblu","Red-flanked Bluetail","Tarsiger cyanurus","Tarsiger cyanurus","sinipyrstö",205
+"blueth","Bluethroat","Luscinia svecica","Luscinia svecica","sinirinta",206
+"mallar3","Mallard","Anas platyrhynchos","Anas platyrhynchos","sinisorsa",207
+"norhar1","Hen Harrier","Circus cyaneus","Circus cyaneus","sinisuohaukka",208
+"blutit","Eurasian Blue Tit","Cyanistes caeruleus","Parus caeruleus","sinitiainen",209
+"woowar","Wood Warbler","Phylloscopus sibilatrix","Phylloscopus sibilatrix","sirittäjä",210
+"citwag","Citrine Wagtail","Motacilla citreola","Motacilla citreola","sitruunavästäräkki",211
+"ruff","Ruff","Calidris pugnax","Philomachus pugnax","suokukko",212
+"sheowl","Short-eared Owl","Asio flammeus","Asio flammeus","suopöllö",213
+"dunlin","Dunlin","Calidris alpina","Calidris alpina","suosirri",214
+"osprey","Osprey","Pandion haliaetus","Pandion haliaetus","sääksi",215
+"yebwar3","Yellow-browed Warbler","Phylloscopus inornatus","Phylloscopus inornatus","taigauunilintu",216
+"comsni","Common Snipe","Gallinago gallinago","Gallinago gallinago","taivaanvuohi",217
+"gretit1","Great Tit","Parus major","Parus major","talitiainen",218
+"gnwtea","Green-winged Teal","Anas crecca","Anas crecca","tavi",219
+"pingro","Pine Grosbeak","Pinicola enucleator","Pinicola enucleator","taviokuurna",220
+"blagro1","Black Grouse","Tetrao tetrix","Tetrao tetrix","teeri",221
+"comgol","Common Goldeneye","Bucephala clangula","Bucephala clangula","telkkä",222
+"comswi","Common Swift","Apus apus","Apus apus","tervapääsky",223
+"eurgol","European Goldfinch","Carduelis carduelis","Carduelis carduelis","tikli",224
+"bohwax","Bohemian Waxwing","Bombycilla garrulus","Bombycilla garrulus","tilhi",225
+"comchi1","Common Chiffchaff","Phylloscopus collybita","Phylloscopus collybita","tiltaltti",226
+"rebmer","Red-breasted Merganser","Mergus serrator","Mergus serrator","tukkakoskelo",227
+"tufduc","Tufted Duck","Aythya fuligula","Aythya fuligula","tukkasotka",228
+"firecr1","Common Firecrest","Regulus ignicapilla","Regulus ignicapilla","tulipäähippiäinen",229
+"gwfgoo","Greater White-fronted Goose","Anser albifrons","Anser albifrons","tundrahanhi",230
+"bkbplo","Black-bellied Plover","Pluvialis squatarola","Pluvialis squatarola","tundrakurmitsa",231
+"gyrfal","Gyrfalcon","Falco rusticolus","Falco rusticolus","tunturihaukka",232
+"lotjae","Long-tailed Jaeger","Stercorarius longicaudus","Stercorarius longicaudus","tunturikihu",233
+"horlar","Horned Lark","Eremophila alpestris","Eremophila alpestris","tunturikiuru",234
+"snoowl1","Snowy Owl","Bubo scandiacus","Bubo scandiacus","tunturipöllö",235
+"eucdov","Eurasian Collared-Dove","Streptopelia decaocto","Streptopelia decaocto","turkinkyyhky",236
+"eutdov","European Turtle-Dove","Streptopelia turtur","Streptopelia turtur","turturikyyhky",237
+"eurkes","Eurasian Kestrel","Falco tinnunculus","Falco tinnunculus","tuulihaukka",238
+"corplo","Common Ringed Plover","Charadrius hiaticula","Charadrius hiaticula","tylli",239
+"banswa","Bank Swallow","Riparia riparia","Riparia riparia","törmäpääsky",240
+"norlap","Northern Lapwing","Vanellus vanellus","Vanellus vanellus","töyhtöhyyppä",241
+"cretit2","Crested Tit","Lophophanes cristatus","Parus cristatus","töyhtötiainen",242
+"smew","Smew","Mergellus albellus","Mergellus albellus","uivelo",243
+"comred","Common Redpoll","Acanthis flammea","Carduelis flammea","urpiainen",244
+"stodov1","Stock Dove","Columba oenas","Columba oenas","uuttukyyhky",245
+"bargoo","Barnacle Goose","Branta leucopsis","Branta leucopsis","valkoposkihanhi",246
+"whbwoo1","White-backed Woodpecker","Dendrocopos leucotos","Dendrocopos leucotos","valkoselkätikka",247
+"comgre","Common Greenshank","Tringa nebularia","Tringa nebularia","valkoviklo",248
+"hoocro1","Hooded Crow","Corvus cornix","Corvus corone","varis",249
+"houspa","House Sparrow","Passer domesticus","Passer domesticus","varpunen",250
+"eurspa1","Eurasian Sparrowhawk","Accipiter nisus","Accipiter nisus","varpushaukka",251
+"eupowl1","Eurasian Pygmy-Owl","Glaucidium passerinum","Glaucidium passerinum","varpuspöllö",252
+"renpha","Red-necked Phalarope","Phalaropus lobatus","Phalaropus lobatus","vesipääsky",253
+"eurgre1","European Greenfinch","Chloris chloris","Carduelis chloris","viherpeippo",254
+"eursis","Eurasian Siskin","Spinus spinus","Carduelis spinus","vihervarpunen",255
+"bearee1","Bearded Reedling","Panurus biarmicus","Panurus biarmicus","viiksitimali",256
+"comqua1","Common Quail","Coturnix coturnix","Coturnix coturnix","viiriäinen",257
+"uraowl1","Ural Owl","Strix uralensis","Strix uralensis","viirupöllö",258
+"blrwar1","Blyth's Reed Warbler","Acrocephalus dumetorum","Acrocephalus dumetorum","viitakerttunen",259
+"eurwar2","River Warbler","Locustella fluviatilis","Locustella fluviatilis","viitasirkkalintu",260
+"martit2","Marsh Tit","Poecile palustris","Poecile palustris","viitatiainen",261
+"grywag","Gray Wagtail","Motacilla cinerea","Motacilla cinerea","virtavästäräkki",262
+"twite1","Twite","Linaria flavirostris","Carduelis flavirostris","vuorihemppo",263
+"whiwag","White Wagtail","Motacilla alba","Motacilla alba","västäräkki",264

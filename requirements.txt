@@ -1,0 +1,7 @@
+numpy<2.0       # Model requires version below 2.0
+librosa==0.10.*
+rasterio==1.4.*
+scipy==1.13.*
+matplotlib==3.9.*
+pandas==2.2.*
+resampy==0.4.*
