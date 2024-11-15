@@ -2,6 +2,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 from scipy.stats import norm
 import rasterio
+import os
 
 # calibrate prediction
 def calibrate(p, cal_table):
@@ -115,4 +116,18 @@ def plot_results(history, val = True):
     plt.title('Training (and validation) loss')
     plt.legend()
     plt.show()
-    
+
+def make_output_file_path(output_path, file_name):
+    """
+    Generates an output file path using BirdNET file name format.
+
+    Args:
+        output_path (str): The directory where the output file will be saved.
+        file_name (str): The name of the input audio file.
+
+    Returns:
+        str: The full path of the output file.
+    """
+    file_name_wo_extension = os.path.splitext(file_name)[0]
+    output_file_path = f"{output_path}/{file_name_wo_extension}.Muuttolinnut.results.csv"
+    return output_file_path

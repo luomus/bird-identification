@@ -5,7 +5,7 @@ import gc
 import tensorflow as tf
 from tensorflow import keras
 from classifier import Classifier
-from functions import calibrate, adjust, threshold_filter
+import functions
 import traceback
 
 # ---------------------------------------------------------------------------
@@ -38,54 +38,49 @@ calibration_parameters = np.load('Pred_adjustment/calibration_params.npy')
 # Todo: ignore unsupported file types
 files = os.listdir(input_path)
 
-
-
-n_files = len(files)
+number_of_files = len(files)
 
 # Loop each audio file in input folder
 for file_index, file_name in enumerate(files):
     try:
         file_path = input_path + '/' + file_name
-        print(f"Analyzing {file_path} ({file_index + 1} of {n_files})")
+        output_file_path = functions.make_output_file_path(output_path, file_name)
 
-        # Output filename with BirdNET format
-        file_name_wo_extension = os.path.splitext(file_name)[0]
-        output_file_path = f"{output_path}/{file_name_wo_extension}.Muuttolinnut.results.csv"
+        print(f"Analyzing {file_path} ({file_index + 1} of {number_of_files})")
 
-        # Create output file with header
-        with open(output_file_path, 'a') as output_file_writer:
-            output_file_writer.write("site, filename, species, prediction, detection_time \n")
+        # Create an empty output file with header
+        with open(output_file_path, 'w') as output_file_writer:
+            output_file_writer.write("Start (s),End (s),Scientific name,Common name,Confidence\n")
 
         # Predict species
         species_predictions, detection_timestamps = audio_classifier.classify(file_path, max_pred=False) #max_pred: only keep highest confidence detection for each species instead of saving all detections
 
         # Calibrate prediction based on calibration parameters
         for detection_index in range(len(species_predictions)):
-            species_predictions[detection_index, :] = calibrate(species_predictions[detection_index, :], cal_table=calibration_parameters)
+            species_predictions[detection_index, :] = functions.calibrate(species_predictions[detection_index, :], cal_table=calibration_parameters)
         
         # Ignore human and noise predictions by setting them to zero
         # Todo: remove?
         species_predictions[:,0:2] = 0
 
         # Filter predictions with a threshold 
-        species_predictions, species_class_indices, detection_timestamps = threshold_filter(species_predictions, detection_timestamps, threshold)
+        species_predictions, species_class_indices, detection_timestamps = functions.threshold_filter(species_predictions, detection_timestamps, threshold)
 
         # Adjust prediction based on time of the year and latitude (only if record is from Finland and location and date are known)
-        species_predictions = adjust(species_predictions, species_class_indices, migration_parameters, lat, lon, day_of_year) 
+        species_predictions = functions.adjust(species_predictions, species_class_indices, migration_parameters, lat, lon, day_of_year) 
 
         # Loop through predictions
         for detection_index in range(len(species_predictions)):
             if species_class_indices[detection_index] > 1: # ignore two first classes: noise and human
 
-                # Save results to output file
-#                output_filename = f"{output_path}/results.txt"
+                # Append results to output file
                 with open(output_file_path, 'a') as output_file_writer:
                     output_file_writer.write(
-                        f"{input_path}, "
-                        f"{file_name}, "
-                        f"{species_name_list['luomus_name'].iloc[species_class_indices[detection_index]]}, "
-                        f"{species_predictions[detection_index]}, "
-                        f"{detection_timestamps[detection_index]}\n"
+                        f"{detection_timestamps[detection_index]},"
+                        f"{detection_timestamps[detection_index] + 3},"
+                        f"{species_name_list['luomus_name'].iloc[species_class_indices[detection_index]]},"
+                        f"{species_name_list['common_name'].iloc[species_class_indices[detection_index]]},"
+                        f"{species_predictions[detection_index]}\n"
                     )
 
         # Clear memory
