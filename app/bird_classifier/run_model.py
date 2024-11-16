@@ -29,9 +29,9 @@ day_of_year = 126 # 6th of May
 
 # Settings
 
-input_path = "../input" # Input folder for audio files
-output_path = "../output" # Output folder for results
-path_to_model = "../models/model_v3_5.keras"
+input_path = "../../input" # Input folder for audio files
+output_path = "../../output" # Output folder for results
+path_to_model = "models/model_v3_5.keras"
 
 # Load classification model
 # TFLITE_THREADS can be as high as number of CPUs available, the rest of the parameters should not be changed
