@@ -7,10 +7,7 @@ import os
 # calibrate prediction
 def calibrate(species_predictions, calibration_parameters):
     """
-    Calibrates prediction probabilities using logistic regression coefficients.
-
-    This function applies a logistic (sigmoid) transformation to adjust the prediction 
-    probabilities for each species based on calibration parameters.
+    Calibrates prediction probabilities a logistic (sigmoid) transformation to adjust the prediction probabilities for each species based on calibration parameters.
 
     Args:
         probabilities (list or np.ndarray): List or array of raw prediction probabilities for each species.
@@ -24,11 +21,7 @@ def calibrate(species_predictions, calibration_parameters):
 
 def adjust(species_predictions, species_class_indices, migration_parameters, lat, lon, day_of_year):
     """
-    Adjusts species prediction probabilities based on migration patterns and geographic occurrence.
-
-    This function refines species presence probabilities from the model, adjusting for 
-    migration timing and spatial occurrence within a geographic area (latitude and longitude).
-    Adjustments account for seasonality, geographic distributions, and potential map overlays.
+    Adjusts species prediction probabilities based on seasonality and geographic occurrence.
 
     Args:
         species_predictions (np.ndarray): Array of prediction probabilities for each species.
@@ -110,8 +103,7 @@ def top_preds(prediction, timestamps, threshold=0.5):
 
 def threshold_filter(species_predictions, detection_timestamps, threshold = 0.5):
     """
-    Filters predictions based on a probability threshold, retaining only 
-    predictions that exceed a specified probability threshold.
+    Filters predictions based on a probability threshold.
 
     Args:
         prediction_probabilities (np.ndarray): Array of prediction probabilities.
@@ -134,6 +126,7 @@ def threshold_filter(species_predictions, detection_timestamps, threshold = 0.5)
 
 
 # pad too short signal with zeros
+# Not used?
 def pad(signal, x1, x2, target_len=3*48000, sr=48000):
     # signal: input audio signal, x1: starting point in seconds x2: ending point in seconds, 
     # target_len: target length for signal, sr: sampling rate
@@ -141,19 +134,34 @@ def pad(signal, x1, x2, target_len=3*48000, sr=48000):
     sig_out[int(x1*sr):int(x2*sr)] = signal[int(x1*sr):int(x2*sr)]
     return sig_out
 
+
 # split input signal to overlapping chunks
-def split_signal(sig, rate, seconds, overlap):
-    # sig: input_signal, rate: sampling rate, seconds: target length in seconds,
-    # overlap: overlap of consecutive frames in seconds, minlen: m
-    sig_splits = []
-    for i in range(0, len(sig), int((seconds - overlap) * rate)):
-        split = sig[i:i + int(seconds * rate)]
-        if len(split) < int(seconds * rate): # pad if clip is too short
-            split = pad(split, 0, len(split)/rate, target_len=int(seconds*rate), sr=rate)     
-        sig_splits.append(split)
-    return sig_splits
+def split_signal(input_signal, sample_rate, chunk_duration_s, overlap_duration_s):
+    """
+    Splits an audio signal into multiple overlapping segments, padding shorter segments if necessary to match the desired chunk duration.
+
+    Args:
+        input_signal (np.ndarray): The input audio signal to split.
+        sample_rate (int): Sampling rate of the input audio signal.
+        chunk_duration (float): Target duration of each chunk in seconds.
+        overlap_duration (float): Overlap duration between consecutive chunks in seconds.
+
+    Returns:
+        list: A list of numpy arrays, where each array is a chunk of the original signal.
+    """
+    signal_chunks = []
+    for i in range(0, len(input_signal), int((chunk_duration_s - overlap_duration_s) * sample_rate)):
+        chunk = input_signal[i:i + int(chunk_duration_s * sample_rate)]
+
+        if len(chunk) < int(chunk_duration_s * sample_rate): # Pad if clip is too short
+            chunk = pad(chunk, 0, len(chunk)/sample_rate, target_len=int(chunk_duration_s*sample_rate), sr=sample_rate)     
+        signal_chunks.append(chunk)
+
+    return signal_chunks
+
 
 # visualize results of network training
+# Not used?
 def plot_results(history, val = True):
     # history: model history object, val: show validation results
     acc = history['binary_accuracy']
@@ -174,6 +182,7 @@ def plot_results(history, val = True):
     plt.title('Training (and validation) loss')
     plt.legend()
     plt.show()
+
 
 def make_output_file_path(output_path, file_name):
     """
