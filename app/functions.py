@@ -5,12 +5,26 @@ import rasterio
 import os
 
 # calibrate prediction
-def calibrate(p, cal_table):
-    return [1/(1+np.exp(-(cal_table[i, 0]+cal_table[i, 1]*pr))) for i, pr in enumerate(p)]
+def calibrate(species_predictions, calibration_parameters):
+    """
+    Calibrates prediction probabilities using logistic regression coefficients.
+
+    This function applies a logistic (sigmoid) transformation to adjust the prediction 
+    probabilities for each species based on calibration parameters.
+
+    Args:
+        probabilities (list or np.ndarray): List or array of raw prediction probabilities for each species.
+        calibration_parameters (np.ndarray): Calibration table, where each row contains logistic regression coefficients (intercept and slope) for each species.
+
+    Returns:
+        list: List of calibrated probabilities for each species.
+    """
+    return [1/(1+np.exp(-(calibration_parameters[i, 0]+calibration_parameters[i, 1]*pr))) for i, pr in enumerate(species_predictions)]
 
 
 def adjust(species_predictions, species_class_indices, migration_parameters, lat, lon, day_of_year):
-    """Adjusts species prediction probabilities based on migration patterns and geographic occurrence.
+    """
+    Adjusts species prediction probabilities based on migration patterns and geographic occurrence.
 
     This function refines species presence probabilities from the model, adjusting for 
     migration timing and spatial occurrence within a geographic area (latitude and longitude).
@@ -73,7 +87,7 @@ def adjust(species_predictions, species_class_indices, migration_parameters, lat
         adjusted_score = np.minimum(0, np.log10(presence_probability)+1)
         adjusted_score = np.maximum(adjusted_score, -10) # avoid -inf
         species_predictions[species_index] = (np.maximum(0, species_predictions[species_index]+adjusted_score*0.25))/np.maximum(0.0001, (1+adjusted_score*0.25))
-        
+
     return species_predictions
 
 

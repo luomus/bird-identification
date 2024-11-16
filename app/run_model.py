@@ -100,7 +100,7 @@ for file_index, file_name in enumerate(files):
                     for detection_index in range(len(species_predictions)):
                         species_predictions[detection_index, :] = functions.calibrate(
                             species_predictions[detection_index, :], 
-                            cal_table=calibration_parameters
+                            calibration_parameters
                         )
                     
                     # Filter predictions with a threshold 
