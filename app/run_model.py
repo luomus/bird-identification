@@ -35,7 +35,8 @@ path_to_model = "../models/model_v3_5.keras"
 
 # Load classification model
 # TFLITE_THREADS can be as high as number of CPUs available, the rest of the parameters should not be changed
-audio_classifier = Classifier(path_to_model=path_to_model, sr=48000, clip_dur=3.0, TFLITE_THREADS=tflite_threads, offset=0, dur=0)
+CLIP_DURATION = 3.0
+audio_classifier = Classifier(path_to_model=path_to_model, sr=48000, clip_dur=CLIP_DURATION, TFLITE_THREADS=tflite_threads, offset=0, dur=0)
 
 # Load species name list and post-processing tables for prediction calibration
 species_name_list = pd.read_csv("classes.csv")
@@ -130,7 +131,7 @@ for file_index, file_name in enumerate(files):
                         with open(output_file_path, "a") as output_file_writer:
                             output_file_writer.write(
                                 f"{detection_timestamps[detection_index]},"
-                                f"{detection_timestamps[detection_index] + 3},"
+                                f"{detection_timestamps[detection_index] + CLIP_DURATION},"
                                 f"{species_name_list['luomus_name'].iloc[species_class_indices[detection_index]]},"
                                 f"{species_name_list['common_name'].iloc[species_class_indices[detection_index]]},"
                                 f"{species_predictions[detection_index]}\n"
