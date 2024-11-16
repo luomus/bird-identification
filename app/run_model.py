@@ -17,7 +17,7 @@ import tempfile
 threshold = 0.3 # only save predictions with confidence higher than threshold
 tflite_threads = 2
 ignore_nonbirds = True # whether to ignore human and noise predictions
-do_sdm_adjustments = True # Whether to adjust confidence values based on the species distribution and temporal model
+apply_sdm_adjustments = True # Whether to adjust confidence values based on the species distribution and temporal model
 
 # Espoo test data
 lat = 60.19 
@@ -48,7 +48,7 @@ files = functions.get_audio_file_names(input_path)
 
 number_of_files = len(files)
 
-# Define segment length (10 minutes in seconds)
+# As the model cannot handle long audio files, split them into segments of SEGMENT_LENGTH seconds
 SEGMENT_LENGTH = 600
 
 # Loop each audio file in input folder
@@ -111,7 +111,7 @@ for file_index, file_name in enumerate(files):
                     )
                     
                     # Adjust prediction based on time of the year and latitude
-                    if do_sdm_adjustments and len(species_predictions) > 0:
+                    if apply_sdm_adjustments and len(species_predictions) > 0:
                         species_predictions = functions.adjust(
                             species_predictions, 
                             species_class_indices, 
@@ -146,5 +146,4 @@ for file_index, file_name in enumerate(files):
         print(f"Error details: {str(e)}")
         raise  # This will show the full traceback
 
-print("All files analyzed")
-#print(f"Results saved to {output_filename}")
+print("All files analyzed.")
