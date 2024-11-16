@@ -13,8 +13,13 @@ def adjust(p, cls, migr_table, lat, lon, day):
     # handle leap year with 366 days
     if day > 365:
         day = 365
-    for j in range(len(p)): # loop through all species
-        c = cls[j]        
+    for j in range(len(p)):
+        c = cls[j]   
+
+        # Skipping the first 2 classes (noise and human)
+        if c <= 1:
+            continue
+
         # Probability that species has migrated to Finland
         migr_c = migr_table[c, :]
         p_migr = np.min((norm.cdf(day, loc=migr_c[0]+migr_c[1]*lat, scale=migr_c[4]/2), 
@@ -131,3 +136,19 @@ def make_output_file_path(output_path, file_name):
     file_name_wo_extension = os.path.splitext(file_name)[0]
     output_file_path = f"{output_path}/{file_name_wo_extension}.Muuttolinnut.results.csv"
     return output_file_path
+
+
+def get_audio_file_names(input_path):
+    """
+    Returns a list of audio files in the input folder. Includes only files with specific extensions.
+
+    Args:
+        input_path (str): The directory where the audio files are.
+
+    Returns:
+        list: A list of audio file names.
+    """
+    supported_extensions = [".wav", ".mp3", ".flac"]
+    files = [f for f in os.listdir(input_path) if os.path.isfile(os.path.join(input_path, f)) and f.endswith(tuple(supported_extensions))]
+    return files
+
