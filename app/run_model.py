@@ -23,7 +23,7 @@ do_sdm_adjustments = True # Whether to adjust confidence values based on the spe
 lat = 60.19 
 lon = 24.62
 day_of_year = 126 # 6th of May
-day_of_year = 156 # 5th of June
+#day_of_year = 156 # 5th of June
 
 # ---------------------------------------------------------------------------
 

@@ -8,54 +8,74 @@ import os
 def calibrate(p, cal_table):
     return [1/(1+np.exp(-(cal_table[i, 0]+cal_table[i, 1]*pr))) for i, pr in enumerate(p)]
 
-# adjust prediction based on time of the year and latitude
-def adjust(p, cls, migr_table, lat, lon, day):
-    # handle leap year with 366 days
-    if day > 365:
-        day = 365
-    for j in range(len(p)):
-        c = cls[j]   
+
+def adjust(species_predictions, species_class_indices, migration_parameters, lat, lon, day_of_year):
+    """Adjusts species prediction probabilities based on migration patterns and geographic occurrence.
+
+    This function refines species presence probabilities from the model, adjusting for 
+    migration timing and spatial occurrence within a geographic area (latitude and longitude).
+    Adjustments account for seasonality, geographic distributions, and potential map overlays.
+
+    Args:
+        species_predictions (np.ndarray): Array of prediction probabilities for each species.
+        species_class_indices (np.ndarray): Array of class indices for each species.
+        migration_parameters (np.ndarray): Migration parameters table, where each row contains migration parameters for a species.
+        latitude (float): Latitude coordinate for the recording location.
+        longitude (float): Longitude coordinate for the recording location.
+        day_of_year (int): Day of the year (1-365/366) representing the time of observation.
+
+    Returns:
+        np.ndarray: Array of adjusted prediction probabilities for each species.
+    """
+    # Handle leap year with 366 days
+    if day_of_year > 365:
+        day_of_year = 365
+    for species_index in range(len(species_predictions)):
+        species_class_index = species_class_indices[species_index]   
 
         # Skipping the first 2 classes (noise and human)
-        if c <= 1:
+        if species_class_index <= 1:
             continue
 
         # Probability that species has migrated to Finland
-        migr_c = migr_table[c, :]
-        p_migr = np.min((norm.cdf(day, loc=migr_c[0]+migr_c[1]*lat, scale=migr_c[4]/2), 
-              1-norm.cdf(day, loc=migr_c[2]+migr_c[3]*lat, scale=migr_c[5]/2)))
+        sp_migration_parameters = migration_parameters[species_class_index, :]
+        migration_probability = np.min((norm.cdf(day_of_year, loc=sp_migration_parameters[0]+sp_migration_parameters[1]*lat, scale=sp_migration_parameters[4]/2), 
+              1-norm.cdf(day_of_year, loc=sp_migration_parameters[2]+sp_migration_parameters[3]*lat, scale=sp_migration_parameters[5]/2)))
         
         # Probability that species occurs in given area
-        with rasterio.open('Pred_adjustment/distribution_maps/'+ str(c)+ '_a.tif') as src:
+        with rasterio.open('Pred_adjustment/distribution_maps/'+ str(species_class_index)+ '_a.tif') as src:
             for value in src.sample([(lon, lat)]): 
-                p_dist_a = value
-        p_dist_a = p_dist_a[0]
-        if np.isnan(p_dist_a): # if no information from given location, species is considered possible
-            p_dist_a=1
+                geo_presence_probability = value
+        geo_presence_probability = geo_presence_probability[0]
+        if np.isnan(geo_presence_probability): # if no information from given location, species is considered possible
+            geo_presence_probability=1
         
         # Use additional map for given time of the year:
-        p_dist_b = 0
-        use_b = 0
-        if(migr_c[6]<migr_c[7]):
-            if((day>=migr_c[6]) & (day<=migr_c[7])):
-                use_b = 1
-        if(migr_c[6]>migr_c[7]):
-            if((day>=migr_c[6]) or (day<=migr_c[7])):
-                use_b = 1
-        if use_b==1:
-            with rasterio.open('Pred_adjustment/distribution_maps/'+ str(c)+ '_b.tif') as src:
+        time_presence_probability = 0
+        use_map_b = 0
+        if(sp_migration_parameters[6]<sp_migration_parameters[7]):
+            if((day_of_year>=sp_migration_parameters[6]) & (day_of_year<=sp_migration_parameters[7])):
+                use_map_b = 1
+        if(sp_migration_parameters[6]>sp_migration_parameters[7]):
+            if((day_of_year>=sp_migration_parameters[6]) or (day_of_year<=sp_migration_parameters[7])):
+                use_map_b = 1
+        
+        if use_map_b==1:
+            with rasterio.open('Pred_adjustment/distribution_maps/'+ str(species_class_index)+ '_b.tif') as src:
                 for value in src.sample([(lon, lat)]): 
-                    p_dist_b = value
-            p_dist_b = p_dist_b[0]
-            if np.isnan(p_dist_b):
-                p_dist_b=1
+                    time_presence_probability = value
+            time_presence_probability = time_presence_probability[0]
+            if np.isnan(time_presence_probability):
+                time_presence_probability=1
 
         # Adjustment based on probability of species being present
-        p_pres = p_migr * (p_dist_a + (1-p_dist_a)*use_b*p_dist_b)
-        q = np.minimum(0, np.log10(p_pres)+1)
-        q = np.maximum(q, -10) # avoid -inf
-        p[j] = (np.maximum(0, p[j]+q*0.25))/np.maximum(0.0001, (1+q*0.25))
-    return p
+        presence_probability = migration_probability * (geo_presence_probability + (1-geo_presence_probability)*use_map_b*time_presence_probability)
+        adjusted_score = np.minimum(0, np.log10(presence_probability)+1)
+        adjusted_score = np.maximum(adjusted_score, -10) # avoid -inf
+        species_predictions[species_index] = (np.maximum(0, species_predictions[species_index]+adjusted_score*0.25))/np.maximum(0.0001, (1+adjusted_score*0.25))
+        
+    return species_predictions
+
 
 # filter and sort predictions based on threshold
 def top_preds(prediction, timestamps, threshold=0.5):
