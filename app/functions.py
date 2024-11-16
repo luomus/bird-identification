@@ -41,6 +41,7 @@ def adjust(species_predictions, species_class_indices, migration_parameters, lat
     Returns:
         np.ndarray: Array of adjusted prediction probabilities for each species.
     """
+
     # Handle leap year with 366 days
     if day_of_year > 365:
         day_of_year = 365
@@ -91,7 +92,8 @@ def adjust(species_predictions, species_class_indices, migration_parameters, lat
     return species_predictions
 
 
-# filter and sort predictions based on threshold
+# Filter and sort predictions based on threshold
+# Not used?
 def top_preds(prediction, timestamps, threshold=0.5):
     # prediction: classification model output (max results), timestamp: timestamps from model, threshold: threshold for filtering (0-1)
     cls= [idx for idx, val in enumerate(prediction) if val > threshold]
@@ -105,14 +107,31 @@ def top_preds(prediction, timestamps, threshold=0.5):
         ts = []
     return prediction, cls, ts
 
-# filter predictions based on threshold
-def threshold_filter(preds, timestamps, threshold=0.5):
-    # prediction: classification model output (all results), timestamp: timestamps from model, threshold: threshold for filtering (0-1)
-    arg_where = np.where(preds>threshold)
-    prediction = preds[arg_where]
-    cls = arg_where[1]
-    ts = timestamps[arg_where[0]]
-    return prediction, cls, ts
+
+def threshold_filter(species_predictions, detection_timestamps, threshold = 0.5):
+    """
+    Filters predictions based on a probability threshold, retaining only 
+    predictions that exceed a specified probability threshold.
+
+    Args:
+        prediction_probabilities (np.ndarray): Array of prediction probabilities.
+        detection_timestamps (np.ndarray): Array of timestamps corresponding to each prediction.
+        probability_threshold (float, optional): Minimum probability required for a prediction to be retained. Defaults to 0.5.
+
+    Returns:
+        tuple: Contains three elements:
+            - filtered_predictions (np.ndarray): Filtered array of prediction probabilities that exceed the threshold.
+            - class_indices (np.ndarray): Array of class indices corresponding to the filtered predictions.
+            - filtered_timestamps (np.ndarray): Array of timestamps corresponding to the filtered predictions.
+    """
+
+    threshold_indices = np.where(species_predictions>threshold)
+    filtered_predictions = species_predictions[threshold_indices]
+    class_indices = threshold_indices[1]
+    filtered_timestamps = detection_timestamps[threshold_indices[0]]
+
+    return filtered_predictions, class_indices, filtered_timestamps
+
 
 # pad too short signal with zeros
 def pad(signal, x1, x2, target_len=3*48000, sr=48000):
