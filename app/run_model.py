@@ -31,9 +31,11 @@ def analyze_directory(input_path, parameters):
     day_of_year = parameters["day_of_year"]
 
     # Standard settings
-    output_path = "../output" # Output folder for results
+#    output_path = "../output" # Output folder for results
+    output_path = input_path
     path_to_model = "models/model_v3_5.keras"
     tflite_threads = 2
+    skip_if_output_exists = True
 
     print(f"Analyzing audio files at {input_path}")
 
@@ -60,7 +62,12 @@ def analyze_directory(input_path, parameters):
         try:
             file_path = f"{input_path}/{file_name}"
             output_file_path = functions.make_output_file_path(output_path, file_name)
-            print(f"Analyzing {file_path} ({file_index + 1} of {number_of_files})")
+
+            if not output_file_path and skip_if_output_exists:
+                print(f"Skipping {file_path} because output file exists and skipping is enabled.")
+                continue
+
+            print(f"Loading file {file_path} ({file_index + 1} of {number_of_files})")
 
             # Create an empty output file with header
             with open(output_file_path, "w") as output_file_writer:
@@ -73,6 +80,10 @@ def analyze_directory(input_path, parameters):
             # Create temporary directory for segments
             with tempfile.TemporaryDirectory() as temp_dir:
                 # Split into segments
+
+                segment_count = int(duration) // SEGMENT_LENGTH
+                print(f"Splitting file into {segment_count} temporary segments of {SEGMENT_LENGTH} seconds")
+
                 for start_time in range(0, int(duration), SEGMENT_LENGTH):
                     # Calculate end time for segment
                     end_time = min(start_time + SEGMENT_LENGTH, duration)
@@ -138,7 +149,7 @@ def analyze_directory(input_path, parameters):
                                     f"{detection_timestamps[detection_index] + CLIP_DURATION},"
                                     f"{species_name_list['luomus_name'].iloc[species_class_indices[detection_index]]},"
                                     f"{species_name_list['common_name'].iloc[species_class_indices[detection_index]]},"
-                                    f"{species_predictions[detection_index]}\n"
+                                    f"{round(species_predictions[detection_index], 3)}\n"
                                 )
                     
                 # Clear memory after processing each file

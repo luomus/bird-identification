@@ -14,7 +14,7 @@ class Classifier():
         self.dur=dur
         self.offset=offset
         self.path_to_model = path_to_model
-        self.MODEL_PATH: str = '../models/BirdNET_GLOBAL_6K_V2.4_Model_FP32.tflite'
+        self.MODEL_PATH: str = 'models/BirdNET_GLOBAL_6K_V2.4_Model_FP32.tflite'
         self.TFLITE_THREADS = TFLITE_THREADS # can be as high as number of CPUs
         ######################################
         # Initialize BirdNET feature extractor
@@ -48,7 +48,7 @@ class Classifier():
         return features
     
     def classify(self, data_path, overlap=1.0, max_pred=True):
-        print(f"Loading file {data_path}...")
+        print(f"Loading file {data_path}")
         if self.dur>0:
                 sig, sr = librosa.load(data_path, sr=self.sr, mono=True, res_type='kaiser_fast', offset=self.offset, duration=self.dur)
         else:
@@ -58,10 +58,10 @@ class Classifier():
         for c in range(len(chunks)):
             samples.append(chunks[c])
         X = np.array(samples, dtype='float32')
-        print("Classifying recording...")
+        print(f"Classifying")
         X = self.model(self.embeddings(X))
         X = X.numpy()
-        print("Recording analyzed!")
+        print("Classification done")
         if max_pred: # return maximum prediction for each species
             pred = list(map(max, zip(*X))) # return max predictions for each class
             t = np.argmax(X, 0)*(self.clip_dur-overlap) # return timepoints of max prediction
