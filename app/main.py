@@ -52,9 +52,6 @@ def main():
         return
 
     parameters = {
-        "lat": 60.154,
-        "lon": 24.718,
-        "day_of_year": 135, # May 15th
         "apply_sdm_adjustments": True,
         "ignore_nonbirds": False,
         "threshold": 0.3

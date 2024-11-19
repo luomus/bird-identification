@@ -3,6 +3,7 @@ import matplotlib.pyplot as plt
 from scipy.stats import norm
 import rasterio
 import os
+import yaml
 
 # calibrate prediction
 def calibrate(species_predictions, calibration_parameters):
@@ -219,3 +220,17 @@ def get_audio_file_names(input_path):
     files = [f for f in os.listdir(input_path) if os.path.isfile(os.path.join(input_path, f)) and f.endswith(tuple(supported_extensions))]
     return files
 
+
+def read_metadata(folder_path):
+    """
+    Reads a metadata.yaml file from the specified folder and returns its contents as a dictionary.
+    If reading fails, returns False.
+    """
+    file_path = os.path.join(folder_path, 'metadata.yaml')
+    
+    try:
+        with open(file_path, 'r') as file:
+            metadata = yaml.safe_load(file)
+            return metadata
+    except (FileNotFoundError, yaml.YAMLError, IOError):
+        return False

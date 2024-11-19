@@ -21,23 +21,29 @@ import tempfile
 
 # Settings
 def analyze_directory(input_path, parameters):
+    print(f"\nAnalyzing audio files at {input_path}")
 
+    # Parameters
     threshold = parameters["threshold"] # only save predictions with confidence higher than threshold
     ignore_nonbirds = parameters["ignore_nonbirds"] # whether to ignore human and noise predictions
     apply_sdm_adjustments = parameters["apply_sdm_adjustments"] # Whether to adjust confidence values based on the species distribution and temporal model
 
-    lat = parameters["lat"]
-    lon = parameters["lon"]
-    day_of_year = parameters["day_of_year"]
+    # Read folder-specific metadata
+    metadata = functions.read_metadata(input_path)
+    if not metadata:
+        print(f"Error: Metadata file not found for {input_path}")
+        return False
+    
+    print("Metadata loaded: ", metadata)
+    lat = metadata["lat"]
+    lon = metadata["lon"]
+    day_of_year = metadata["day_of_year"]
 
     # Standard settings
-#    output_path = "../output" # Output folder for results
     output_path = input_path
     path_to_model = "models/model_v3_5.keras"
     tflite_threads = 2
     skip_if_output_exists = True
-
-    print(f"\nAnalyzing audio files at {input_path}")
 
     # Load classification model
     # TFLITE_THREADS can be as high as number of CPUs available, the rest of the parameters should not be changed
@@ -69,7 +75,10 @@ def analyze_directory(input_path, parameters):
 
             print(f"Loading file {file_path} ({file_index + 1} of {number_of_files})")
 
+            # Todo: If filename contains a date, use that instead of the metadata date. Support SM4 & Audiomoth formats.
+
             # Create an empty output file with header
+            # Todo: Since this creates file before data is written into it, aborting the process will leave an empty file, which may cause subsequent analysis to be skipped. Instead write all output first into memory, and into file only after all data is ready.
             with open(output_file_path, "w") as output_file_writer:
                 output_file_writer.write("Start (s),End (s),Scientific name,Common name,Confidence\n")
 
