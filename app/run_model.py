@@ -37,7 +37,7 @@ def analyze_directory(input_path, parameters):
     tflite_threads = 2
     skip_if_output_exists = True
 
-    print(f"Analyzing audio files at {input_path}")
+    print(f"\nAnalyzing audio files at {input_path}")
 
     # Load classification model
     # TFLITE_THREADS can be as high as number of CPUs available, the rest of the parameters should not be changed
@@ -81,7 +81,7 @@ def analyze_directory(input_path, parameters):
             with tempfile.TemporaryDirectory() as temp_dir:
                 # Split into segments
 
-                segment_count = int(duration) // SEGMENT_LENGTH
+                segment_count = int(duration) // SEGMENT_LENGTH + 1
                 print(f"Splitting file into {segment_count} temporary segments of {SEGMENT_LENGTH} seconds")
 
                 for start_time in range(0, int(duration), SEGMENT_LENGTH):
@@ -151,6 +151,7 @@ def analyze_directory(input_path, parameters):
                                     f"{species_name_list['common_name'].iloc[species_class_indices[detection_index]]},"
                                     f"{round(species_predictions[detection_index], 3)}\n"
                                 )
+                        print(f"Wrote predictions to {output_file_path}")
                     
                 # Clear memory after processing each file
                 gc.collect()
@@ -161,5 +162,5 @@ def analyze_directory(input_path, parameters):
             print(f"Error details: {str(e)}")
             raise  # This will show the full traceback
 
-    print("All files analyzed.")
+    print("All files analyzed")
     return True
