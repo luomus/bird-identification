@@ -1,6 +1,6 @@
 # bird-identification
 
-Bird audio identification tool
+A bird audio identification tool designed to analyze recordings and generate a list of bird species detected using an AI model. Built with TensorFlow and Python, it operates within a Docker environment. The project is a work in progress and currently in a very preliminary stage.
 
 ## Setup
 
