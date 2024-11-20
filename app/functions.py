@@ -194,16 +194,17 @@ def make_output_file_path(output_path, file_name):
         file_name (str): The name of the input audio file.
 
     Returns:
-        str or bool: The full path of the output file or False if the file already exists.
+        str: The full path of the output file.
+        boolean: True if the file already exists, False otherwise.
     """
     file_name_wo_extension = os.path.splitext(file_name)[0]
     output_file_path = f"{output_path}/{file_name_wo_extension}.Muuttolinnut.results.csv"
 
     # Check that the output file does not already exist
     if os.path.exists(output_file_path):
-        return False
+        return output_file_path, True
 
-    return output_file_path
+    return output_file_path, False
 
 
 def get_audio_file_names(input_path):

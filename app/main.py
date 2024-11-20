@@ -6,7 +6,7 @@ import os
 import run_model
 
 
-def get_data_directory(directory: str) -> str:
+def get_data_directory(directory: str):
     # Check if main directory exists
     directory = f"../input/{directory}"
     if not os.path.isdir(directory):
@@ -35,6 +35,27 @@ def main():
         required=True,
         help='Directory that contains the audio files'
     )
+    parser.add_argument(
+        '--thr',
+        type=float,
+        default=0.3,
+        help='Threshold for species prediction filtering.'
+    )
+    parser.add_argument(
+        '--noise',
+        action='store_true',
+        help='Ignore non-bird species predictions.'
+    )
+    parser.add_argument(
+        '--sdm',
+        action='store_true',
+        help='Enable species distribution model adjustments.'
+    )
+    parser.add_argument(
+        '--skip',
+        action='store_true',
+        help='Whether to skip analyzing a file if output file already exists.'
+    )
 
     # Parse arguments
     try:
@@ -44,27 +65,32 @@ def main():
         return
 
     # Validate
-
     # Check if directory exists
     data_directory = get_data_directory(args.dir)
     if not data_directory:
         print(f"Error: Directory '{args.dir}' not found", file=sys.stderr)
         return
 
+    # Check if threshold is within valid range
+    if args.thr < 0 or args.thr > 1:
+        print("Error: Threshold must be between 0 and 1", file=sys.stderr)
+        return
+    
+    # Set parameters
     parameters = {
-        "apply_sdm_adjustments": True,
-        "ignore_nonbirds": False,
-        "threshold": 0.3
+        'threshold': args.thr,
+        'noise': args.noise,
+        'sdm': args.sdm,
+        'skip': args.skip
     }
 
+    # Main analysis
     try:
-        # Call the analyze_directory function with provided coordinates
+        print("Starting analysis")
         success = run_model.analyze_directory(data_directory, parameters)
     except Exception as e:
         print(f"Error during analysis: {str(e)}", file=sys.stderr)
-        # Print full traceback
         raise
-        sys.exit(1)
 
 if __name__ == "__main__":
     main()

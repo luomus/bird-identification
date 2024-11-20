@@ -2,8 +2,6 @@ import pandas as pd
 import numpy as np
 import os
 import gc
-from tensorflow import keras
-from classifier import Classifier
 import functions
 import traceback
 
@@ -11,22 +9,20 @@ import librosa
 import soundfile as sf
 import tempfile
 
-# ---------------------------------------------------------------------------
-# User-defined parameters
 
-
-#day_of_year = 156 # 5th of June
-
-# ---------------------------------------------------------------------------
-
-# Settings
 def analyze_directory(input_path, parameters):
+    from classifier import Classifier
+    from tensorflow import keras
+
     print(f"\nAnalyzing audio files at {input_path}")
 
     # Parameters
-    threshold = parameters["threshold"] # only save predictions with confidence higher than threshold
-    ignore_nonbirds = parameters["ignore_nonbirds"] # whether to ignore human and noise predictions
-    apply_sdm_adjustments = parameters["apply_sdm_adjustments"] # Whether to adjust confidence values based on the species distribution and temporal model
+    threshold = parameters["threshold"]
+    include_noise = parameters["noise"]
+    include_sdm = parameters["sdm"]
+    skip_if_output_exists = parameters["skip"]
+
+    print("Parameters: ", parameters)
 
     # Read folder-specific metadata
     metadata = functions.read_metadata(input_path)
@@ -43,7 +39,6 @@ def analyze_directory(input_path, parameters):
     output_path = input_path
     path_to_model = "models/model_v3_5.keras"
     tflite_threads = 2
-    skip_if_output_exists = True
 
     # Load classification model
     # TFLITE_THREADS can be as high as number of CPUs available, the rest of the parameters should not be changed
@@ -67,9 +62,9 @@ def analyze_directory(input_path, parameters):
     for file_index, file_name in enumerate(files):
         try:
             file_path = f"{input_path}/{file_name}"
-            output_file_path = functions.make_output_file_path(output_path, file_name)
+            output_file_path, output_file_exists = functions.make_output_file_path(output_path, file_name)
 
-            if not output_file_path and skip_if_output_exists:
+            if output_file_exists and skip_if_output_exists:
                 print(f"Skipping {file_path} because output file exists and skipping is enabled.")
                 continue
 
@@ -135,7 +130,9 @@ def analyze_directory(input_path, parameters):
                         )
                         
                         # Adjust prediction based on time of the year and latitude
-                        if apply_sdm_adjustments and len(species_predictions) > 0:
+                        # Todo: Should this be done before filtering?
+                        if include_sdm and len(species_predictions) > 0:
+                            print("DEBUG: DOING SDM")
                             species_predictions = functions.adjust(
                                 species_predictions, 
                                 species_class_indices, 
@@ -148,7 +145,8 @@ def analyze_directory(input_path, parameters):
                         # Loop through predictions
                         for detection_index in range(len(species_predictions)):
                             # Exclude classes 0 and 1, which are humans and noise
-                            if ignore_nonbirds and species_class_indices[detection_index] <= 1:
+                            if species_class_indices[detection_index] <= 1 and not include_noise:
+                                print("DEBUG: EXCLUDING NOISE")
                                 continue
                             
                             # Append results to output file
