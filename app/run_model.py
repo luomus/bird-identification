@@ -26,7 +26,7 @@ def analyze_directory(input_path, parameters):
 
     # Read folder-specific metadata
     metadata = functions.read_metadata(input_path)
-    if not metadata:
+    if metadata is None:
         print(f"Error: Metadata file not found for {input_path}")
         return False
     
@@ -104,6 +104,7 @@ def analyze_directory(input_path, parameters):
                     sf.write(temp_file_path, segment, sample_rate)
                     
                     # Predict species for segment
+                    # Todo: this fails if max_pred is True
                     species_predictions, detection_timestamps = audio_classifier.classify(temp_file_path, max_pred=False)
                     
                     if len(species_predictions) > 0:
@@ -130,9 +131,8 @@ def analyze_directory(input_path, parameters):
                         )
                         
                         # Adjust prediction based on time of the year and latitude
-                        # Todo: Should this be done before filtering?
+                        # Todo: Why this is after thresholding? Shouldn't it be before?
                         if include_sdm and len(species_predictions) > 0:
-                            print("DEBUG: DOING SDM")
                             species_predictions = functions.adjust(
                                 species_predictions, 
                                 species_class_indices, 
@@ -146,7 +146,6 @@ def analyze_directory(input_path, parameters):
                         for detection_index in range(len(species_predictions)):
                             # Exclude classes 0 and 1, which are humans and noise
                             if species_class_indices[detection_index] <= 1 and not include_noise:
-                                print("DEBUG: EXCLUDING NOISE")
                                 continue
                             
                             # Append results to output file
@@ -167,7 +166,7 @@ def analyze_directory(input_path, parameters):
         except Exception as e: 
             print(f"Error analyzing {file_name}!")
             print(f"Error details: {str(e)}")
-            raise  # This will show the full traceback
+            raise
 
     print("All files analyzed")
     return True

@@ -7,6 +7,17 @@ import run_model
 
 
 def get_data_directory(directory: str):
+    """
+    Retrieve the path to the data directory, if it exists.
+
+    Args:
+        directory (str): The name of the main directory to search within the "../input/" path.
+
+    Returns:
+        str: The path to the 'data' or 'Data' subdirectory, if found.
+        str: The path to the main directory if no subdirectory is found.
+        bool: `False` if the main directory does not exist.
+    """
     # Check if main directory exists
     directory = f"../input/{directory}"
     if not os.path.isdir(directory):
@@ -38,7 +49,7 @@ def main():
     parser.add_argument(
         '--thr',
         type=float,
-        default=0.3,
+        default=0.5,
         help='Threshold for species prediction filtering.'
     )
     parser.add_argument(

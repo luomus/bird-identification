@@ -9,3 +9,11 @@ A bird audio identification tool designed to analyze recordings and generate a l
 - `mkdir input && mkdir output && mkdir models`
 - Place models to the `models` folder: BirdNET and Muuttolintujen kevät
 - `docker compose up --build; docker compose down;`
+
+## Todo
+
+- Use None instead of False as sentinel values
+- Add type hints
+- Get date from file name
+- Add baim
+- Unit testing?

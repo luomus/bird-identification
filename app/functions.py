@@ -4,6 +4,7 @@ from scipy.stats import norm
 import rasterio
 import os
 import yaml
+from typing import Optional, Dict
 
 # calibrate prediction
 def calibrate(species_predictions, calibration_parameters):
@@ -222,10 +223,15 @@ def get_audio_file_names(input_path):
     return files
 
 
-def read_metadata(folder_path):
+def read_metadata(folder_path: str) -> Optional[Dict]:
     """
-    Reads a metadata.yaml file from the specified folder and returns its contents as a dictionary.
-    If reading fails, returns False.
+    Read a `metadata.yaml` file from a specified folder and return its contents. If the file is not found, cannot be opened, or contains invalid YAML, the function returns `False`.
+
+    Args:
+        folder_path (str): The path to the folder containing the `metadata.yaml` file.
+
+    Returns:
+        Optional[Dict]: The contents of the `metadata.yaml` file as a dictionary if successfully read and parsed, or `None` if the file does not exist, cannot be read, or contains invalid YAML.
     """
     file_path = os.path.join(folder_path, 'metadata.yaml')
     
@@ -234,4 +240,4 @@ def read_metadata(folder_path):
             metadata = yaml.safe_load(file)
             return metadata
     except (FileNotFoundError, yaml.YAMLError, IOError):
-        return False
+        return None
