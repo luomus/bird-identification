@@ -5,6 +5,35 @@ import rasterio
 import os
 import yaml
 from typing import Optional, Dict
+import re
+from datetime import datetime
+
+
+def get_day_of_year_from_filename(file_name: str) -> Optional[int]:
+    """
+    Extracts the day of the year from a filename. Supported formats:
+    - Audiomoth: 20240527_200000.[extension]
+    - Wildlife Acoustics SM4: [prefix]_20240406_015900.[extension]
+
+    Args:
+        file_name (str): The name of the file containing the date information.
+
+    Returns:
+        Optional[int]: The day of the year as an integer if successfully extracted (1-365 or 1-366 for leap years), or `None` if the date information is not found or invalid.
+    """
+    # Regular expression to match the date and time format
+    pattern = r"(?:.*_)?(\d{8}_\d{6})\.\w+$"
+    match = re.search(pattern, file_name)
+    
+    if match:
+        date_str = match.group(1)
+        try:
+            date_obj = datetime.strptime(date_str, "%Y%m%d_%H%M%S")
+            return date_obj.timetuple().tm_yday
+        except ValueError:
+            return None
+    return None
+
 
 # calibrate prediction
 def calibrate(species_predictions, calibration_parameters):

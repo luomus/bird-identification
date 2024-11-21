@@ -15,7 +15,7 @@ def get_data_directory(directory: str) -> Optional[Dict]:
         directory (str): The name of the main directory to search within the "../input/" path.
 
     Returns:
-        Optional[Dict]: The path to the directory that contains audio files, or `None` if the directory is not found.
+        Optional[str]: The path to the directory that contains audio files, or `None` if the directory is not found.
     """
     # Check if main directory exists
     directory = f"../input/{directory}"

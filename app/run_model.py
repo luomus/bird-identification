@@ -70,7 +70,11 @@ def analyze_directory(input_path, parameters):
 
             print(f"Loading file {file_path} ({file_index + 1} of {number_of_files})")
 
-            # Todo: If filename contains a date, use that instead of the metadata date. Support SM4 & Audiomoth formats.
+            # Doing: If filename contains a date, use that instead of the metadata date. Support SM4 & Audiomoth formats.
+            day_of_year_from_file = functions.get_day_of_year_from_filename(file_name)
+            if day_of_year_from_file is not None:
+                day_of_year = day_of_year_from_file
+                print(f"Day of year from filename: {day_of_year}")
 
             # Create an empty output file with header
             # Todo: Since this creates file before data is written into it, aborting the process will leave an empty file, which may cause subsequent analysis to be skipped. Instead write all output first into memory, and into file only after all data is ready.
