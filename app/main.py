@@ -4,9 +4,10 @@ import argparse
 import sys
 import os
 import run_model
+from typing import Optional, Dict
 
 
-def get_data_directory(directory: str):
+def get_data_directory(directory: str) -> Optional[Dict]:
     """
     Retrieve the path to the data directory, if it exists.
 
@@ -14,14 +15,12 @@ def get_data_directory(directory: str):
         directory (str): The name of the main directory to search within the "../input/" path.
 
     Returns:
-        str: The path to the 'data' or 'Data' subdirectory, if found.
-        str: The path to the main directory if no subdirectory is found.
-        bool: `False` if the main directory does not exist.
+        Optional[Dict]: The path to the directory that contains audio files, or `None` if the directory is not found.
     """
     # Check if main directory exists
     directory = f"../input/{directory}"
     if not os.path.isdir(directory):
-        return False
+        return None
     
     # Check for data subdirectory (case variations)
     for data_dir in ['data', 'Data']:
@@ -78,7 +77,7 @@ def main():
     # Validate
     # Check if directory exists
     data_directory = get_data_directory(args.dir)
-    if not data_directory:
+    if data_directory is None:
         print(f"Error: Directory '{args.dir}' not found", file=sys.stderr)
         return
 
