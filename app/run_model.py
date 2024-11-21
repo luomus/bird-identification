@@ -38,7 +38,7 @@ def analyze_directory(input_path, parameters):
     # Standard settings
     output_path = input_path
     path_to_model = "models/model_v3_5.keras"
-    tflite_threads = 2
+    tflite_threads = 1
 
     # Load classification model
     # TFLITE_THREADS can be as high as number of CPUs available, the rest of the parameters should not be changed
