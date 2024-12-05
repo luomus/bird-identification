@@ -70,7 +70,7 @@ def analyze_directory(input_path, parameters):
 
             print(f"Loading file {file_path} ({file_index + 1} of {number_of_files})")
 
-            # Doing: If filename contains a date, use that instead of the metadata date. Support SM4 & Audiomoth formats.
+            # If filename contains a date, use that instead of the metadata date. Note that only pre-specified date formats are supported.
             day_of_year_from_file = functions.get_day_of_year_from_filename(file_name)
             if day_of_year_from_file is not None:
                 day_of_year = day_of_year_from_file

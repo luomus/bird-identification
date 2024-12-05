@@ -19,14 +19,14 @@ A bird audio identification tool designed to analyze recordings and generate a l
   - `day_of_year`: Day of the year, 1-365/6
 - Run the script with `python main.py --dir <subfolder> --`
 - Optional parameters:
-    - `--thr`: Detection threshold as a decimal number between 0...1, default 0.5
+    - `--thr`: Detection threshold as a decimal number between 0<>1, default 0.5
     - `--noise`: Include noise in the output, default False
     - `--sdm`: Use species distribution model, default False
     - `--skip`: Skip files that already have a result, default False
 
 ## Todo
 
+- Organizing the repos: continue with this repo, include baim features. Then rethink whether this tool and analysis (Bart) tool should be bundled together. And how to manage web interface vs. desktop app.
 - Add type hints?
-- Get date from file name
 - Add baim
 - Unit testing?
