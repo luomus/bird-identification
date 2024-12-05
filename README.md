@@ -34,3 +34,8 @@ A bird audio identification tool designed to analyze recordings and generate a l
 - Add type hints?
 - Add baim
 - Unit testing?
+
+### Ideas
+
+- Calculate absolute datetime for each row
+- Include first and last sound to the random samples

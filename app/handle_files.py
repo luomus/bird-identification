@@ -76,7 +76,7 @@ def make_output_directory(main_directory: str) -> Optional[str]:
     return output_directory
 
 
-def load_csv_files_to_dataframe(file_names: list[str], threshold: float) -> pd.DataFrame:
+def load_csv_files_to_dataframe(file_paths: list[str], threshold: float) -> pd.DataFrame:
     """
     Given a list of CSV file names, loads their contents into a single pandas DataFrame.
     
@@ -89,21 +89,24 @@ def load_csv_files_to_dataframe(file_names: list[str], threshold: float) -> pd.D
     """
     dataframes = []
 
-    for file_name in file_names:
+    for file_path in file_paths:
         try:
-            df = pd.read_csv(file_name)
+            df = pd.read_csv(file_path)
+
+            # Add a new column with the filename
+            # Split file path by "/" and take the last part
+            file_name = os.path.basename(file_path)
+            df['Filename'] = file_name.replace('.csv', '')
+
             df = df[df['Confidence'] >= threshold]
 
             dataframes.append(df)
         except Exception as e:
-            print(f"Error reading {file_name}: {e}")
-    
-#    print(dataframes)
+            print(f"Error reading {file_path}: {e}")
 
     combined_dataframe = pd.concat(dataframes, ignore_index=True)
     return combined_dataframe
     
-
 
 def handle_files(main_directory, threshold):
 
@@ -125,10 +128,15 @@ def handle_files(main_directory, threshold):
     species_counts = df['Scientific name'].value_counts()
     print(species_counts)
 
-    stats_functions.generate_historgrams(df, threshold, output_directory)
-        
-    
+#    stats_functions.generate_historgrams(df, threshold, output_directory)
+
+    # Randomly sample 5 rows per 'Scientific name' group
+    random_samples = (
+        df.groupby('Scientific name')
+        .apply(lambda group: group.sample(n=5, replace=False) if len(group) >= 5 else group)
+        .reset_index(drop=True)
+    )
+    print(random_samples)
 
 
-
-handle_files("suomenoja", 0.5)
+handle_files("test", 0.7)
