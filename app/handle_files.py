@@ -17,7 +17,10 @@ Overall process:
 import os   
 from typing import Optional, Dict
 from datetime import datetime
+import pandas as pd
+
 import functions
+import stats_functions
 
 
 def get_datafile_list(directory: str) -> Optional[list]:
@@ -39,6 +42,9 @@ def get_datafile_list(directory: str) -> Optional[list]:
     # Get list of files with ".csv" extentions in directory
     data_files = [f for f in os.listdir(directory) if f.endswith('.csv')]
 
+    # Append directory to filenames
+    data_files = [os.path.join(directory, f) for f in data_files]
+
     if len(data_files) == 0:
         print(f"Data directory {directory} doesn't contain any data files")
         return None
@@ -58,7 +64,7 @@ def make_output_directory(main_directory: str) -> Optional[str]:
     """
 
     current_datetime = datetime.now()
-    formatted_datetime = current_datetime.strftime('%Y%m%d_%H%M')
+    formatted_datetime = current_datetime.strftime('%Y%m%d_%H%M%S')
     output_directory = f"../input/{ main_directory }/report_{ formatted_datetime }"
 
     try:
@@ -67,20 +73,62 @@ def make_output_directory(main_directory: str) -> Optional[str]:
         print(f"Error: Could not create output directory {output_directory}")
         return None
 
-    print("Made output directory ", output_directory)
     return output_directory
+
+
+def load_csv_files_to_dataframe(file_names: list[str], threshold: float) -> pd.DataFrame:
+    """
+    Given a list of CSV file names, loads their contents into a single pandas DataFrame.
+    
+    Parameters:
+    - file_names (list): List of file paths to the CSV files.
+    - threshold (float): The threshold value used to filter rows.
+    
+    Returns:
+    - pandas.DataFrame: Combined DataFrame containing all the CSV files' contents.
+    """
+    dataframes = []
+
+    for file_name in file_names:
+        try:
+            df = pd.read_csv(file_name)
+            df = df[df['Confidence'] >= threshold]
+
+            dataframes.append(df)
+        except Exception as e:
+            print(f"Error reading {file_name}: {e}")
+    
+#    print(dataframes)
+
+    combined_dataframe = pd.concat(dataframes, ignore_index=True)
+    return combined_dataframe
+    
 
 
 def handle_files(main_directory, threshold):
 
     datafile_directory = functions.get_data_directory(main_directory)
-    print(datafile_directory)
+    print("Getting data from ", datafile_directory)
 
     data_files = get_datafile_list(datafile_directory)
-    print(data_files)
+    print(f"Loaded { len(data_files) } data files")
 
     output_directory = make_output_directory(main_directory)
+    print("Created directory ", output_directory) 
+
+    df = load_csv_files_to_dataframe(data_files, threshold)
+
+#    print(df)
+    print(f"Loaded { len(df) } rows of data")
+
+    # Generate statistics
+    species_counts = df['Scientific name'].value_counts()
+    print(species_counts)
+
+    stats_functions.generate_historgrams(df, threshold, output_directory)
+        
+    
 
 
 
-handle_files("test", 0.5)
+handle_files("suomenoja", 0.5)
