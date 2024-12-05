@@ -5,31 +5,7 @@ import sys
 import os
 import run_model
 from typing import Optional, Dict
-
-
-def get_data_directory(directory: str) -> Optional[Dict]:
-    """
-    Retrieve the path to the data directory, if it exists.
-
-    Args:
-        directory (str): The name of the main directory to search within the "../input/" path.
-
-    Returns:
-        Optional[str]: The path to the directory that contains audio files, or `None` if the directory is not found.
-    """
-    # Check if main directory exists
-    directory = f"../input/{directory}"
-    if not os.path.isdir(directory):
-        return None
-    
-    # Check for data subdirectory (case variations)
-    for data_dir in ['data', 'Data']:
-        potential_path = os.path.join(directory, data_dir)
-        if os.path.isdir(potential_path):
-            return potential_path
-    
-    # If no data subdirectory found, return original directory
-    return directory
+import functions
 
 
 def main():
@@ -76,7 +52,7 @@ def main():
 
     # Validate
     # Check if directory exists
-    data_directory = get_data_directory(args.dir)
+    data_directory = functions.get_data_directory(args.dir)
     if data_directory is None:
         print(f"Error: Directory '{args.dir}' not found", file=sys.stderr)
         return

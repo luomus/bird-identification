@@ -9,6 +9,32 @@ import re
 from datetime import datetime
 
 
+def get_data_directory(directory: str) -> Optional[Dict]:
+    """
+    Retrieve the path to the data directory, if it exists.
+
+    Args:
+        directory (str): The name of the main directory to search within the "../input/" path.
+
+    Returns:
+        Optional[str]: The path to the directory that contains audio files, or `None` if the directory is not found.
+    """
+    # Check if main directory exists
+    directory = f"../input/{directory}"
+    if not os.path.isdir(directory):
+        print(f"Directory {directory} doesn't exist")
+        return None
+    
+    # Check for data subdirectory (case variations)
+    for data_dir in ['data', 'Data']:
+        potential_path = os.path.join(directory, data_dir)
+        if os.path.isdir(potential_path):
+            return potential_path
+    
+    # If no data subdirectory found, return main directory
+    return directory
+
+
 def get_day_of_year_from_filename(file_name: str) -> Optional[int]:
     """
     Extracts the day of the year from a filename. Supported formats:

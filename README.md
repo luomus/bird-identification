@@ -24,6 +24,10 @@ A bird audio identification tool designed to analyze recordings and generate a l
     - `--sdm`: Use species distribution model, default False
     - `--skip`: Skip files that already have a result, default False
 
+#### Notes of usage
+
+- If classification stops with message "Killed", try restarting the container. It's unclear what causes this issue.
+
 ## Todo
 
 - Organizing the repos: continue with this repo, include baim features. Then rethink whether this tool and analysis (Bart) tool should be bundled together. And how to manage web interface vs. desktop app.
