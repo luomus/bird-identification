@@ -106,7 +106,69 @@ def load_csv_files_to_dataframe(file_paths: list[str], threshold: float) -> pd.D
 
     combined_dataframe = pd.concat(dataframes, ignore_index=True)
     return combined_dataframe
+
+
+
+
+def get_detection_samples(df: pd.DataFrame, sample_count: int) -> pd.DataFrame:
+    """
+    Gets a subset of rows from an audio detection dataframe: specific rows for each unique value in 'Scientific name'.
+    - Row with the lowest value in 'Start (s)'
+    - Row with the highest value in 'Start (s)'
+    - Row with the lowest value in 'Confidence'
+    - Row with the highest value in 'Confidence'
+    - 1...n random rows
+
+    Parameters:
+    - df (pandas.DataFrame): The input DataFrame.
+    - sample_count (int): The number of samples to take for each unique value in 'Scientific name'.
+
+    Returns:
+    - pandas.DataFrame: A subset of the input DataFrame.
+    """
+
+    if sample_count < 5:
+        sample_count = 5
+
+    random_count = sample_count - 4
+
+    result_rows = []
+    unique_names = df["Scientific name"].unique()
     
+    for name in unique_names:
+        subset = df[df["Scientific name"] == name]
+        
+        # Row with lowest 'Start (s)' value
+        row_lowest_start = subset.loc[subset["Start (s)"].idxmin()].to_dict()
+        
+        # Row with highest 'Start (s)' value
+        row_highest_start = subset.loc[subset["Start (s)"].idxmax()].to_dict()
+        
+        # Row with lowest 'Confidence' value
+        row_lowest_confidence = subset.loc[subset["Confidence"].idxmin()].to_dict()
+        
+        # Row with highest 'Confidence' value
+        row_highest_confidence = subset.loc[subset["Confidence"].idxmax()].to_dict()
+        
+        # Get random_count random rows and convert to list of dicts
+        if len(subset) >= random_count:
+            random_rows = subset.sample(n=random_count).to_dict(orient="records")
+        else:
+            random_rows = subset.to_dict(orient="records")
+        
+        # Add all rows to the result list as dictionaries
+        result_rows.extend([
+            row_lowest_start,
+            row_highest_start,
+            row_lowest_confidence,
+            row_highest_confidence
+        ])
+        result_rows.extend(random_rows)  # Add random rows
+    
+    # Combine all rows into a new DataFrame
+    result_df = pd.DataFrame(result_rows).drop_duplicates()
+    return result_df
+
 
 def handle_files(main_directory, threshold):
 
@@ -131,12 +193,16 @@ def handle_files(main_directory, threshold):
 #    stats_functions.generate_historgrams(df, threshold, output_directory)
 
     # Randomly sample 5 rows per 'Scientific name' group
+    '''
     random_samples = (
         df.groupby('Scientific name')
         .apply(lambda group: group.sample(n=5, replace=False) if len(group) >= 5 else group)
         .reset_index(drop=True)
     )
-    print(random_samples)
+    '''
+
+    samples_df = get_detection_samples(df, 6)
+    print(samples_df)
 
 
 handle_files("test", 0.7)
