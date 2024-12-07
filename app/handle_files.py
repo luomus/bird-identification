@@ -19,8 +19,13 @@ from typing import Optional, Dict
 from datetime import datetime
 import pandas as pd
 
+import librosa
+import soundfile as sf
+
 import functions
 import stats_functions
+
+import time
 
 
 def get_datafile_list(directory: str) -> Optional[list]:
@@ -147,11 +152,17 @@ def load_csv_files_to_dataframe(file_paths: list[str], threshold: float) -> pd.D
         try:
             df = pd.read_csv(file_path)
 
+            # Add new column with the file path
+            df['Filepath'] = file_path
+
+            df['Audio Filepath'] = df['Filepath'].apply(get_audio_file_path)
+
             # Add a new column with the filename
             # Split file path by "/" and take the last part
-            file_name = os.path.basename(file_path)
-            df['Filename'] = file_name.replace('.csv', '')
+#            file_name = os.path.basename(file_path)
+#            df['Filename'] = file_name.replace('.csv', '')
 
+            # Filter rows by threshold
             df = df[df['Confidence'] >= threshold]
 
             dataframes.append(df)
@@ -162,6 +173,38 @@ def load_csv_files_to_dataframe(file_paths: list[str], threshold: float) -> pd.D
     return combined_dataframe
 
 
+def get_audio_file_path(file_path):
+    """
+    Given a file path, removes the suffix starting from the third dot from the right.
+    Checks if a file with extensions '.flac', '.wav', or '.mp3' exists and returns the new path.
+    If no such file exists, returns None.
+    """
+    # Split the file path into directory and file name
+    dir_name, file_name = os.path.split(file_path)
+
+    # Split the file name on dots
+    parts = file_name.split('.')
+
+    # Ensure there are at least 4 parts for the third dot from the right
+    if len(parts) < 4:
+        print(f"Error: Incorrectly formatted file name: {file_name}")
+        return None  # Not enough parts to remove the suffix properly
+
+    # Reconstruct the file name without the suffix from the third dot from the right
+    new_file_name = '.'.join(parts[:-3])  # Keep all parts up to the third dot from the right
+
+    # Possible audio file extensions
+    audio_extensions = ['.wav', '.flac', '.mp3']
+
+    # Check for each audio extension
+    for ext in audio_extensions:
+        new_path = os.path.join(dir_name, new_file_name + ext)
+        if os.path.exists(new_path):
+            return new_path  # Return the first found audio file path
+
+    # If no file with the given extensions is found
+    print(f"Error: No audio file found for {file_path}")
+    return None
 
 
 def get_detection_samples(df: pd.DataFrame, sample_count: int = 5) -> pd.DataFrame:
@@ -226,6 +269,10 @@ def get_detection_samples(df: pd.DataFrame, sample_count: int = 5) -> pd.DataFra
 
 def handle_files(main_directory, threshold):
 
+    pd.set_option('display.max_colwidth', None) # Prevent truncating cell content
+    pd.set_option('display.width', 0)           # Adjust width for large data
+
+    # Check input data is ok
     datafile_directory = functions.get_data_directory(main_directory)
     print("Getting data from ", datafile_directory)
 
@@ -233,25 +280,31 @@ def handle_files(main_directory, threshold):
     print(f"Loaded { len(data_files) } data files")
 #    print(data_files)
 
-    audio_extension = check_audio_files(data_files)
-    print(f"Audio extension: {audio_extension}")
+#    audio_extension = check_audio_files(data_files)
+#    print(f"Audio extension: {audio_extension}")
 
-    output_directory = make_output_directory(main_directory)
-    print("Created directory ", output_directory) 
-
+    # Load and analyze data
     species_predictions_df = load_csv_files_to_dataframe(data_files, threshold)
 
-#    print(df)
     print(f"Loaded { len(species_predictions_df) } rows of data")
 
     # Generate statistics
     species_counts = species_predictions_df['Scientific name'].value_counts()
     print(species_counts)
 
-    stats_functions.generate_historgrams(species_predictions_df, threshold, output_directory)
+    # Prepare report
+    output_directory = make_output_directory(main_directory)
+    print("Created directory ", output_directory)
 
+#    stats_functions.generate_historgrams(species_predictions_df, threshold, output_directory)
+
+    # Pick examples for validation
     example_species_predictions_df = get_detection_samples(species_predictions_df, 6)
     print(example_species_predictions_df)
 
+    # Loop through the example rows and extract audio segments
+#    PADDING_SECONDS = 2
+#    example_species_predictions_df = make_soundfiles(example_species_predictions_df, output_directory, PADDING_SECONDS)
 
-handle_files("suomenoja", 0.75)
+
+handle_files("suomenoja", 0.1)

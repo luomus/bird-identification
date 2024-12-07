@@ -26,6 +26,12 @@ A bird audio identification tool designed to analyze recordings and generate a l
 
 #### Notes of usage
 
+- Expects that
+    - Audio files are in the main directory, or a subdirectory named data or Data
+    - Audio filenames are in format [par1].[extension]
+    - Extension is wav, mp3 or flac
+    - If data files are generated with another application, they are in the same directory as the audio files and in format [par1].[part2].results.csv
+    - Data files have columns: Start (s), End (s), Scientific name, Common name, Confidence, [Optional columns]
 - If classification stops with message "Killed", try restarting the container. It's unclear what causes this issue.
 
 ## Todo
