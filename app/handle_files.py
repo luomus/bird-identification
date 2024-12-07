@@ -210,7 +210,7 @@ def get_audio_file_path(file_path):
 
 import pandas as pd
 
-def get_detection_examples(df: pd.DataFrame, example_count: int = 5) -> pd.DataFrame:
+def get_detection_examples(df: pd.DataFrame, example_count: int = 4) -> pd.DataFrame:
     """
     Gets example audio segments; a subset of rows from an audio detection dataframe i.e., specific rows for each unique value in 'Scientific name'.
     - Row with the lowest value in 'Start (s)'
@@ -218,12 +218,15 @@ def get_detection_examples(df: pd.DataFrame, example_count: int = 5) -> pd.DataF
     - Row with the highest value in 'Confidence'
     - Row with the lowest value in 'Confidence'
     - 0...n random rows
+    
     Parameters:
     - df (pandas.DataFrame): The input DataFrame.
     - example_count (int): The number of examples to take for each unique value in 'Scientific name'.
+
     Returns:
     - pandas.DataFrame: A subset of the input DataFrame, with data about the selected examples.
     """
+
     if example_count < 5:
         example_count = 5
     random_count = example_count - 4
@@ -437,8 +440,8 @@ def handle_files(main_directory, threshold):
     pd.set_option('display.max_colwidth', None) # Prevent truncating cell content
     pd.set_option('display.width', 0)           # Adjust width for large data
 
-    PADDING_SECONDS = 1
-    EXAMPLE_COUNT = 4
+    PADDING_SECONDS = 1 # How many seconds to add to the start and end of the segment, around the detected vocalization.
+    EXAMPLE_COUNT = 4 # How many examples to pick for each species. 4 are fixed and additional random examples are picked if available.
 
     # Check input data is ok
     datafile_directory = functions.get_data_directory(main_directory)
