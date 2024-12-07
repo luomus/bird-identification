@@ -38,6 +38,7 @@ A bird audio identification tool designed to analyze recordings and generate a l
 
 - Organizing the repos: continue with this repo, include baim features. Then rethink whether this tool and analysis (Bart) tool should be bundled together. And how to manage web interface vs. desktop app.
 - Error handling when functions return None
+- Prepare for missing audio files & missing data files
 - Add type hints?
 - Add baim
 - Unit testing?

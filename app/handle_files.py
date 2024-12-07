@@ -26,6 +26,7 @@ import functions
 import stats_functions
 
 import time
+import tracemalloc
 
 
 def get_datafile_list(directory: str) -> Optional[list]:
@@ -267,7 +268,59 @@ def get_detection_samples(df: pd.DataFrame, sample_count: int = 5) -> pd.DataFra
     return result_df
 
 
+def make_soundfiles(example_species_predictions_df, output_directory, PADDING_SECONDS):
+    """
+    Given a DataFrame of example species predictions, extracts audio segments from the corresponding audio files and saves them to the output directory.
+
+    DataFrame is in this format:
+    Start (s)  End (s)    Scientific name         Common name  Confidence                                                          Filepath                                Audio Filepath
+    0          0.0      3.0  Luscinia luscinia  Thrush Nightingale       0.944  ../input/suomenoja/Data/20240517_000000.Muuttolinnut.results.csv  ../input/suomenoja/Data/20240517_000000.flac
+    1       3594.0   3597.0  Luscinia luscinia  Thrush Nightingale       0.616  ../input/suomenoja/Data/20240516_220000.Muuttolinnut.results.csv  ../input/suomenoja/Data/20240516_220000.flac
+    2       2754.0   2757.0  Luscinia luscinia  Thrush Nightingale       0.300  ../input/suomenoja/Data/20240516_230000.Muuttolinnut.results.csv  ../input/suomenoja/Data/20240516_230000.flac
+    3        908.0    911.0  Luscinia luscinia  Thrush Nightingale       0.960  ../input/suomenoja/Data/20240517_000000.Muuttolinnut.results.csv  ../input/suomenoja/Data/20240517_000000.flac
+    4       2074.0   2077.0  Luscinia luscinia  Thrush Nightingale       0.610  ../input/suomenoja/Data/20240517_230000.Muuttolinnut.results.csv  ../input/suomenoja/Data/20240517_230000.flac
+
+    """
+
+    # Loop though example_species_predictions_df, i.e. species predictions
+    for index, row in example_species_predictions_df.iterrows():
+
+        segment_start = row['Start (s)'] - PADDING_SECONDS
+        segment_end = row['End (s)'] + PADDING_SECONDS
+
+        if segment_start < 0:
+            segment_start = 0
+        
+        # TODO: speed this up slightly by caching file durations to a global variable
+        audio_duration = librosa.get_duration(path = row['Audio Filepath'])
+
+        if segment_end > audio_duration:
+            segment_end = audio_duration
+
+        # Generate segment filename
+        file_name_with_ext = os.path.basename(row["Audio Filepath"])
+        base_file_name, extension = os.path.splitext(file_name_with_ext)
+
+        segment_filepath = f"{ output_directory }/{ base_file_name }_{ row['Scientific name'].replace(' ', '-') }_{ int(segment_start) }_{ int(segment_end) }_{ round(row['Confidence'], 3) }{ extension }"
+
+        # Load only the segment into memory
+        y, sr = librosa.load(row["Audio Filepath"], offset= segment_start, duration = (segment_end - segment_start))
+
+        # Save the segment to a new file
+        sf.write(segment_filepath, y, sr, format='FLAC')
+
+        print("Segment saved to ", segment_filepath)
+
+        # Add segment filename to dataframe
+        example_species_predictions_df.loc[index, 'Segment Filepath'] = segment_filepath
+
+    return example_species_predictions_df
+
+
 def handle_files(main_directory, threshold):
+    tracemalloc.start()
+    start_time = time.perf_counter()
+
 
     pd.set_option('display.max_colwidth', None) # Prevent truncating cell content
     pd.set_option('display.width', 0)           # Adjust width for large data
@@ -303,8 +356,25 @@ def handle_files(main_directory, threshold):
     print(example_species_predictions_df)
 
     # Loop through the example rows and extract audio segments
-#    PADDING_SECONDS = 2
-#    example_species_predictions_df = make_soundfiles(example_species_predictions_df, output_directory, PADDING_SECONDS)
+    PADDING_SECONDS = 2
+    example_species_predictions_df = make_soundfiles(example_species_predictions_df, output_directory, PADDING_SECONDS)
+
+    print(example_species_predictions_df)
 
 
-handle_files("suomenoja", 0.1)
+
+
+    end_time = time.perf_counter()
+    elapsed_time = end_time - start_time
+    print(f"Time taken: {elapsed_time:.4f} seconds")
+
+    current, peak = tracemalloc.get_traced_memory()
+
+    print(f"Current memory usage: {current / (1024 * 1024):.2f} MB")
+    print(f"Peak memory usage: {peak / (1024 * 1024):.2f} MB")
+
+    # Stop tracing
+    tracemalloc.stop()
+
+
+handle_files("test", 0.8)
