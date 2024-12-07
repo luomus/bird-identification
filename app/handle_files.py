@@ -325,13 +325,107 @@ def make_soundfiles(example_species_predictions_df, output_directory, PADDING_SE
     return example_species_predictions_df
 
 
+def generate_html_report(example_species_predictions_df, output_directory):
+    """
+    Generates a HTML report for the example species predictions. Each example is displayed as a card with these information:
+    - Scientific name
+    - Common name
+    - Confidence
+    - Audio player for the segment
+
+    The cards are grouped under Scientific name headings.
+
+    DataFrame is in this format:
+    Start (s)  End (s)    Scientific name         Common name  Confidence                                                          Filepath                                Audio Filepath
+    0          0.0      3.0  Luscinia luscinia  Thrush Nightingale       0.944  ../input/suomenoja/Data/20240517_000000.Muuttolinnut.results.csv  ../input/suomenoja/Data/20240517_000000.flac
+    1       3594.0   3597.0  Luscinia luscinia  Thrush Nightingale       0.616  ../input/suomenoja/Data/20240516_220000.Muuttolinnut.results.csv  ../input/suomenoja/Data/20240516_220000.flac
+    2       2754.0   2757.0  Luscinia luscinia  Thrush Nightingale       0.300  ../input/suomenoja/Data/20240516_230000.Muuttolinnut.results.csv  ../input/suomenoja/Data/20240516_230000.flac
+    3        908.0    911.0  Luscinia luscinia  Thrush Nightingale       0.960  ../input/suomenoja/Data/20240517_000000.Muuttolinnut.results.csv  ../input/suomenoja/Data/20240517_000000.flac
+    4       2074.0   2077.0  Luscinia luscinia  Thrush Nightingale       0.610  ../input/suomenoja/Data/20240517_230000.Muuttolinnut.results.csv  ../input/suomenoja/Data/20240517_230000.flac
+
+    Parameters:
+    - example_species_predictions_df (pandas.DataFrame): DataFrame containing the example species predictions.
+    - output_directory (str): The directory to save the audio segments.
+
+    Returns:
+    - output_file_path (str): The path to the saved audio segment, or None if the report couldn't be generated.
+    """
+
+    # Create a new HTML file
+    html_file_path = f"{ output_directory }/_report.html"
+
+    with open(html_file_path, 'w') as f:
+        f.write("<!DOCTYPE html>\n")
+        f.write("<html>\n")
+        f.write("<head>\n")
+        f.write(f"<title>Report { output_directory }</title>\n")
+        f.write("""
+        <style>
+            body {
+                background-color: #f0f0f0;
+                font-family: Arial, sans-serif;
+            }
+            div {
+                background-color: white;
+                border: 1px solid #ddd;
+                border-radius: 5px;
+                margin: 10px;
+                padding: 10px;
+            }
+            h2 {
+
+            }
+            p {
+
+            }
+        </style>
+        """)
+        f.write("</head>\n")
+        f.write("<body>\n")
+        f.write(f"<h1>Report { output_directory }</h1>\n")
+        f.write(f"<p>Generated at { datetime.now() }</p>\n")
+
+        scientific_name_mem = ""
+        for index, row in example_species_predictions_df.iterrows():
+
+            if row['Scientific name'] != scientific_name_mem:
+                if scientific_name_mem != "":
+                    f.write("</div>\n")
+                scientific_name_mem = row['Scientific name']
+                f.write(f"<h2>{ row['Common name'] } (<em>{ row['Scientific name'] }</em>)</h2>\n")
+                f.write("<div>\n")
+
+            filename = os.path.basename(row['Segment Filepath'])
+            parts = filename.split('.')
+            extension = parts[-1]
+
+            f.write(f"<h3><em>{ row['Scientific name'] }</em>, { round(row['Confidence'], 3) }, { row['Type'] }</h3>\n")
+            f.write(f"<audio controls>\n")
+            f.write(f"<source src='{ filename }' type='audio/{ extension }'>\n")
+            f.write(f"Your browser does not support the audio element.\n")
+            f.write(f"</audio>\n")
+            f.write(f"<p>Start: { int(row['Start (s)']) } s, end: { int(row['End (s)']) } s</p>\n")
+            f.write(f"<p>{ filename }</p>\n")
+
+        f.write("</div>\n")
+        f.write("</body>\n")
+        f.write("</html>\n")
+
+    print("HTML report saved to ", html_file_path)
+    return html_file_path
+
+
+
 def handle_files(main_directory, threshold):
+
+    # Start benchmarking
     tracemalloc.start()
     start_time = time.perf_counter()
 
-
+    # Settings for development
     pd.set_option('display.max_colwidth', None) # Prevent truncating cell content
     pd.set_option('display.width', 0)           # Adjust width for large data
+
 
     # Check input data is ok
     datafile_directory = functions.get_data_directory(main_directory)
@@ -364,14 +458,15 @@ def handle_files(main_directory, threshold):
     print(example_species_predictions_df)
 
     # Loop through the example rows and extract audio segments
-    PADDING_SECONDS = 2
+    PADDING_SECONDS = 1
     example_species_predictions_df = make_soundfiles(example_species_predictions_df, output_directory, PADDING_SECONDS)
 
     print(example_species_predictions_df)
 
+    # Generate HTML report
+    report_filepath = generate_html_report(example_species_predictions_df, output_directory)
 
-
-
+    # End benchmarking
     end_time = time.perf_counter()
     elapsed_time = end_time - start_time
     print(f"Time taken: {elapsed_time:.4f} seconds")
