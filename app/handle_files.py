@@ -208,70 +208,65 @@ def get_audio_file_path(file_path):
     return None
 
 
+import pandas as pd
+
 def get_detection_examples(df: pd.DataFrame, example_count: int = 5) -> pd.DataFrame:
     """
-    Gets a subset of rows from an audio detection dataframe: specific rows for each unique value in 'Scientific name'.
+    Gets example audio segments; a subset of rows from an audio detection dataframe i.e., specific rows for each unique value in 'Scientific name'.
     - Row with the lowest value in 'Start (s)'
     - Row with the highest value in 'Start (s)'
-    - Row with the lowest value in 'Confidence'
     - Row with the highest value in 'Confidence'
-    - 1...n random rows
-
+    - Row with the lowest value in 'Confidence'
+    - 0...n random rows
     Parameters:
     - df (pandas.DataFrame): The input DataFrame.
-    - sample_count (int): The number of samples to take for each unique value in 'Scientific name'.
-
+    - example_count (int): The number of examples to take for each unique value in 'Scientific name'.
     Returns:
-    - pandas.DataFrame: A subset of the input DataFrame.
+    - pandas.DataFrame: A subset of the input DataFrame, with data about the selected examples.
     """
-
     if example_count < 5:
         example_count = 5
-
     random_count = example_count - 4
-
     result_rows = []
     unique_names = df["Scientific name"].unique()
-    
+
     for name in unique_names:
         subset = df[df["Scientific name"] == name]
+        selected_indices = set()  # To keep track of selected rows
         
         # Row with lowest 'Start (s)' value
-        row_lowest_start = subset.loc[subset["Start (s)"].idxmin()].to_dict()
-        row_lowest_start["Type"] = "first"
+        row_lowest_start = subset.loc[subset["Start (s)"].idxmin()]
+        selected_indices.add(row_lowest_start.name)
+        result_rows.append(row_lowest_start.to_dict() | {"Type": "first"})
         
         # Row with highest 'Start (s)' value
-        row_highest_start = subset.loc[subset["Start (s)"].idxmax()].to_dict()
-        row_highest_start["Type"] = "last"
-        
-        # Row with lowest 'Confidence' value
-        row_lowest_confidence = subset.loc[subset["Confidence"].idxmin()].to_dict()
-        row_lowest_confidence["Type"] = "lowest confidence"
+        remaining = subset.drop(index=list(selected_indices))
+        if not remaining.empty:
+            row_highest_start = remaining.loc[remaining["Start (s)"].idxmax()]
+            selected_indices.add(row_highest_start.name)
+            result_rows.append(row_highest_start.to_dict() | {"Type": "last"})
         
         # Row with highest 'Confidence' value
-        row_highest_confidence = subset.loc[subset["Confidence"].idxmax()].to_dict()
-        row_highest_confidence["Type"] = "highest confidence"
-
-        # Get random_count random rows and convert to list of dicts
-        if len(subset) >= random_count:
-            random_rows = subset.sample(n=random_count).to_dict(orient="records")
-            random_type = "random"
-        else:
-            random_rows = subset.to_dict(orient="records")
-            random_type = "remaining"
-
-        # Add "Type" to random rows
-        for random_row in random_rows:
-            random_row["Type"] = random_type
-
-        # Add all rows to the result list as dictionaries
-        result_rows.extend([
-            row_lowest_start,
-            row_highest_start,
-            row_lowest_confidence,
-            row_highest_confidence
-        ])
-        result_rows.extend(random_rows)  # Add random rows
+        remaining = subset.drop(index=list(selected_indices))
+        if not remaining.empty:
+            row_highest_confidence = remaining.loc[remaining["Confidence"].idxmax()]
+            selected_indices.add(row_highest_confidence.name)
+            result_rows.append(row_highest_confidence.to_dict() | {"Type": "highest confidence"})
+        
+        # Row with lowest 'Confidence' value
+        remaining = subset.drop(index=list(selected_indices))
+        if not remaining.empty:
+            row_lowest_confidence = remaining.loc[remaining["Confidence"].idxmin()]
+            selected_indices.add(row_lowest_confidence.name)
+            result_rows.append(row_lowest_confidence.to_dict() | {"Type": "lowest confidence"})
+        
+        # Random rows
+        remaining = subset.drop(index=list(selected_indices))
+        if not remaining.empty:
+            random_rows = remaining.sample(n=min(len(remaining), random_count))
+            for _, row in random_rows.iterrows():
+                result_rows.append(row.to_dict() | {"Type": "random"})
+                selected_indices.add(row.name)
     
     # Combine all rows into a new DataFrame
     result_df = pd.DataFrame(result_rows).drop_duplicates()
