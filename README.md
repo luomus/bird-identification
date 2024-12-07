@@ -36,13 +36,14 @@ A bird audio identification tool designed to analyze recordings and generate a l
 
 ## Todo
 
+- Order species by count
+- When only few detections, don't duplicate examples
+- Add UTC time to each segment. Or local time? And show it on the report.
 - get_detection_samples to use first and last overall segment (date + time)
 - Organizing the repos: continue with this repo, include baim features. Then rethink whether this tool and analysis (Bart) tool should be bundled together. And how to manage web interface vs. desktop app.
 - Error handling when functions return None
-- Add UTC time to each segment. Or local time?
 - Prepare for missing audio files & missing data files
 - Add type hints?
-- Add baim
 - Unit testing?
 
 ### Ideas

@@ -208,7 +208,7 @@ def get_audio_file_path(file_path):
     return None
 
 
-def get_detection_samples(df: pd.DataFrame, sample_count: int = 5) -> pd.DataFrame:
+def get_detection_examples(df: pd.DataFrame, example_count: int = 5) -> pd.DataFrame:
     """
     Gets a subset of rows from an audio detection dataframe: specific rows for each unique value in 'Scientific name'.
     - Row with the lowest value in 'Start (s)'
@@ -225,10 +225,10 @@ def get_detection_samples(df: pd.DataFrame, sample_count: int = 5) -> pd.DataFra
     - pandas.DataFrame: A subset of the input DataFrame.
     """
 
-    if sample_count < 5:
-        sample_count = 5
+    if example_count < 5:
+        example_count = 5
 
-    random_count = sample_count - 4
+    random_count = example_count - 4
 
     result_rows = []
     unique_names = df["Scientific name"].unique()
@@ -238,29 +238,31 @@ def get_detection_samples(df: pd.DataFrame, sample_count: int = 5) -> pd.DataFra
         
         # Row with lowest 'Start (s)' value
         row_lowest_start = subset.loc[subset["Start (s)"].idxmin()].to_dict()
-        row_lowest_start["Type"] = "First"
+        row_lowest_start["Type"] = "first"
         
         # Row with highest 'Start (s)' value
         row_highest_start = subset.loc[subset["Start (s)"].idxmax()].to_dict()
-        row_highest_start["Type"] = "Last"
+        row_highest_start["Type"] = "last"
         
         # Row with lowest 'Confidence' value
         row_lowest_confidence = subset.loc[subset["Confidence"].idxmin()].to_dict()
-        row_lowest_confidence["Type"] = "Lowest confidence"
+        row_lowest_confidence["Type"] = "lowest confidence"
         
         # Row with highest 'Confidence' value
         row_highest_confidence = subset.loc[subset["Confidence"].idxmax()].to_dict()
-        row_highest_confidence["Type"] = "Highest confidence"
+        row_highest_confidence["Type"] = "highest confidence"
 
         # Get random_count random rows and convert to list of dicts
         if len(subset) >= random_count:
             random_rows = subset.sample(n=random_count).to_dict(orient="records")
+            random_type = "random"
         else:
             random_rows = subset.to_dict(orient="records")
+            random_type = "remaining"
 
         # Add "Type" to random rows
         for random_row in random_rows:
-            random_row["Type"] = "Random"
+            random_row["Type"] = random_type
 
         # Add all rows to the result list as dictionaries
         result_rows.extend([
@@ -325,7 +327,24 @@ def make_soundfiles(example_species_predictions_df, output_directory, PADDING_SE
     return example_species_predictions_df
 
 
-def generate_html_report(example_species_predictions_df, output_directory):
+def seconds_to_time(seconds):
+    """
+    Convert seconds into minutes and seconds format.
+    
+    Args:
+        seconds (float): Number of seconds to convert
+        
+    Returns:
+        str: Formatted string in "M min, S s" format
+    """
+
+    seconds = int(seconds)
+    minutes = seconds // 60
+    remaining_seconds = seconds % 60
+    return f"{minutes} min, {remaining_seconds} s"
+
+
+def generate_html_report(example_species_predictions_df, species_counts, output_directory):
     """
     Generates a HTML report for the example species predictions. Each example is displayed as a card with these information:
     - Scientific name
@@ -335,16 +354,9 @@ def generate_html_report(example_species_predictions_df, output_directory):
 
     The cards are grouped under Scientific name headings.
 
-    DataFrame is in this format:
-    Start (s)  End (s)    Scientific name         Common name  Confidence                                                          Filepath                                Audio Filepath
-    0          0.0      3.0  Luscinia luscinia  Thrush Nightingale       0.944  ../input/suomenoja/Data/20240517_000000.Muuttolinnut.results.csv  ../input/suomenoja/Data/20240517_000000.flac
-    1       3594.0   3597.0  Luscinia luscinia  Thrush Nightingale       0.616  ../input/suomenoja/Data/20240516_220000.Muuttolinnut.results.csv  ../input/suomenoja/Data/20240516_220000.flac
-    2       2754.0   2757.0  Luscinia luscinia  Thrush Nightingale       0.300  ../input/suomenoja/Data/20240516_230000.Muuttolinnut.results.csv  ../input/suomenoja/Data/20240516_230000.flac
-    3        908.0    911.0  Luscinia luscinia  Thrush Nightingale       0.960  ../input/suomenoja/Data/20240517_000000.Muuttolinnut.results.csv  ../input/suomenoja/Data/20240517_000000.flac
-    4       2074.0   2077.0  Luscinia luscinia  Thrush Nightingale       0.610  ../input/suomenoja/Data/20240517_230000.Muuttolinnut.results.csv  ../input/suomenoja/Data/20240517_230000.flac
-
     Parameters:
     - example_species_predictions_df (pandas.DataFrame): DataFrame containing the example species predictions.
+    - species_counts (dict): Dictionary containing the counts of each species in the DataFrame.
     - output_directory (str): The directory to save the audio segments.
 
     Returns:
@@ -392,20 +404,24 @@ def generate_html_report(example_species_predictions_df, output_directory):
                 if scientific_name_mem != "":
                     f.write("</div>\n")
                 scientific_name_mem = row['Scientific name']
-                f.write(f"<h2>{ row['Common name'] } (<em>{ row['Scientific name'] }</em>)</h2>\n")
-                f.write("<div>\n")
+
+                count = species_counts.get(row['Scientific name'], 0)
+                histogram_file = f"{ row['Scientific name'].replace(' ', '_') }.png"
+
+                f.write(f"<h2><span class='common'>{ row['Common name'] }</span> <em class='sci'>({ row['Scientific name'] })</em>, <span class='count'>{ count }</span> detections</h2>\n")
+                f.write(f"<img src='{ histogram_file }' alt='Histogram for { row['Scientific name'] }'>\n")
+
+                f.write("<div class='species'>\n")
 
             filename = os.path.basename(row['Segment Filepath'])
             parts = filename.split('.')
             extension = parts[-1]
 
-            f.write(f"<h3><em>{ row['Scientific name'] }</em>, { round(row['Confidence'], 3) }, { row['Type'] }</h3>\n")
-            f.write(f"<audio controls>\n")
-            f.write(f"<source src='{ filename }' type='audio/{ extension }'>\n")
-            f.write(f"Your browser does not support the audio element.\n")
-            f.write(f"</audio>\n")
-            f.write(f"<p>Start: { int(row['Start (s)']) } s, end: { int(row['End (s)']) } s</p>\n")
-            f.write(f"<p>{ filename }</p>\n")
+            f.write(f"<div class='example'>\n")
+            f.write(f"<h3><span class='type'>{ row['Type'] }</span>, <span class='confidence'>{ round(row['Confidence'], 3) }</span></h3>\n")
+            f.write(f"<audio controls><source src='{ filename }' type='audio/{ extension }'></audio>\n")
+            f.write(f"<p><span class='filename'>{ filename }</span>, <span class='timestamp'>{ seconds_to_time(row['Start (s)']) }</span></p>\n")
+            f.write(f"</div>\n")
 
         f.write("</div>\n")
         f.write("</body>\n")
@@ -426,6 +442,8 @@ def handle_files(main_directory, threshold):
     pd.set_option('display.max_colwidth', None) # Prevent truncating cell content
     pd.set_option('display.width', 0)           # Adjust width for large data
 
+    PADDING_SECONDS = 1
+    EXAMPLE_COUNT = 4
 
     # Check input data is ok
     datafile_directory = functions.get_data_directory(main_directory)
@@ -451,20 +469,19 @@ def handle_files(main_directory, threshold):
     output_directory = make_output_directory(main_directory)
     print("Created directory ", output_directory)
 
-#    stats_functions.generate_historgrams(species_predictions_df, threshold, output_directory)
+    stats_functions.generate_historgrams(species_predictions_df, threshold, output_directory)
 
     # Pick examples for validation
-    example_species_predictions_df = get_detection_samples(species_predictions_df, 6)
-    print(example_species_predictions_df)
+    example_species_predictions_df = get_detection_examples(species_predictions_df, EXAMPLE_COUNT)
+#    print(example_species_predictions_df)
 
     # Loop through the example rows and extract audio segments
-    PADDING_SECONDS = 1
     example_species_predictions_df = make_soundfiles(example_species_predictions_df, output_directory, PADDING_SECONDS)
 
-    print(example_species_predictions_df)
+#    print(example_species_predictions_df)
 
     # Generate HTML report
-    report_filepath = generate_html_report(example_species_predictions_df, output_directory)
+    report_filepath = generate_html_report(example_species_predictions_df, species_counts, output_directory)
 
     # End benchmarking
     end_time = time.perf_counter()
