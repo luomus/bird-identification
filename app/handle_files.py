@@ -34,9 +34,11 @@ def get_datafile_list(directory: str) -> Optional[list]:
         Optional[list]: List of data files in the directory, or `None` if no files are found.
     """
 
+    audio_extensions = ['wav', 'mp3', 'flac']
+
     # Check if directory exists
     if not os.path.isdir(directory):
-        print(f"Data directory {directory} doesn't exist")
+        print(f"Error: data directory {directory} doesn't exist")
         return None
 
     # Get list of files with ".csv" extentions in directory
@@ -46,10 +48,62 @@ def get_datafile_list(directory: str) -> Optional[list]:
     data_files = [os.path.join(directory, f) for f in data_files]
 
     if len(data_files) == 0:
-        print(f"Data directory {directory} doesn't contain any data files")
+        print(f"Error: data directory {directory} doesn't contain any data files")
         return None
-    
+
     return data_files
+
+
+def check_audio_files(data_file_paths, audio_extensions=('wav', 'mp3', 'flac')):
+    """
+    Check if corresponding audio files exist for each data file.
+    
+    Args:
+        data_file_paths (list): List of paths to data files.
+        audio_extensions (tuple): Possible extensions for audio files.
+        
+    Returns:
+        str or None: The common audio file extension if all corresponding files are found, else None.
+    """
+    # Dictionary to store the matched audio extension count
+    extension_counts = {ext: 0 for ext in audio_extensions}
+
+    # Iterate through each data file
+    for file_path in data_file_paths:
+        # Extract the directory and filename
+        directory = os.path.dirname(file_path)
+        filename = os.path.basename(file_path)
+
+        # Extract part1 and part2 from the filename "[part1].[part2].results.csv"
+        if not filename.endswith(".results.csv"):
+            print("Error: Invalid file format, missing .results.csv extension")
+            return None  # Invalid file format
+        
+        try:
+            part1, part2 = filename.split(".results.csv")[0].split(".")
+        except ValueError:
+            print("Error: Incorrectly formatted file name")
+            return None  # Incorrectly formatted file name
+        
+        # Check for corresponding audio files with valid extensions
+        audio_file_found = False
+        for ext in audio_extensions:
+            audio_file = os.path.join(directory, f"{part1}.{ext}")
+            if os.path.isfile(audio_file):
+                extension_counts[ext] += 1
+                audio_file_found = True
+                break
+
+        if not audio_file_found:
+            return None  # Missing corresponding audio file for this data file
+
+    # Determine if one extension consistently matches all files
+    for ext, count in extension_counts.items():
+        if count == len(data_file_paths):
+            return ext
+
+    print("Error: Inconsistent audio file extensions")
+    return None
 
 
 def make_output_directory(main_directory: str) -> Optional[str]:
@@ -110,7 +164,7 @@ def load_csv_files_to_dataframe(file_paths: list[str], threshold: float) -> pd.D
 
 
 
-def get_detection_samples(df: pd.DataFrame, sample_count: int) -> pd.DataFrame:
+def get_detection_samples(df: pd.DataFrame, sample_count: int = 5) -> pd.DataFrame:
     """
     Gets a subset of rows from an audio detection dataframe: specific rows for each unique value in 'Scientific name'.
     - Row with the lowest value in 'Start (s)'
@@ -177,32 +231,27 @@ def handle_files(main_directory, threshold):
 
     data_files = get_datafile_list(datafile_directory)
     print(f"Loaded { len(data_files) } data files")
+#    print(data_files)
+
+    audio_extension = check_audio_files(data_files)
+    print(f"Audio extension: {audio_extension}")
 
     output_directory = make_output_directory(main_directory)
     print("Created directory ", output_directory) 
 
-    df = load_csv_files_to_dataframe(data_files, threshold)
+    species_predictions_df = load_csv_files_to_dataframe(data_files, threshold)
 
 #    print(df)
-    print(f"Loaded { len(df) } rows of data")
+    print(f"Loaded { len(species_predictions_df) } rows of data")
 
     # Generate statistics
-    species_counts = df['Scientific name'].value_counts()
+    species_counts = species_predictions_df['Scientific name'].value_counts()
     print(species_counts)
 
-#    stats_functions.generate_historgrams(df, threshold, output_directory)
+    stats_functions.generate_historgrams(species_predictions_df, threshold, output_directory)
 
-    # Randomly sample 5 rows per 'Scientific name' group
-    '''
-    random_samples = (
-        df.groupby('Scientific name')
-        .apply(lambda group: group.sample(n=5, replace=False) if len(group) >= 5 else group)
-        .reset_index(drop=True)
-    )
-    '''
-
-    samples_df = get_detection_samples(df, 6)
-    print(samples_df)
+    example_species_predictions_df = get_detection_samples(species_predictions_df, 6)
+    print(example_species_predictions_df)
 
 
-handle_files("test", 0.7)
+handle_files("suomenoja", 0.75)

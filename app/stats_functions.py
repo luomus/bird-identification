@@ -39,6 +39,8 @@ def generate_historgrams(df, threshold, output_directory):
         plt.savefig(file_path)
         plt.close()
 
+        print(f"Generated histogram for {species}")
+
         i += 1
 
     return i
