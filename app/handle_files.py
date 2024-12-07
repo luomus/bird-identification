@@ -238,22 +238,30 @@ def get_detection_samples(df: pd.DataFrame, sample_count: int = 5) -> pd.DataFra
         
         # Row with lowest 'Start (s)' value
         row_lowest_start = subset.loc[subset["Start (s)"].idxmin()].to_dict()
+        row_lowest_start["Type"] = "First"
         
         # Row with highest 'Start (s)' value
         row_highest_start = subset.loc[subset["Start (s)"].idxmax()].to_dict()
+        row_highest_start["Type"] = "Last"
         
         # Row with lowest 'Confidence' value
         row_lowest_confidence = subset.loc[subset["Confidence"].idxmin()].to_dict()
+        row_lowest_confidence["Type"] = "Lowest confidence"
         
         # Row with highest 'Confidence' value
         row_highest_confidence = subset.loc[subset["Confidence"].idxmax()].to_dict()
-        
+        row_highest_confidence["Type"] = "Highest confidence"
+
         # Get random_count random rows and convert to list of dicts
         if len(subset) >= random_count:
             random_rows = subset.sample(n=random_count).to_dict(orient="records")
         else:
             random_rows = subset.to_dict(orient="records")
-        
+
+        # Add "Type" to random rows
+        for random_row in random_rows:
+            random_row["Type"] = "Random"
+
         # Add all rows to the result list as dictionaries
         result_rows.extend([
             row_lowest_start,
