@@ -60,7 +60,7 @@ def get_datafile_list(directory: str) -> Optional[list]:
     return data_files
 
 
-def check_audio_files(data_file_paths, audio_extensions=('wav', 'mp3', 'flac')):
+def check_audio_files(data_file_paths: list[str], audio_extensions: tuple[str, ...] = ('wav', 'mp3', 'flac')) -> Optional[str]:
     """
     Check if corresponding audio files exist for each data file.
     
@@ -174,7 +174,7 @@ def load_csv_files_to_dataframe(file_paths: list[str], threshold: float) -> pd.D
     return combined_dataframe
 
 
-def get_audio_file_path(file_path):
+def get_audio_file_path(file_path: str) -> Optional[str]:
     """
     Given a file path, removes the suffix starting from the third dot from the right.
     Checks if a file with extensions '.flac', '.wav', or '.mp3' exists and returns the new path.
@@ -218,7 +218,7 @@ def get_detection_examples(df: pd.DataFrame, example_count: int = 4) -> pd.DataF
     - Row with the highest value in 'Confidence'
     - Row with the lowest value in 'Confidence'
     - 0...n random rows
-    
+
     Parameters:
     - df (pandas.DataFrame): The input DataFrame.
     - example_count (int): The number of examples to take for each unique value in 'Scientific name'.
@@ -276,7 +276,7 @@ def get_detection_examples(df: pd.DataFrame, example_count: int = 4) -> pd.DataF
     return result_df
 
 
-def make_soundfiles(example_species_predictions_df, output_directory, PADDING_SECONDS):
+def make_soundfiles(example_species_predictions_df: pd.DataFrame, output_directory: str, PADDING_SECONDS: int) -> pd.DataFrame:
     """
     Given a DataFrame of example species predictions, extracts audio segments from the corresponding audio files and saves them to the output directory.
 
@@ -300,7 +300,7 @@ def make_soundfiles(example_species_predictions_df, output_directory, PADDING_SE
             segment_start = 0
         
         # TODO: speed this up slightly by caching file durations to a global variable
-        audio_duration = librosa.get_duration(path = row['Audio Filepath'])
+        audio_duration = librosa.get_duration(path=row['Audio Filepath'])
 
         if segment_end > audio_duration:
             segment_end = audio_duration
@@ -309,10 +309,10 @@ def make_soundfiles(example_species_predictions_df, output_directory, PADDING_SE
         file_name_with_ext = os.path.basename(row["Audio Filepath"])
         base_file_name, extension = os.path.splitext(file_name_with_ext)
 
-        segment_filepath = f"{ output_directory }/{ base_file_name }_{ row['Scientific name'].replace(' ', '-') }_{ int(segment_start) }_{ int(segment_end) }_{ round(row['Confidence'], 3) }{ extension }"
+        segment_filepath = f"{output_directory}/{base_file_name}_{row['Scientific name'].replace(' ', '-')}_{int(segment_start)}_{int(segment_end)}_{round(row['Confidence'], 3)}{extension}"
 
         # Load only the segment into memory
-        y, sr = librosa.load(row["Audio Filepath"], offset= segment_start, duration = (segment_end - segment_start))
+        y, sr = librosa.load(row["Audio Filepath"], offset=segment_start, duration=(segment_end - segment_start))
 
         # Save the segment to a new file
         sf.write(segment_filepath, y, sr, format='FLAC')
@@ -325,7 +325,7 @@ def make_soundfiles(example_species_predictions_df, output_directory, PADDING_SE
     return example_species_predictions_df
 
 
-def seconds_to_time(seconds):
+def seconds_to_time(seconds: float) -> str:
     """
     Convert seconds into minutes and seconds format.
     
@@ -333,16 +333,16 @@ def seconds_to_time(seconds):
         seconds (float): Number of seconds to convert
         
     Returns:
-        str: Formatted string in "M min, S s" format
+        str: Formatted string in "M min S s" format
     """
 
     seconds = int(seconds)
     minutes = seconds // 60
     remaining_seconds = seconds % 60
-    return f"{minutes} min, {remaining_seconds} s"
+    return f"{minutes} min {remaining_seconds} s"
 
 
-def generate_html_report(example_species_predictions_df, species_counts, output_directory):
+def generate_html_report(example_species_predictions_df: pd.DataFrame, species_counts: pd.Series, output_directory: str) -> Optional[str]:
     """
     Generates a HTML report for the example species predictions. Each example is displayed as a card with these information:
     - Scientific name
@@ -353,12 +353,12 @@ def generate_html_report(example_species_predictions_df, species_counts, output_
     The cards are grouped under Scientific name headings.
 
     Parameters:
-    - example_species_predictions_df (pandas.DataFrame): DataFrame containing the example species predictions.
-    - species_counts (dict): Dictionary containing the counts of each species in the DataFrame.
+    - example_species_predictions_df (pd.DataFrame): DataFrame containing the example species predictions.
+    - species_counts (pd.Series): Series containing the counts of each species in the DataFrame.
     - output_directory (str): The directory to save the audio segments.
 
     Returns:
-    - output_file_path (str): The path to the saved audio segment, or None if the report couldn't be generated.
+    - Optional[str]: The path to the saved audio segment, or None if the report couldn't be generated.
     """
 
     # Create a new HTML file
@@ -406,10 +406,10 @@ def generate_html_report(example_species_predictions_df, species_counts, output_
                 count = species_counts.get(row['Scientific name'], 0)
                 histogram_file = f"{ row['Scientific name'].replace(' ', '_') }.png"
 
-                f.write(f"<h2><span class='common'>{ row['Common name'] }</span> <em class='sci'>({ row['Scientific name'] })</em>, <span class='count'>{ count }</span> detections</h2>\n")
-                f.write(f"<img src='{ histogram_file }' alt='Histogram for { row['Scientific name'] }'>\n")
-
                 f.write("<div class='species'>\n")
+                f.write(f"<h2><span class='common'>{ row['Common name'] }</span> <em class='sci'>({ row['Scientific name'] })</em>, <span class='count'>{ count }</span> detections</h2>\n")
+                f.write(f"<img src='{ histogram_file }' class='histogram' alt='Histogram for { row['Scientific name'] }'>\n")
+
 
             filename = os.path.basename(row['Segment Filepath'])
             parts = filename.split('.')
@@ -429,8 +429,19 @@ def generate_html_report(example_species_predictions_df, species_counts, output_
     return html_file_path
 
 
+def handle_files(main_directory: str, threshold: float) -> None:
+    """
+    Handles the processing of files for bird identification, including loading data, generating statistics, 
+    and creating reports.
 
-def handle_files(main_directory, threshold):
+    Args:
+        main_directory (str): The main directory where the data files are located.
+        threshold (float): The threshold value for filtering predictions.
+
+    Returns:
+        None
+    """
+
 
     # Start benchmarking
     tracemalloc.start()
@@ -467,6 +478,7 @@ def handle_files(main_directory, threshold):
     output_directory = make_output_directory(main_directory)
     print("Created directory ", output_directory)
 
+    # Generate and save histograms
     stats_functions.generate_historgrams(species_predictions_df, threshold, output_directory)
 
     # Pick examples for validation
@@ -480,6 +492,7 @@ def handle_files(main_directory, threshold):
 
     # Generate HTML report
     report_filepath = generate_html_report(example_species_predictions_df, species_counts, output_directory)
+
 
     # End benchmarking
     end_time = time.perf_counter()
