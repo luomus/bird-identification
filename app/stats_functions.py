@@ -20,7 +20,6 @@ def generate_historgrams(df, threshold, output_directory):
 
     BUCKETS = 100
 
-    i = 0
     for species, group in df.groupby("Scientific name"):
         plt.figure()
         plt.hist(group["Confidence"], bins=[i / BUCKETS for i in range(BUCKETS + 1)])
@@ -41,9 +40,45 @@ def generate_historgrams(df, threshold, output_directory):
 
         print(f"Generated histogram for {species}")
 
-        i += 1
+    return True
 
-    return i
 
+def generate_temporal_chart(df, output_directory):
+
+    """
+    Loops through each species and generates bar charts of counts of rows in one-hour time buckets.
+
+    Parameters:
+        dataframe (pd.DataFrame): The input dataframe with 'Timestamp' and 'Scientific name'.
+    """
+
+    # Ensure Timestamp is a datetime object
+    df['Timestamp'] = pd.to_datetime(df['Timestamp'])
     
+    # Get the unique scientific names
+    species_list = df['Scientific name'].unique()
+    
+    # Loop through each species
+    for species in species_list:
+        # Filter the dataframe for the current species
+        species_df = df[df['Scientific name'] == species].copy()
+        
+        # Group by one-hour time buckets
+        species_df.loc[:, 'Hour'] = species_df['Timestamp'].dt.floor('h')
+        hourly_counts = species_df.groupby('Hour').size()
+        
+        # Plot the bar chart
+        plt.figure(figsize=(10, 6))
+        plt.bar(hourly_counts.index, hourly_counts.values, width=0.03, color='orange')
+        plt.title(f"Observation Counts for {species}")
+        plt.xticks(rotation=45)
+        plt.tight_layout()
 
+        # Save the figure
+        file_path = os.path.join(output_directory, f"{species.replace(' ', '_')}_temporal.png")
+        plt.savefig(file_path)
+        plt.close()
+
+        print(f"Generated temporal chart for {species}")
+
+    return True

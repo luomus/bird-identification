@@ -385,8 +385,12 @@ def generate_html_report(example_species_predictions_df: pd.DataFrame, species_c
             h2 {
                 margin-top: 0;
             }
-            img {
+            .histogram {
                 width: 400px;
+                height: auto;
+            }
+            .temporal {
+                width: 600px;
                 height: auto;
             }
             .example {
@@ -433,10 +437,12 @@ def generate_html_report(example_species_predictions_df: pd.DataFrame, species_c
 
                 count = species_counts.get(row['Scientific name'], 0)
                 histogram_file = f"{ row['Scientific name'].replace(' ', '_') }.png"
+                temportal_file = f"{ row['Scientific name'].replace(' ', '_') }_temporal.png"
 
                 f.write("<div class='species'>\n")
                 f.write(f"<h2><span class='common'>{ row['Common name'] }</span> <em class='sci'>({ row['Scientific name'] })</em>, <span class='count'>{ count }</span> detections</h2>\n")
                 f.write(f"<img src='{ histogram_file }' class='histogram' alt='Histogram for { row['Scientific name'] }'>\n")
+                f.write(f"<img src='{ temportal_file }' class='temporal' alt='Temporal chart for { row['Scientific name'] }'>\n")
 
 
             filename = os.path.basename(row['Segment Filepath'])
@@ -529,7 +535,10 @@ def handle_files(main_directory: str, threshold: float, PADDING_SECONDS: int = 1
     print("Saved data to ", pickle_filepath)
 
     # Generate and save histograms
-#    stats_functions.generate_historgrams(species_predictions_df, threshold, output_directory)
+    stats_functions.generate_historgrams(species_predictions_df, threshold, output_directory)
+
+    # Generate temporal charts
+    stats_functions.generate_temporal_chart(species_predictions_df, output_directory)
 
     # Pick examples for validation
     example_species_predictions_df = get_detection_examples(species_predictions_df, EXAMPLE_COUNT)
@@ -559,4 +568,4 @@ def handle_files(main_directory: str, threshold: float, PADDING_SECONDS: int = 1
     tracemalloc.stop()
 
 
-handle_files("test", 0.75)
+handle_files("suomenoja", 0.70)
