@@ -458,6 +458,24 @@ def generate_html_report(example_species_predictions_df: pd.DataFrame, species_c
     return html_file_path
 
 
+def sort_by_species_count(example_species_predictions_df: pd.DataFrame, species_counts: pd.Series) -> pd.DataFrame:
+    """
+    Sorts the example species predictions DataFrame by the count of each species in descending order.
+    
+    Args:
+        example_species_predictions_df (pd.DataFrame): The DataFrame containing the example species predictions.
+        species_counts (pd.Series): The Series containing the counts of each species in the DataFrame.
+    
+    Returns:
+        pd.DataFrame: The sorted DataFrame.
+    """
+
+    species_order = list(species_counts.keys())
+    example_species_predictions_df['Scientific name'] = pd.Categorical(example_species_predictions_df['Scientific name'], categories=species_order, ordered=True)
+    example_species_predictions_df_sorted = example_species_predictions_df.sort_values(by='Scientific name')
+    return example_species_predictions_df_sorted
+
+
 def handle_files(main_directory: str, threshold: float, PADDING_SECONDS: int = 1, EXAMPLE_COUNT: int = 4) -> None:
     """
     Handles the processing of files for bird identification, including loading data, generating statistics, 
@@ -511,17 +529,21 @@ def handle_files(main_directory: str, threshold: float, PADDING_SECONDS: int = 1
     print("Saved data to ", pickle_filepath)
 
     # Generate and save histograms
-    stats_functions.generate_historgrams(species_predictions_df, threshold, output_directory)
+#    stats_functions.generate_historgrams(species_predictions_df, threshold, output_directory)
 
     # Pick examples for validation
     example_species_predictions_df = get_detection_examples(species_predictions_df, EXAMPLE_COUNT)
 #    print(example_species_predictions_df) # DEBUG
 
-    # Loop through the example rows and extract audio segments
+    # Loop through the example rows and generate audio segments
     example_species_predictions_df = make_soundfiles(example_species_predictions_df, output_directory, PADDING_SECONDS)
 
+    # Sort so that common species are first
+    example_species_predictions_df_sorted = sort_by_species_count(example_species_predictions_df, species_counts)
+
     # Generate HTML report
-    report_filepath = generate_html_report(example_species_predictions_df, species_counts, output_directory)
+    report_filepath = generate_html_report(example_species_predictions_df_sorted, species_counts, output_directory)
+    print("Report saved to ", report_filepath)
 
     # End benchmarking
     end_time = time.perf_counter()
@@ -537,4 +559,4 @@ def handle_files(main_directory: str, threshold: float, PADDING_SECONDS: int = 1
     tracemalloc.stop()
 
 
-handle_files("suomenoja", 0.97)
+handle_files("test", 0.75)
