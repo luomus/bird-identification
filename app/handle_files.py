@@ -458,7 +458,7 @@ def generate_html_report(example_species_predictions_df: pd.DataFrame, species_c
     return html_file_path
 
 
-def handle_files(main_directory: str, threshold: float) -> None:
+def handle_files(main_directory: str, threshold: float, PADDING_SECONDS: int = 1, EXAMPLE_COUNT: int = 4) -> None:
     """
     Handles the processing of files for bird identification, including loading data, generating statistics, 
     and creating reports.
@@ -466,11 +466,12 @@ def handle_files(main_directory: str, threshold: float) -> None:
     Args:
         main_directory (str): The main directory where the data files are located.
         threshold (float): The threshold value for filtering predictions.
+        PADDING_SECONDS (int): The number of seconds to add to the start and end of the segment.
+        EXAMPLE_COUNT (int): The number of examples to pick for each species.
 
     Returns:
         None
     """
-
 
     # Start benchmarking
     tracemalloc.start()
@@ -480,9 +481,6 @@ def handle_files(main_directory: str, threshold: float) -> None:
     pd.set_option('display.max_colwidth', None) # Prevent truncating cell content
     pd.set_option('display.width', 0)           # Adjust width for large data
 
-    PADDING_SECONDS = 1 # How many seconds to add to the start and end of the segment, around the detected vocalization.
-    EXAMPLE_COUNT = 4 # How many examples to pick for each species. 4 are fixed and additional random examples are picked if available.
-
     # Check input data is ok
     datafile_directory = functions.get_data_directory(main_directory)
     print("Getting data from ", datafile_directory)
@@ -490,9 +488,6 @@ def handle_files(main_directory: str, threshold: float) -> None:
     data_files = get_datafile_list(datafile_directory)
     print(f"Loaded { len(data_files) } data files")
 #    print(data_files)
-
-#    audio_extension = check_audio_files(data_files)
-#    print(f"Audio extension: {audio_extension}")
 
     # Load data
     species_predictions_df = load_csv_files_to_dataframe(data_files, threshold)
@@ -510,8 +505,13 @@ def handle_files(main_directory: str, threshold: float) -> None:
     output_directory = make_output_directory(main_directory)
     print("Created directory ", output_directory)
 
+    # Save data to serialized format, so that it can later bre re-read into Pandas dataframe
+    pickle_filepath = f"{ output_directory }/species_predictions.pkl"
+    species_predictions_df.to_pickle(pickle_filepath)
+    print("Saved data to ", pickle_filepath)
+
     # Generate and save histograms
-#    stats_functions.generate_historgrams(species_predictions_df, threshold, output_directory)
+    stats_functions.generate_historgrams(species_predictions_df, threshold, output_directory)
 
     # Pick examples for validation
     example_species_predictions_df = get_detection_examples(species_predictions_df, EXAMPLE_COUNT)
@@ -520,11 +520,8 @@ def handle_files(main_directory: str, threshold: float) -> None:
     # Loop through the example rows and extract audio segments
     example_species_predictions_df = make_soundfiles(example_species_predictions_df, output_directory, PADDING_SECONDS)
 
-#    print(example_species_predictions_df) # DEBUG
-
     # Generate HTML report
     report_filepath = generate_html_report(example_species_predictions_df, species_counts, output_directory)
-
 
     # End benchmarking
     end_time = time.perf_counter()
@@ -540,4 +537,4 @@ def handle_files(main_directory: str, threshold: float) -> None:
     tracemalloc.stop()
 
 
-handle_files("suomenoja", 0.95)
+handle_files("suomenoja", 0.97)

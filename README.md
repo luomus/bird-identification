@@ -41,6 +41,7 @@ A bird audio identification tool designed to analyze recordings and generate a l
 - Error handling when functions return None
 - Prepare for missing audio files & missing data files
 - Running analysis should save settings to a metadata file. Report should show those settings.
+- Handle file paths in a more consistent ways (directory path, file name, datetime from filename)
 - Add type hints?
 - Unit testing?
 
