@@ -234,17 +234,17 @@ def get_detection_examples(df: pd.DataFrame, example_count: int = 4) -> pd.DataF
         subset = df[df["Scientific name"] == name]
         selected_indices = set()  # To keep track of selected rows
         
-        # Row with lowest 'Start (s)' value
-        row_lowest_start = subset.loc[subset["Start (s)"].idxmin()]
-        selected_indices.add(row_lowest_start.name)
-        result_rows.append(row_lowest_start.to_dict() | {"Type": "first"})
+        # Row with lowest 'Timestamp' value
+        row_lowest_timestamp = subset.loc[subset["Timestamp"].idxmin()]
+        selected_indices.add(row_lowest_timestamp.name)
+        result_rows.append(row_lowest_timestamp.to_dict() | {"Type": "first"})
         
-        # Row with highest 'Start (s)' value
+        # Row with highest 'Timestamp' value
         remaining = subset.drop(index=list(selected_indices))
         if not remaining.empty:
-            row_highest_start = remaining.loc[remaining["Start (s)"].idxmax()]
-            selected_indices.add(row_highest_start.name)
-            result_rows.append(row_highest_start.to_dict() | {"Type": "last"})
+            row_highest_timestamp = remaining.loc[remaining["Timestamp"].idxmax()]
+            selected_indices.add(row_highest_timestamp.name)
+            result_rows.append(row_highest_timestamp.to_dict() | {"Type": "last"})
         
         # Row with highest 'Confidence' value
         remaining = subset.drop(index=list(selected_indices))
@@ -398,8 +398,23 @@ def generate_html_report(example_species_predictions_df: pd.DataFrame, species_c
             h3:first-letter {
                 text-transform: uppercase;
             }
-            .timestamp {
+            .timestamp, start {
                 font-weight: bold;
+            }
+            .first {
+                color: #009;    
+            }
+            .last {
+                color: #909;    
+            }
+            .highest {
+                color: #090;    
+            }
+            .lowest {
+                color: #900;    
+            }
+            .random {
+                color: #333;    
             }
         </style>
         """)
@@ -429,9 +444,10 @@ def generate_html_report(example_species_predictions_df: pd.DataFrame, species_c
             extension = parts[-1]
 
             f.write(f"<div class='example'>\n")
-            f.write(f"<h3><span class='type'>{ row['Type'] }</span>, <span class='confidence'>{ round(row['Confidence'], 3) }</span></h3>\n")
+            f.write(f"<h3><span class='type { row['Type'] }'>{ row['Type'] }</span>, <span class='confidence'>{ round(row['Confidence'], 3) }</span></h3>\n")
             f.write(f"<audio controls><source src='{ filename }' type='audio/{ extension }'></audio>\n")
-            f.write(f"<p><span class='filename'>{ filename }</span>, <span class='timestamp'>{ seconds_to_time(row['Start (s)']) }</span></p>\n")
+            f.write(f"<p><span class='timestamp'>{ row['Timestamp'] }</span></p>\n")
+            f.write(f"<p><span class='filename'>{ filename }</span>, <span class='start'>{ seconds_to_time(row['Start (s)']) }</span></p>\n")
             f.write(f"</div>\n")
 
         f.write("</div>\n")
@@ -478,11 +494,13 @@ def handle_files(main_directory: str, threshold: float) -> None:
 #    audio_extension = check_audio_files(data_files)
 #    print(f"Audio extension: {audio_extension}")
 
-    # Load and analyze data
+    # Load data
     species_predictions_df = load_csv_files_to_dataframe(data_files, threshold)
-
     print(f"Loaded { len(species_predictions_df) } rows of data")
-    print(species_predictions_df) # DEBUG
+
+    # Add row-level timestamps
+    species_predictions_df['Timestamp'] = species_predictions_df['File timestamp'] + pd.to_timedelta(species_predictions_df['Start (s)'], unit='s')
+#    print(species_predictions_df) # DEBUG
 
     # Generate statistics
     species_counts = species_predictions_df['Scientific name'].value_counts()
@@ -522,4 +540,4 @@ def handle_files(main_directory: str, threshold: float) -> None:
     tracemalloc.stop()
 
 
-handle_files("test", 0.95)
+handle_files("suomenoja", 0.95)
