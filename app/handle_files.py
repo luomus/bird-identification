@@ -15,7 +15,7 @@ Overall process:
 '''
 
 import os   
-from typing import Optional, Dict
+from typing import Optional, Dict, Tuple
 from datetime import datetime
 import pandas as pd
 
@@ -153,15 +153,12 @@ def load_csv_files_to_dataframe(file_paths: list[str], threshold: float) -> pd.D
         try:
             df = pd.read_csv(file_path)
 
-            # Add new column with the file path
+            # Add new columns
             df['Filepath'] = file_path
-
             df['Audio Filepath'] = df['Filepath'].apply(get_audio_file_path)
 
-            # Add a new column with the filename
-            # Split file path by "/" and take the last part
-#            file_name = os.path.basename(file_path)
-#            df['Filename'] = file_name.replace('.csv', '')
+            date_str, time_str = functions.get_date_and_time_from_filepath(file_path)
+            df['File timestamp'] = pd.to_datetime(date_str + time_str, format='%Y%m%d%H%M%S')
 
             # Filter rows by threshold
             df = df[df['Confidence'] >= threshold]
@@ -372,21 +369,37 @@ def generate_html_report(example_species_predictions_df: pd.DataFrame, species_c
         f.write("""
         <style>
             body {
-                background-color: #f0f0f0;
+                background-color: #f3ede7;
                 font-family: Arial, sans-serif;
             }
             div {
                 background-color: white;
-                border: 1px solid #ddd;
+                border: 1px solid #dfd3c8;
                 border-radius: 5px;
-                margin: 10px;
-                padding: 10px;
+                margin: 1em 0.7em;
+                padding: 1em 0.7em;
+            }
+            .species {
+                margin-top: 3em;
             }
             h2 {
-
+                margin-top: 0;
             }
-            p {
-
+            img {
+                width: 400px;
+                height: auto;
+            }
+            .example {
+                background-color: #f7f3f0; 
+            }
+            h3 {
+                margin-top: 0;
+            }
+            h3:first-letter {
+                text-transform: uppercase;
+            }
+            .timestamp {
+                font-weight: bold;
             }
         </style>
         """)
@@ -469,6 +482,7 @@ def handle_files(main_directory: str, threshold: float) -> None:
     species_predictions_df = load_csv_files_to_dataframe(data_files, threshold)
 
     print(f"Loaded { len(species_predictions_df) } rows of data")
+    print(species_predictions_df) # DEBUG
 
     # Generate statistics
     species_counts = species_predictions_df['Scientific name'].value_counts()
@@ -479,16 +493,16 @@ def handle_files(main_directory: str, threshold: float) -> None:
     print("Created directory ", output_directory)
 
     # Generate and save histograms
-    stats_functions.generate_historgrams(species_predictions_df, threshold, output_directory)
+#    stats_functions.generate_historgrams(species_predictions_df, threshold, output_directory)
 
     # Pick examples for validation
     example_species_predictions_df = get_detection_examples(species_predictions_df, EXAMPLE_COUNT)
-#    print(example_species_predictions_df)
+#    print(example_species_predictions_df) # DEBUG
 
     # Loop through the example rows and extract audio segments
     example_species_predictions_df = make_soundfiles(example_species_predictions_df, output_directory, PADDING_SECONDS)
 
-#    print(example_species_predictions_df)
+#    print(example_species_predictions_df) # DEBUG
 
     # Generate HTML report
     report_filepath = generate_html_report(example_species_predictions_df, species_counts, output_directory)
@@ -508,4 +522,4 @@ def handle_files(main_directory: str, threshold: float) -> None:
     tracemalloc.stop()
 
 
-handle_files("test", 0.8)
+handle_files("test", 0.95)

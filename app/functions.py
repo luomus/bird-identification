@@ -4,7 +4,7 @@ from scipy.stats import norm
 import rasterio
 import os
 import yaml
-from typing import Optional, Dict
+from typing import Optional, Dict, Tuple
 import re
 from datetime import datetime
 
@@ -59,6 +59,45 @@ def get_day_of_year_from_filename(file_name: str) -> Optional[int]:
         except ValueError:
             return None
     return None
+
+
+def get_date_and_time_from_filepath(file_path: str) -> Optional[Tuple[str, str]]:
+    """
+    Extracts the date and time from a filename. Supported formats:
+    - Audiomoth: ../somedirectory/20240527_200000.[extension]
+    - Wildlife Acoustics SM4: ../somedirectory/[prefix]_20240406_015900.[extension]
+
+    Args:
+        file_path (str): The path to the file containing the date and time information.
+
+    Returns:
+        Optional[Tuple[str, str]]: A tuple with date as "YYYYMMDD" and time as "HHMM" if successfully extracted, or `None` if not found or invalid.
+    """
+    # Get filename from path
+    file_name = os.path.basename(file_path)
+
+    # Regular expression to match date (YYYYMMDD) and time (HHMMSS)
+    pattern = r"(?:.*_)?(\d{8})_(\d{6})\.\w+(?:\..*)?$"
+    match = re.search(pattern, file_name)
+
+    if match:
+        date_part = match.group(1)  # Extract YYYYMMDD
+        time_part_full = match.group(2)  # Extract HHMMSS
+
+        # Take only the first 4 digits (HHMM) from the time part
+        time_part = time_part_full[:4]
+
+        try:
+            # Validate date and time format
+            datetime.strptime(date_part, "%Y%m%d")  # Validate YYYYMMDD
+            datetime.strptime(time_part, "%H%M")    # Validate HHMM
+            return date_part, time_part
+        except ValueError:
+            print(f"Error: Invalid date or time format in file {file_name}")
+            return None
+    print(f"Error: Date and time not found in file {file_name}")
+    return None
+
 
 
 # calibrate prediction
