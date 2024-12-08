@@ -3,9 +3,11 @@ import pandas as pd
 import matplotlib.pyplot as plt
 import os
 
-def generate_historgrams(df, threshold, output_directory):
+from typing import Optional
+
+def generate_histograms(df: pd.DataFrame, threshold: float, output_directory: str) -> bool:
     """
-    Generate histograms for each species in the DataFrame.
+    Generates histograms for each species in a DataFrame.
 
     Parameters:
     - df (pandas.DataFrame): DataFrame containing the data.
@@ -43,13 +45,12 @@ def generate_historgrams(df, threshold, output_directory):
     return True
 
 
-def generate_temporal_chart(df, output_directory):
-
+def generate_temporal_chart(df: pd.DataFrame, output_directory: str) -> bool:
     """
-    Loops through each species and generates bar charts of counts of rows in one-hour time buckets.
+    Loops through each species in a DataFrame and generates bar charts of counts of rows in one-hour time buckets.
 
     Parameters:
-        dataframe (pd.DataFrame): The input dataframe with 'Timestamp' and 'Scientific name'.
+    - df (pandas.DataFrame): The input dataframe with 'Timestamp' and 'Scientific name'.
     """
 
     # Ensure Timestamp is a datetime object
@@ -66,7 +67,7 @@ def generate_temporal_chart(df, output_directory):
         # Group by one-hour time buckets
         species_df.loc[:, 'Hour'] = species_df['Timestamp'].dt.floor('h')
         hourly_counts = species_df.groupby('Hour').size()
-        
+
         # Plot the bar chart
         plt.figure(figsize=(10, 6))
         plt.bar(hourly_counts.index, hourly_counts.values, width=0.03, color='orange')
