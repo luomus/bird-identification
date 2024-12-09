@@ -435,6 +435,16 @@ def generate_html_report(example_species_predictions_df: pd.DataFrame, species_c
         f.write(f"<h1>Report for { main_directory }</h1>\n")
         f.write(f"<p>Generated at { datetime.now() }</p>\n")
 
+        # Print species counts
+        f.write("<div id='contents'>\n")
+        f.write("<h2>Species counts</h2>\n")
+        f.write("<ol>\n")
+        for species, count in species_counts.items():
+            species_id = species.replace(' ', '_')
+            f.write(f"<li><a href='#{ species_id }'>{ species }</a>: { count }</li>\n")
+        f.write("</ol>\n")
+        f.write("</div>\n")
+
         scientific_name_mem = ""
         for index, row in example_species_predictions_df.iterrows():
 
@@ -446,9 +456,10 @@ def generate_html_report(example_species_predictions_df: pd.DataFrame, species_c
                 count = species_counts.get(row['Scientific name'], 0)
                 histogram_file = f"{ row['Scientific name'].replace(' ', '_') }.png"
                 temportal_file = f"{ row['Scientific name'].replace(' ', '_') }_temporal.png"
+                species_id = row['Scientific name'].replace(' ', '_')
 
                 f.write("<div class='species'>\n")
-                f.write(f"<h2><span class='common'>{ row['Common name'] }</span> <em class='sci'>({ row['Scientific name'] })</em>, <span class='count'>{ count }</span> detections</h2>\n")
+                f.write(f"<h2 id='{ species_id }'><span class='common'>{ row['Common name'] }</span> <em class='sci'>({ row['Scientific name'] })</em>, <span class='count'>{ count }</span> detections</h2>\n")
                 f.write(f"<img src='{ histogram_file }' class='histogram' alt='Histogram for { row['Scientific name'] }'>\n")
                 f.write(f"<img src='{ temportal_file }' class='temporal' alt='Temporal chart for { row['Scientific name'] }'>\n")
 
@@ -578,4 +589,4 @@ def handle_files(main_directory: str, threshold: float, PADDING_SECONDS: int = 1
     tracemalloc.stop()
 
 
-handle_files("suurpelto-testi", 0.7, 1, 10)
+handle_files("test", 0.7, 1, 5)
