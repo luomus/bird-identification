@@ -21,8 +21,13 @@ def generate_histograms(df: pd.DataFrame, threshold: float, output_directory: st
     print("Generating histograms")
 
     BUCKETS = 100
+    MINIMUM_RECORDS = 5
 
     for species, group in df.groupby("Scientific name"):
+        if len(group) < MINIMUM_RECORDS:
+            print(f"Skipping {species} due to less than {MINIMUM_RECORDS} records")
+            continue
+
         plt.figure()
         plt.hist(group["Confidence"], bins=[i / BUCKETS for i in range(BUCKETS + 1)])
         plt.axvline(x=threshold, color='grey', linestyle='--', linewidth=1.5)
@@ -58,11 +63,18 @@ def generate_temporal_chart(df: pd.DataFrame, output_directory: str) -> bool:
     
     # Get the unique scientific names
     species_list = df['Scientific name'].unique()
-    
+
+    MINIMUM_RECORDS = 5
+
     # Loop through each species
     for species in species_list:
         # Filter the dataframe for the current species
         species_df = df[df['Scientific name'] == species].copy()
+
+        # Skip if there are less than MINIMUM_RECORDS records
+        if len(species_df) < MINIMUM_RECORDS:
+            print(f"Skipping {species} due to less than {MINIMUM_RECORDS} records")
+            continue
         
         # Group by one-hour time buckets
         species_df.loc[:, 'Hour'] = species_df['Timestamp'].dt.floor('h')
