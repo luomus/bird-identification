@@ -36,11 +36,17 @@ A bird audio identification tool designed to analyze recordings and generate a l
 
 ## Todo
 
-- Using handle_files from command line
-- Organizing the repos: continue with this repo, include baim features. Then rethink whether this tool and analysis (Bart) tool should be bundled together. And how to manage web interface vs. desktop app.
-- Error handling when functions return None
-- Prepare for missing audio files & missing data files
-- Running analysis should save settings to a metadata file. Report should show those settings.
-- Handle file paths in a more consistent ways (directory path, file name, datetime from filename)
-- Unit testing?
-- 
+- Should have:
+  - Using handle_files from command line
+  - Table of contents to the report
+  - Normalize x-axis for all temporal charts. Get first and last time from the original data when it's loaded?
+  - Organizing the repos: continue with this repo, include baim features. Then rethink whether this tool and analysis (Bart) tool should be bundled together. And how to manage web interface vs. desktop app.
+  - Error handling when functions return None
+  - Prepare for missing audio files & missing data files
+  - Running analysis should save settings to a metadata file. Report should show those settings.
+  - Unit testing
+- Nice to have:
+  - Handle file paths in a more consistent ways (directory path, file name, datetime from filename)
+  - Histograms are not made for species with only few detections. However, <img> tag is generated for these on the result service. Would be elegant not to have broken image links, though they are not visible for users.
+
+

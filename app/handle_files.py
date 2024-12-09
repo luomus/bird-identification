@@ -253,6 +253,13 @@ def get_detection_examples(df: pd.DataFrame, example_count: int = 4) -> pd.DataF
             selected_indices.add(row_highest_confidence.name)
             result_rows.append(row_highest_confidence.to_dict() | {"Type": "highest confidence"})
         
+        # Second row with highest 'Confidence' value
+        remaining = subset.drop(index=list(selected_indices))
+        if not remaining.empty:
+            row_highest_confidence = remaining.loc[remaining["Confidence"].idxmax()]
+            selected_indices.add(row_highest_confidence.name)
+            result_rows.append(row_highest_confidence.to_dict() | {"Type": "highest confidence"})
+        
         # Row with lowest 'Confidence' value
         remaining = subset.drop(index=list(selected_indices))
         if not remaining.empty:
@@ -536,10 +543,10 @@ def handle_files(main_directory: str, threshold: float, PADDING_SECONDS: int = 1
     print("Saved data to ", pickle_filepath)
 
     # Generate and save histograms
-#    stats_functions.generate_histograms(species_predictions_df, threshold, output_directory)
+    stats_functions.generate_histograms(species_predictions_df, threshold, output_directory)
 
     # Generate temporal charts
-#    stats_functions.generate_temporal_chart(species_predictions_df, output_directory)
+    stats_functions.generate_temporal_chart(species_predictions_df, output_directory)
 
     # Sort so that common species are first
     species_predictions_df_sorted = sort_by_species_count(species_predictions_df, species_counts)
@@ -571,4 +578,4 @@ def handle_files(main_directory: str, threshold: float, PADDING_SECONDS: int = 1
     tracemalloc.stop()
 
 
-handle_files("suomenoja", 0.70)
+handle_files("test", 0.80)
