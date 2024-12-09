@@ -339,7 +339,7 @@ def seconds_to_time(seconds: float) -> str:
     return f"{minutes} min {remaining_seconds} s"
 
 
-def generate_html_report(example_species_predictions_df: pd.DataFrame, species_counts: pd.Series, output_directory: str) -> Optional[str]:
+def generate_html_report(example_species_predictions_df: pd.DataFrame, species_counts: pd.Series, main_directory: str, output_directory: str) -> Optional[str]:
     """
     Generates a HTML report for the example species predictions. Each example is displayed as a card with these information:
     - Scientific name
@@ -352,6 +352,7 @@ def generate_html_report(example_species_predictions_df: pd.DataFrame, species_c
     Parameters:
     - example_species_predictions_df (pd.DataFrame): DataFrame containing the example species predictions.
     - species_counts (pd.Series): Series containing the counts of each species in the DataFrame.
+    - main_directory (str): The directory sound files are loaded from, acts as a name for them.
     - output_directory (str): The directory to save the audio segments.
 
     Returns:
@@ -424,7 +425,7 @@ def generate_html_report(example_species_predictions_df: pd.DataFrame, species_c
         """)
         f.write("</head>\n")
         f.write("<body>\n")
-        f.write(f"<h1>Report { output_directory }</h1>\n")
+        f.write(f"<h1>Report for { main_directory }</h1>\n")
         f.write(f"<p>Generated at { datetime.now() }</p>\n")
 
         scientific_name_mem = ""
@@ -535,23 +536,25 @@ def handle_files(main_directory: str, threshold: float, PADDING_SECONDS: int = 1
     print("Saved data to ", pickle_filepath)
 
     # Generate and save histograms
-    stats_functions.generate_historgrams(species_predictions_df, threshold, output_directory)
+#    stats_functions.generate_histograms(species_predictions_df, threshold, output_directory)
 
     # Generate temporal charts
-    stats_functions.generate_temporal_chart(species_predictions_df, output_directory)
+#    stats_functions.generate_temporal_chart(species_predictions_df, output_directory)
+
+    # Sort so that common species are first
+    species_predictions_df_sorted = sort_by_species_count(species_predictions_df, species_counts)
+    print("Sorted by species")
 
     # Pick examples for validation
-    example_species_predictions_df = get_detection_examples(species_predictions_df, EXAMPLE_COUNT)
+    example_species_predictions_df = get_detection_examples(species_predictions_df_sorted, EXAMPLE_COUNT)
 #    print(example_species_predictions_df) # DEBUG
+    print(f"Selected { len(example_species_predictions_df) } examples for validation")
 
     # Loop through the example rows and generate audio segments
     example_species_predictions_df = make_soundfiles(example_species_predictions_df, output_directory, PADDING_SECONDS)
 
-    # Sort so that common species are first
-    example_species_predictions_df_sorted = sort_by_species_count(example_species_predictions_df, species_counts)
-
     # Generate HTML report
-    report_filepath = generate_html_report(example_species_predictions_df_sorted, species_counts, output_directory)
+    report_filepath = generate_html_report(example_species_predictions_df, species_counts, main_directory, output_directory)
     print("Report saved to ", report_filepath)
 
     # End benchmarking
