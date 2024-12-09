@@ -207,7 +207,7 @@ def get_audio_file_path(file_path: str) -> Optional[str]:
 
 import pandas as pd
 
-def get_detection_examples(df: pd.DataFrame, example_count: int = 4) -> pd.DataFrame:
+def get_detection_examples(df: pd.DataFrame, example_count: int = 5) -> pd.DataFrame:
     """
     Gets example audio segments; a subset of rows from an audio detection dataframe i.e., specific rows for each unique value in 'Scientific name'.
     - Row with the lowest value in 'Start (s)'
@@ -226,7 +226,7 @@ def get_detection_examples(df: pd.DataFrame, example_count: int = 4) -> pd.DataF
 
     if example_count < 5:
         example_count = 5
-    random_count = example_count - 4
+    random_count = example_count - 5
     result_rows = []
     unique_names = df["Scientific name"].unique()
 
@@ -294,6 +294,8 @@ def make_soundfiles(example_species_predictions_df: pd.DataFrame, output_directo
 
     """
 
+    print("Generating audio segments")
+
     # Loop though example_species_predictions_df, i.e. species predictions
     for index, row in example_species_predictions_df.iterrows():
 
@@ -303,11 +305,9 @@ def make_soundfiles(example_species_predictions_df: pd.DataFrame, output_directo
         if segment_start < 0:
             segment_start = 0
         
-        # TODO: speed this up slightly by caching file durations to a global variable
         audio_duration = librosa.get_duration(path=row['Audio Filepath'])
-
         if segment_end > audio_duration:
-            segment_end = audio_duration
+            segment_end = int(audio_duration)
 
         # Generate segment filename
         file_name_with_ext = os.path.basename(row["Audio Filepath"])
@@ -321,7 +321,7 @@ def make_soundfiles(example_species_predictions_df: pd.DataFrame, output_directo
         # Save the segment to a new file
         sf.write(segment_filepath, y, sr, format='FLAC')
 
-        print("Segment saved to ", segment_filepath)
+        print("Segment saved to", segment_filepath)
 
         # Add segment filename to dataframe
         example_species_predictions_df.loc[index, 'Segment Filepath'] = segment_filepath
@@ -490,7 +490,7 @@ def sort_by_species_count(example_species_predictions_df: pd.DataFrame, species_
     return example_species_predictions_df_sorted
 
 
-def handle_files(main_directory: str, threshold: float, PADDING_SECONDS: int = 1, EXAMPLE_COUNT: int = 4) -> None:
+def handle_files(main_directory: str, threshold: float, PADDING_SECONDS: int = 1, EXAMPLE_COUNT: int = 5) -> None:
     """
     Handles the processing of files for bird identification, including loading data, generating statistics, 
     and creating reports.
@@ -578,4 +578,4 @@ def handle_files(main_directory: str, threshold: float, PADDING_SECONDS: int = 1
     tracemalloc.stop()
 
 
-handle_files("test", 0.80)
+handle_files("suurpelto-testi", 0.7, 1, 10)
