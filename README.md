@@ -36,6 +36,10 @@ A bird audio identification tool designed to analyze recordings and generate a l
 
 ## Todo
 
+- Compare BirdNET, this model with SDM and this model without SDM. E.g. migration observations.
+- How to handle multiple species being detected in the same time frame?
+- Spectrograms
+- Species commonness: how many % of observations from that area (+- 100 km) and time (+-10 days) are this species
 - Should have:
   - Using handle_files from command line
   - Table of contents to the report

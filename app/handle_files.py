@@ -589,4 +589,4 @@ def handle_files(main_directory: str, threshold: float, PADDING_SECONDS: int = 1
     tracemalloc.stop()
 
 
-handle_files("test", 0.7, 1, 5)
+handle_files("suomenoja", 0.7, 1, 5)
