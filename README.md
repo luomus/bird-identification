@@ -41,7 +41,7 @@ This analyzes audio files and generates tabular text files containing the identi
   1) `./subfolder/data`
   2) `./subfolder/Data`
   3. `.subfolder`
-- Place *metadata.yaml* file in the subfolder. Example format:
+- Place `metadata.yaml` file in the subfolder. Example format:
 
 ```yaml
 lat: 60.123
@@ -72,8 +72,8 @@ This reads tabular files containing species identifications, and generates an HT
 - Run the script with `python main_report.py --dir <subfolder>`
 - Optional parameters:
   - `--thr`: Detection threshold as a decimal number between 0<>1, default 0.5
-  - `--padding`: Padding in seconds for example audio files. Default 1.
-  - `--examples`: Number of example audio files to pick for each species. Minimum 5, default 5.
+  - `--padding`: Padding in seconds for example audio files, default 1.
+  - `--examples`: Number of example audio files to pick for each species, minimum 5, default 5.
 
 ## Todo
 

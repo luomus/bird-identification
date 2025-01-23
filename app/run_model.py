@@ -159,7 +159,7 @@ def analyze_directory(input_path, parameters):
                                     f"{detection_timestamps[detection_index] + CLIP_DURATION},"
                                     f"{species_name_list['luomus_name'].iloc[species_class_indices[detection_index]]},"
                                     f"{species_name_list['common_name'].iloc[species_class_indices[detection_index]]},"
-                                    f"{round(species_predictions[detection_index], 3)}\n"
+                                    f"{round(float(species_predictions[detection_index]), 4)}\n"
                                 )
                         print(f"Wrote predictions to {output_file_path}")
                     
