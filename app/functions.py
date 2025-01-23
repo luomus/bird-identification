@@ -135,7 +135,7 @@ def adjust(species_predictions, species_class_indices, migration_parameters, lat
     if day_of_year > 365:
         day_of_year = 365
     for species_index in range(len(species_predictions)):
-        species_class_index = species_class_indices[species_index]   
+        species_class_index = species_class_indices[species_index]
 
         # Skipping the first 2 classes (noise and human)
         if species_class_index <= 1:
@@ -222,7 +222,6 @@ def threshold_filter(species_predictions, detection_timestamps, threshold = 0.5)
 
 
 # pad too short signal with zeros
-# Not used?
 def pad(signal, x1, x2, target_len=3*48000, sr=48000):
     # signal: input audio signal, x1: starting point in seconds x2: ending point in seconds, 
     # target_len: target length for signal, sr: sampling rate
@@ -258,6 +257,7 @@ def split_signal(input_signal, sample_rate, chunk_duration_s, overlap_duration_s
 
 # visualize results of network training
 # Not used?
+'''
 def plot_results(history, val = True):
     # history: model history object, val: show validation results
     acc = history['binary_accuracy']
@@ -278,6 +278,7 @@ def plot_results(history, val = True):
     plt.title('Training (and validation) loss')
     plt.legend()
     plt.show()
+'''
 
 
 def make_output_file_path(output_path, file_name):
@@ -332,6 +333,22 @@ def read_metadata(folder_path: str) -> Optional[Dict]:
     try:
         with open(file_path, 'r') as file:
             metadata = yaml.safe_load(file)
+
+            # Check that contains both lat and lon, with proper decimal values
+            if "lat" not in metadata or "lon" not in metadata:
+                return None
+            if not isinstance(metadata["lat"], (int, float)) or not isinstance(metadata["lon"], (int, float)):
+                return None
+            # lat should be between -90 and 90, lon between -180 and 180
+            if metadata["lat"] < -90 or metadata["lat"] > 90 or metadata["lon"] < -180 or metadata["lon"] > 180:
+                return None
+
+            # if day_of_year not set, warn and use 100 as default
+            if "day_of_year" not in metadata:
+                day_of_year = 100
+                print(f"WARNING: day_of_year not set in metadata, using default value {day_of_year}")
+                metadata["day_of_year"] = day_of_year
+
             return metadata
     except (FileNotFoundError, yaml.YAMLError, IOError):
         return None

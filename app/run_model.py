@@ -11,6 +11,17 @@ import tempfile
 
 
 def analyze_directory(input_path, parameters):
+    # Read folder-specific metadata
+    metadata = functions.read_metadata(input_path)
+    if metadata is None:
+        print(f"Error: Proper metadata file not found at {input_path}")
+        return False
+    
+    print("Metadata loaded: ", metadata)
+    lat = metadata["lat"]
+    lon = metadata["lon"]
+    day_of_year = metadata["day_of_year"]
+
     from classifier import Classifier
     from tensorflow import keras
 
@@ -23,17 +34,6 @@ def analyze_directory(input_path, parameters):
     skip_if_output_exists = parameters["skip"]
 
     print("Parameters: ", parameters)
-
-    # Read folder-specific metadata
-    metadata = functions.read_metadata(input_path)
-    if metadata is None:
-        print(f"Error: Metadata file not found for {input_path}")
-        return False
-    
-    print("Metadata loaded: ", metadata)
-    lat = metadata["lat"]
-    lon = metadata["lon"]
-    day_of_year = metadata["day_of_year"]
 
     # Standard settings
     output_path = input_path

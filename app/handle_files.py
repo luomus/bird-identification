@@ -150,8 +150,12 @@ def load_csv_files_to_dataframe(file_paths: list[str], threshold: float) -> pd.D
     dataframes = []
 
     for file_path in file_paths:
+        print(f"Reading file {file_path}")
         try:
             df = pd.read_csv(file_path)
+
+            # Filter rows by threshold
+            df = df[df['Confidence'] >= threshold]
 
             # Add new columns
             df['Filepath'] = file_path
@@ -159,9 +163,6 @@ def load_csv_files_to_dataframe(file_paths: list[str], threshold: float) -> pd.D
 
             date_str, time_str = functions.get_date_and_time_from_filepath(file_path)
             df['File timestamp'] = pd.to_datetime(date_str + time_str, format='%Y%m%d%H%M%S')
-
-            # Filter rows by threshold
-            df = df[df['Confidence'] >= threshold]
 
             dataframes.append(df)
         except Exception as e:
@@ -346,7 +347,7 @@ def seconds_to_time(seconds: float) -> str:
     return f"{minutes} min {remaining_seconds} s"
 
 
-def generate_html_report(example_species_predictions_df: pd.DataFrame, species_counts: pd.Series, main_directory: str, output_directory: str) -> Optional[str]:
+def generate_html_report(example_species_predictions_df: pd.DataFrame, species_counts: pd.Series, threshold: float, main_directory: str, output_directory: str) -> Optional[str]:
     """
     Generates a HTML report for the example species predictions. Each example is displayed as a card with these information:
     - Scientific name
@@ -359,6 +360,7 @@ def generate_html_report(example_species_predictions_df: pd.DataFrame, species_c
     Parameters:
     - example_species_predictions_df (pd.DataFrame): DataFrame containing the example species predictions.
     - species_counts (pd.Series): Series containing the counts of each species in the DataFrame.
+    - threshold (float): The threshold value used to filter predictions.
     - main_directory (str): The directory sound files are loaded from, acts as a name for them.
     - output_directory (str): The directory to save the audio segments.
 
@@ -432,8 +434,8 @@ def generate_html_report(example_species_predictions_df: pd.DataFrame, species_c
         """)
         f.write("</head>\n")
         f.write("<body>\n")
-        f.write(f"<h1>Report for { main_directory }</h1>\n")
-        f.write(f"<p>Generated at { datetime.now() }</p>\n")
+        f.write(f"<h1>Report for { main_directory }, threshold { threshold }</h1>\n")
+        f.write(f"<p>Generated at { datetime.now().strftime('%Y-%m-%d %H:%M:%S') }</p>\n")
 
         # Print species counts
         f.write("<div id='contents'>\n")
@@ -529,7 +531,7 @@ def handle_files(main_directory: str, threshold: float, PADDING_SECONDS: int = 1
     print("Getting data from ", datafile_directory)
 
     data_files = get_datafile_list(datafile_directory)
-    print(f"Loaded { len(data_files) } data files")
+    print(f"Got list of { len(data_files) } data files")
 #    print(data_files)
 
     # Load data
@@ -572,7 +574,7 @@ def handle_files(main_directory: str, threshold: float, PADDING_SECONDS: int = 1
     example_species_predictions_df = make_soundfiles(example_species_predictions_df, output_directory, PADDING_SECONDS)
 
     # Generate HTML report
-    report_filepath = generate_html_report(example_species_predictions_df, species_counts, main_directory, output_directory)
+    report_filepath = generate_html_report(example_species_predictions_df, species_counts, threshold, main_directory, output_directory)
     print("Report saved to ", report_filepath)
 
     # End benchmarking
@@ -589,4 +591,4 @@ def handle_files(main_directory: str, threshold: float, PADDING_SECONDS: int = 1
     tracemalloc.stop()
 
 
-handle_files("suomenoja", 0.7, 1, 5)
+handle_files("starrängen", 0.7, 1, 5)

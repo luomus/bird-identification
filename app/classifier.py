@@ -4,6 +4,7 @@ import numpy as np
 import librosa
 import os
 from functions import pad, split_signal
+import time
 
 # Classifier
 
@@ -48,6 +49,9 @@ class Classifier():
         return features
     
     def classify(self, data_path, overlap=1.0, max_pred=True):
+        # Start timing
+        start = time.time()
+
         print(f"Loading file {data_path}")
         if self.dur>0:
                 sig, sr = librosa.load(data_path, sr=self.sr, mono=True, res_type='kaiser_fast', offset=self.offset, duration=self.dur)
@@ -58,10 +62,15 @@ class Classifier():
         for c in range(len(chunks)):
             samples.append(chunks[c])
         X = np.array(samples, dtype='float32')
-        print(f"Classifying")
+        print(f"Classifying segment")
         X = self.model(self.embeddings(X))
         X = X.numpy()
-        print("Classification done")
+        print("Segment classification done")
+
+        # End timing
+        end = time.time()
+        print(f"Classification took {round(end - start, 1)} seconds")
+
         if max_pred: # return maximum prediction for each species
             pred = list(map(max, zip(*X))) # return max predictions for each class
             t = np.argmax(X, 0)*(self.clip_dur-overlap) # return timepoints of max prediction
