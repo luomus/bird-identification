@@ -7,7 +7,7 @@ A bird audio identification tool designed to analyze recordings and generate a l
 - `git clone`
 - `cd bird-identification`
 - `mkdir input && mkdir output && mkdir models`
-- Place models to the `models` folder: BirdNET and Muuttolintujen kevät
+- Place models to the `app/models` folder: BirdNET and Muuttolintujen kevät
 - `docker compose up --build; docker compose down;`
 - Access the running docker container:
   - `docker exec -ti bird-identification bash`
