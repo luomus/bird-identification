@@ -20,10 +20,10 @@ A bird audio identification tool designed to analyze recordings and generate a l
 
 This analyzes audio files and generates tabular text files containing the identifications, one file for each audio file.
 
-- Place audio files to a subfolder of the `input` folder. The script will search the audio files here in this order, and will load files from the first one that contains at least one of them:
-  1) ./subfolder/data
-  2) ./subfolder/Data
-  3. .subfolder
+- Place audio files to a subfolder of the `input` folder, for example `my_backyard_2025-01`. The script will search the audio files here in this order, and will load files from the first one that contains at least one of them:
+  1) `./subfolder/data`
+  2) `./subfolder/Data`
+  3. `.subfolder`
 - Place *metadata.yaml* file in the subfolder. The file should contain the following fields:
   - `lat`: Latitude in decimal degrees
   - `lon`: Longitude in decimal degrees
