@@ -38,10 +38,10 @@ This analyzes audio files and generates tabular text files containing the identi
 #### Note
 
 - Expects that
-    - Audio filenames are in format [part1].[extension]
-    - Extension is wav, mp3 or flac
-    - If data files have already been generated with another application (e.g. BirdNET), they are in the same directory as the audio files and in format [part1].[part2].results.csv
-    - Data files have columns: Start (s), End (s), Scientific name, Common name, Confidence, [Optional columns]
+    - Audio filenames are in format `[part1].[extension]`
+    - Extension is `wav`, `mp3` or `flac`
+    - If data files have already been generated with another application (e.g. BirdNET), they are in the same directory as the audio files and in format `[part1].[part2].results.csv`
+    - Data files have columns: `Start (s), End (s), Scientific name, Common name, Confidence, [Optional columns]`
 - If classification stops with message "Killed", try restarting the Docker container. It's unclear what causes this issue.
 
 ### Generating validation report
