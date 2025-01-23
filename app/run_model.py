@@ -9,6 +9,23 @@ import librosa
 import soundfile as sf
 import tempfile
 
+from typing import Dict, Any
+
+
+# Print a analysis metadata file
+def write_inference_metadata(output_path: str, metadata_dict: Dict[str, Any]) -> None:
+    """Write model inference metadata to a YAML file with timestamp in the filename.
+
+    Args:
+        output_path: Directory path where the metadata file will be saved.
+        metadata_dict: Dictionary containing metadata key-value pairs to be written.
+    """
+    from datetime import datetime
+    date_string = datetime.now().strftime("%Y-%m-%d_%H-%M")
+    with open(f"{output_path}/inference_{date_string}.yaml", "w") as f:
+        for key, value in metadata_dict.items():
+            f.write(f"{key}: {value}\n")
+
 
 def analyze_directory(input_path, parameters):
     # Read folder-specific metadata
@@ -28,22 +45,22 @@ def analyze_directory(input_path, parameters):
     print(f"\nAnalyzing audio files at {input_path}")
 
     # Parameters
-    threshold = parameters["threshold"]
-    include_noise = parameters["noise"]
-    include_sdm = parameters["sdm"]
-    skip_if_output_exists = parameters["skip"]
+    THRESHOLD = parameters["threshold"]
+    INCLUDE_NOISE = parameters["noise"]
+    INCLUDE_SDM = parameters["sdm"]
+    SKIP_IF_OUTPUT_EXISTS = parameters["skip"]
 
     print("Parameters: ", parameters)
 
     # Standard settings
     output_path = input_path
-    path_to_model = "models/model_v3_5.keras"
-    tflite_threads = 1
+    MODEL_PATH = "models/model_v3_5.keras"
+    TFLITE_THREADS = 1
 
     # Load classification model
     # TFLITE_THREADS can be as high as number of CPUs available, the rest of the parameters should not be changed
     CLIP_DURATION = 3.0
-    audio_classifier = Classifier(path_to_model=path_to_model, sr=48000, clip_dur=CLIP_DURATION, TFLITE_THREADS=tflite_threads, offset=0, dur=0)
+    audio_classifier = Classifier(path_to_model=MODEL_PATH, sr=48000, clip_dur=CLIP_DURATION, TFLITE_THREADS=TFLITE_THREADS, offset=0, dur=0)
 
     # Load species name list and post-processing tables for prediction calibration
     species_name_list = pd.read_csv("classes.csv")
@@ -59,13 +76,17 @@ def analyze_directory(input_path, parameters):
     SEGMENT_LENGTH = 600
 
     # Loop each audio file in input folder
+    analyzed_files_count = 0
+    skipped_files_count = 0
+    read_day_of_year_from_file = False
     for file_index, file_name in enumerate(files):
         try:
             file_path = f"{input_path}/{file_name}"
             output_file_path, output_file_exists = functions.make_output_file_path(output_path, file_name)
 
-            if output_file_exists and skip_if_output_exists:
+            if output_file_exists and SKIP_IF_OUTPUT_EXISTS:
                 print(f"Skipping {file_path} because output file exists and skipping is enabled.")
+                skipped_files_count += 1
                 continue
 
             print(f"Loading file {file_path} ({file_index + 1} of {number_of_files})")
@@ -75,6 +96,7 @@ def analyze_directory(input_path, parameters):
             if day_of_year_from_file is not None:
                 day_of_year = day_of_year_from_file
                 print(f"Day of year from filename: {day_of_year}")
+                read_day_of_year_from_file = True
 
             # Create an empty output file with header
             # Todo: Since this creates file before data is written into it, aborting the process will leave an empty file, which may cause subsequent analysis to be skipped. Instead write all output first into memory, and into file only after all data is ready.
@@ -131,12 +153,12 @@ def analyze_directory(input_path, parameters):
                         species_predictions, species_class_indices, detection_timestamps = functions.threshold_filter(
                             species_predictions, 
                             detection_timestamps, 
-                            threshold
+                            THRESHOLD
                         )
                         
                         # Adjust prediction based on time of the year and latitude
                         # Todo: Why this is after thresholding? Shouldn't it be before?
-                        if include_sdm and len(species_predictions) > 0:
+                        if INCLUDE_SDM and len(species_predictions) > 0:
                             species_predictions = functions.adjust(
                                 species_predictions, 
                                 species_class_indices, 
@@ -149,7 +171,7 @@ def analyze_directory(input_path, parameters):
                         # Loop through predictions
                         for detection_index in range(len(species_predictions)):
                             # Exclude classes 0 and 1, which are humans and noise
-                            if species_class_indices[detection_index] <= 1 and not include_noise:
+                            if species_class_indices[detection_index] <= 1 and not INCLUDE_NOISE:
                                 continue
                             
                             # Append results to output file
@@ -163,14 +185,30 @@ def analyze_directory(input_path, parameters):
                                 )
                         print(f"Wrote predictions to {output_file_path}")
                     
-                # Clear memory after processing each file
+                # After each file
                 gc.collect()
+                analyzed_files_count += 1
 
         # Handle exceptions
         except Exception as e: 
             print(f"Error analyzing {file_name}!")
             print(f"Error details: {str(e)}")
             raise
+
+    metadata_dict = {
+        "day_of_year": day_of_year,
+        "read_day_of_year_from_file": read_day_of_year_from_file,
+        "lat": lat,
+        "lon": lon,
+        "threshold": THRESHOLD,
+        "include_noise": INCLUDE_NOISE,
+        "include_sdm": INCLUDE_SDM,
+        "skip_if_output_exists": SKIP_IF_OUTPUT_EXISTS,
+        "model": MODEL_PATH,
+        "skipped_files_count": skipped_files_count,
+        "analyzed_files_count": analyzed_files_count
+    }
+    write_inference_metadata(output_path, metadata_dict)
 
     print("All files analyzed")
     return True

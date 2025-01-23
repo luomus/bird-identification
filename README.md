@@ -78,7 +78,7 @@ This reads tabular files containing species identifications, and generates an HT
 ## Todo
 
 - Next:
-  - Save model run metadata, include it into the report
+  - Include inference metadata into the report
   - How to handle multiple species being detected in the same time frame?
 - Maybe later:
   - Include both sdm and non-sdm predictions in the output
