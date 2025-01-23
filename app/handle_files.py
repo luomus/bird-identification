@@ -503,24 +503,29 @@ def sort_by_species_count(example_species_predictions_df: pd.DataFrame, species_
     return example_species_predictions_df_sorted
 
 
-def handle_files(main_directory: str, threshold: float, PADDING_SECONDS: int = 1, EXAMPLE_COUNT: int = 5) -> None:
+def handle_files(main_directory: str, parameters: dict) -> None:
     """
     Handles the processing of files for bird identification, including loading data, generating statistics, 
     and creating reports.
 
     Args:
-        main_directory (str): The main directory where the data files are located.
-        threshold (float): The threshold value for filtering predictions.
-        PADDING_SECONDS (int): The number of seconds to add to the start and end of the segment.
-        EXAMPLE_COUNT (int): The number of examples to pick for each species.
+        main_directory (str): The directory where the data files are located.
+        parameters (dict): Dictionary containing configuration parameters:
+            - threshold (float): The threshold value for filtering predictions.
+            - padding_seconds (int): The number of seconds to add to the start and end of the segment.
+            - example_count (int): The number of examples to pick for each species.
 
     Returns:
         None
     """
-
     # Start benchmarking
     tracemalloc.start()
     start_time = time.perf_counter()
+
+    # Extract parameters with defaults
+    THRESHOLD = parameters["threshold"]
+    PADDING_SECONDS = parameters["padding_seconds"]
+    EXAMPLE_COUNT = parameters["example_count"]
 
     # Settings for development
     pd.set_option('display.max_colwidth', None) # Prevent truncating cell content
@@ -535,7 +540,7 @@ def handle_files(main_directory: str, threshold: float, PADDING_SECONDS: int = 1
 #    print(data_files)
 
     # Load data
-    species_predictions_df = load_csv_files_to_dataframe(data_files, threshold)
+    species_predictions_df = load_csv_files_to_dataframe(data_files, THRESHOLD)
     print(f"Loaded { len(species_predictions_df) } rows of data")
 
     # Add row-level timestamps
@@ -556,7 +561,7 @@ def handle_files(main_directory: str, threshold: float, PADDING_SECONDS: int = 1
     print("Saved data to ", pickle_filepath)
 
     # Generate and save histograms
-    stats_functions.generate_histograms(species_predictions_df, threshold, output_directory)
+    stats_functions.generate_histograms(species_predictions_df, THRESHOLD, output_directory)
 
     # Generate temporal charts
     stats_functions.generate_temporal_chart(species_predictions_df, output_directory)
@@ -574,7 +579,7 @@ def handle_files(main_directory: str, threshold: float, PADDING_SECONDS: int = 1
     example_species_predictions_df = make_soundfiles(example_species_predictions_df, output_directory, PADDING_SECONDS)
 
     # Generate HTML report
-    report_filepath = generate_html_report(example_species_predictions_df, species_counts, threshold, main_directory, output_directory)
+    report_filepath = generate_html_report(example_species_predictions_df, species_counts, THRESHOLD, main_directory, output_directory)
     print("Report saved to ", report_filepath)
 
     # End benchmarking
@@ -589,6 +594,3 @@ def handle_files(main_directory: str, threshold: float, PADDING_SECONDS: int = 1
 
     # Stop tracing
     tracemalloc.stop()
-
-
-handle_files("starrängen", 0.7, 1, 5)

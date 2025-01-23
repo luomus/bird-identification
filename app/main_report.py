@@ -1,11 +1,11 @@
-# Script to be accessed from a command line, to analyze audio files.
+# Script to be accessed from a command line, to make a report.
 
 #!/usr/bin/env python3
 
 import argparse
 import sys
 import os
-import run_model
+import handle_files
 from typing import Optional, Dict
 import functions
 
@@ -13,7 +13,7 @@ import functions
 def main():
     # Set up argument parser
     parser = argparse.ArgumentParser(
-        description='Analyze bird audio recordings from a specific location.'
+        description='Generate report of analyzed audio files.'
     )
     
     # Add required arguments
@@ -21,7 +21,7 @@ def main():
         '--dir',
         type=str,
         required=True,
-        help='Directory that contains the audio files'
+        help='Directory that contains the audio and result files'
     )
     parser.add_argument(
         '--thr',
@@ -30,19 +30,16 @@ def main():
         help='Threshold for species prediction filtering.'
     )
     parser.add_argument(
-        '--noise',
-        action='store_true',
-        help='Ignore non-bird species predictions.'
+        '--padding',
+        type=int,
+        default=1,
+        help='Padding in seconds for example audio files. Default 1.'
     )
     parser.add_argument(
-        '--sdm',
-        action='store_true',
-        help='Enable species distribution model adjustments.'
-    )
-    parser.add_argument(
-        '--skip',
-        action='store_true',
-        help='Whether to skip analyzing a file if output file already exists.'
+        '--examples',
+        type=int,
+        default=5,
+        help='Number of example audio files to pick for each species. Minimum 5, default 5.'
     )
 
     # Parse arguments
@@ -67,15 +64,14 @@ def main():
     # Set parameters
     parameters = {
         'threshold': args.thr,
-        'noise': args.noise,
-        'sdm': args.sdm,
-        'skip': args.skip
+        'padding_seconds': args.padding,
+        'example_count': args.examples
     }
 
-    # Main analysis
+    # Main report generation
     try:
-        print("Starting analysis")
-        success = run_model.analyze_directory(data_directory, parameters)
+        print("Starting report generation")
+        success = handle_files.handle_files(data_directory, parameters)
     except Exception as e:
         print(f"Error during analysis: {str(e)}", file=sys.stderr)
         raise
