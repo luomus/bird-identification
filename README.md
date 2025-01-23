@@ -2,7 +2,24 @@
 
 A bird audio identification tool designed to analyze recordings and generate a list of bird species detected using an AI model. Built with TensorFlow and Python, it operates within a Docker environment. The project is a work in progress and currently in a very preliminary stage.
 
+## Features
+
+- Analyzes audio recordings (WAV, MP3, FLAC) to detect bird species
+- Uses species distribution and temporal modeling to improve detection accuracy
+- Handles batch processing of multiple audio files
+- Generates reports with species statistics and sample audio clips to help verifying the results
+
 ## Setup
+
+### Prerequisites
+
+- Docker
+- Git
+- The following AI models (available on request):
+  - BirdNET
+  - Muuttolintujen kevät
+
+### Installation
 
 - `git clone`
 - `cd bird-identification`
@@ -24,10 +41,13 @@ This analyzes audio files and generates tabular text files containing the identi
   1) `./subfolder/data`
   2) `./subfolder/Data`
   3. `.subfolder`
-- Place *metadata.yaml* file in the subfolder. The file should contain the following fields:
-  - `lat`: Latitude in decimal degrees
-  - `lon`: Longitude in decimal degrees
-  - `day_of_year`: Day of the year, 1-365/6
+- Place *metadata.yaml* file in the subfolder. Example format:
+
+```yaml
+lat: 60.123
+lon: 24.123 
+day_of_year: 152
+```
 - Run the script with `python main.py --dir <subfolder>`
 - Optional parameters:
   - `--thr`: Detection threshold as a decimal number between 0<>1, default 0.5
