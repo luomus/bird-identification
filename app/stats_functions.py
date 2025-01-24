@@ -41,7 +41,7 @@ def generate_histograms(df: pd.DataFrame, threshold: float, output_directory: st
         plt.tight_layout()
 
         # Save the figure
-        file_path = os.path.join(output_directory, f"{species.replace(' ', '_')}.png")
+        file_path = os.path.join(output_directory, f"{species.replace(' ', '_')}_histogram.png")
         plt.savefig(file_path)
         plt.close()
 

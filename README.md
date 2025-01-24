@@ -23,7 +23,7 @@ A bird audio identification tool designed to analyze recordings and generate a l
 
 - `git clone`
 - `cd bird-identification`
-- `mkdir input && mkdir output && mkdir models`
+- `mkdir input && mkdir output && mkdir app/models`
 - Place models to the `app/models` folder: BirdNET and Muuttolintujen kevät
 - `docker compose up --build; docker compose down;`
 - Access the running docker container:
@@ -58,10 +58,10 @@ day_of_year: 152
 #### Note
 
 - Expects that
-    - Audio filenames are in format `[part1].[extension]`
-    - Extension is `wav`, `mp3` or `flac`
-    - If data files have already been generated with another application (e.g. BirdNET), they are in the same directory as the audio files and in format `[part1].[part2].results.csv`
-    - Data files have columns: `Start (s), End (s), Scientific name, Common name, Confidence, [Optional columns]`
+  - Audio filenames are in format `[part1].[extension]`
+  - Extension is `wav`, `mp3` or `flac`
+  - If data files have already been generated with another application (e.g. BirdNET), they are in the same directory as the audio files and in format `[part1].[part2].results.csv`
+  - Data files have columns: `Start (s), End (s), Scientific name, Common name, Confidence, [Optional columns]`
 - If classification stops with message "Killed", try restarting the Docker container. It's unclear what causes this issue.
 
 ### Generating validation report
@@ -78,9 +78,9 @@ This reads tabular files containing species identifications, and generates an HT
 ## Todo
 
 - Next:
-  - Include inference metadata into the report
   - How to handle multiple species being detected in the same time frame?
 - Maybe later:
+  - Include inference metadata into the report, so that it can be shared independently. But what to do if there are multiple inference files?
   - Include both sdm and non-sdm predictions in the output
   - Add taxon MX codes to the output
   - Check why comparison-audio files are sometimes split into 5, 6 or 7 segments

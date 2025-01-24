@@ -27,7 +27,8 @@ import stats_functions
 
 import time
 import tracemalloc
-
+import matplotlib.pyplot as plt
+import numpy as np
 
 def get_datafile_list(directory: str) -> Optional[list]:
     """
@@ -321,12 +322,43 @@ def make_soundfiles(example_species_predictions_df: pd.DataFrame, output_directo
 
         # Save the segment to a new file
         sf.write(segment_filepath, y, sr, format='FLAC')
-
         print("Segment saved to", segment_filepath)
+
+        # Generate spectrogram
+        spectrogram_filepath = f"{output_directory}/{base_file_name}_{row['Scientific name'].replace(' ', '-')}_{int(segment_start)}_{int(segment_end)}_{round(row['Confidence'], 3)}.png"
+        
+        # Compute regular STFT instead of mel spectrogram, to get linear y-axis scale
+        D = librosa.stft(y)
+        D_db = librosa.amplitude_to_db(np.abs(D), ref=np.max)
+        
+        # Create new figure with no margins
+        plt.figure(figsize=(10, 4))
+        plt.subplots_adjust(0, 0, 1, 1)  # Remove all margins
+        
+        # Display spectrogram using imshow
+        plt.imshow(D_db,
+                  origin='lower',  # Place low frequencies at bottom
+                  aspect='auto',   # Maintain aspect ratio
+                  cmap='viridis'
+                  )
+        
+        # Remove all decorative elements
+        plt.axis('off')  # Remove axes
+        plt.xticks([])   # Remove x-axis ticks
+        plt.yticks([])   # Remove y-axis ticks
+        
+        # Save with tight bounds and no extra space
+        plt.savefig(spectrogram_filepath, 
+                   bbox_inches='tight',
+                   pad_inches=0,
+                   transparent=True)
+        plt.close()  # Close the figure to free memory
+        print("Spectrogram saved to", spectrogram_filepath)
 
         # Add segment filename to dataframe
         example_species_predictions_df.loc[index, 'Segment Filepath'] = segment_filepath
-
+        example_species_predictions_df.loc[index, 'Spectrogram Filepath'] = spectrogram_filepath
+        
     return example_species_predictions_df
 
 
@@ -347,7 +379,7 @@ def seconds_to_time(seconds: float) -> str:
     return f"{minutes} min {remaining_seconds} s"
 
 
-def generate_html_report(example_species_predictions_df: pd.DataFrame, species_counts: pd.Series, threshold: float, main_directory: str, output_directory: str) -> Optional[str]:
+def generate_html_report(example_species_predictions_df: pd.DataFrame, species_counts: pd.Series, parameters: dict, main_directory: str, output_directory: str) -> Optional[str]:
     """
     Generates a HTML report for the example species predictions. Each example is displayed as a card with these information:
     - Scientific name
@@ -360,7 +392,7 @@ def generate_html_report(example_species_predictions_df: pd.DataFrame, species_c
     Parameters:
     - example_species_predictions_df (pd.DataFrame): DataFrame containing the example species predictions.
     - species_counts (pd.Series): Series containing the counts of each species in the DataFrame.
-    - threshold (float): The threshold value used to filter predictions.
+    - parameters (dict): Dictionary containing the parameters used to generate the report.
     - main_directory (str): The directory sound files are loaded from, acts as a name for them.
     - output_directory (str): The directory to save the audio segments.
 
@@ -406,6 +438,9 @@ def generate_html_report(example_species_predictions_df: pd.DataFrame, species_c
             .example {
                 background-color: #f7f3f0; 
             }
+            .example img {
+                max-width: 400px;
+            }
             h3 {
                 margin-top: 0;
             }
@@ -434,8 +469,9 @@ def generate_html_report(example_species_predictions_df: pd.DataFrame, species_c
         """)
         f.write("</head>\n")
         f.write("<body>\n")
-        f.write(f"<h1>Report for { main_directory }, threshold { threshold }</h1>\n")
+        f.write(f"<h1>Report for { main_directory }</h1>\n")
         f.write(f"<p>Generated at { datetime.now().strftime('%Y-%m-%d %H:%M:%S') }</p>\n")
+        f.write(f"<p>Threshold { parameters['threshold'] }, audio padding { parameters['padding_seconds'] } seconds, { parameters['example_count'] } examples per species</p>\n")
 
         # Print species counts
         f.write("<div id='contents'>\n")
@@ -456,25 +492,28 @@ def generate_html_report(example_species_predictions_df: pd.DataFrame, species_c
                 scientific_name_mem = row['Scientific name']
 
                 count = species_counts.get(row['Scientific name'], 0)
-                histogram_file = f"{ row['Scientific name'].replace(' ', '_') }.png"
-                temportal_file = f"{ row['Scientific name'].replace(' ', '_') }_temporal.png"
+                histogram_file = f"{ row['Scientific name'].replace(' ', '_') }_histogram.png"
+                temporal_file = f"{ row['Scientific name'].replace(' ', '_') }_temporal.png"
                 species_id = row['Scientific name'].replace(' ', '_')
 
                 f.write("<div class='species'>\n")
                 f.write(f"<h2 id='{ species_id }'><span class='common'>{ row['Common name'] }</span> <em class='sci'>({ row['Scientific name'] })</em>, <span class='count'>{ count }</span> detections</h2>\n")
                 f.write(f"<img src='{ histogram_file }' class='histogram' alt='Histogram for { row['Scientific name'] }'>\n")
-                f.write(f"<img src='{ temportal_file }' class='temporal' alt='Temporal chart for { row['Scientific name'] }'>\n")
+                f.write(f"<img src='{ temporal_file }' class='temporal' alt='Temporal chart for { row['Scientific name'] }'>\n")
 
 
-            filename = os.path.basename(row['Segment Filepath'])
-            parts = filename.split('.')
+            audio_filename = os.path.basename(row['Segment Filepath'])
+            parts = audio_filename.split('.')
             extension = parts[-1]
+
+            spectrogram_filename = os.path.basename(row['Spectrogram Filepath'])
 
             f.write(f"<div class='example'>\n")
             f.write(f"<h3><span class='type { row['Type'] }'>{ row['Type'] }</span>, <span class='confidence'>{ round(row['Confidence'], 3) }</span></h3>\n")
-            f.write(f"<audio controls><source src='{ filename }' type='audio/{ extension }'></audio>\n")
+            f.write(f"<img src='{ spectrogram_filename }' class='spectrogram' alt='{ row['Scientific name'] }'><br>\n")
+            f.write(f"<audio controls><source src='{ audio_filename }' type='audio/{ extension }'></audio>\n")
             f.write(f"<p><span class='timestamp'>{ row['Timestamp'] }</span></p>\n")
-            f.write(f"<p><span class='filename'>{ filename }</span>, <span class='start'>{ seconds_to_time(row['Start (s)']) }</span></p>\n")
+            f.write(f"<p><span class='filename'>{ audio_filename }</span>, <span class='start'>{ seconds_to_time(row['Start (s)']) }</span></p>\n")
             f.write(f"</div>\n")
 
         f.write("</div>\n")
@@ -579,7 +618,8 @@ def handle_files(main_directory: str, parameters: dict) -> None:
     example_species_predictions_df = make_soundfiles(example_species_predictions_df, output_directory, PADDING_SECONDS)
 
     # Generate HTML report
-    report_filepath = generate_html_report(example_species_predictions_df, species_counts, THRESHOLD, main_directory, output_directory)
+    parameters = dict(threshold=THRESHOLD, padding_seconds=PADDING_SECONDS, example_count=EXAMPLE_COUNT)
+    report_filepath = generate_html_report(example_species_predictions_df, species_counts, parameters, main_directory, output_directory)
     print("Report saved to ", report_filepath)
 
     # End benchmarking
