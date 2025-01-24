@@ -183,7 +183,7 @@ def analyze_directory(input_path, parameters):
     # Loop each audio file in input folder
     analyzed_files_count = 0
     skipped_files_count = 0
-    read_day_of_year_from_file = False
+    read_day_of_year_from_audiofile = False
     for file_index, file_name in enumerate(files):
         try:
             file_path = f"{input_path}/{file_name}"
@@ -201,7 +201,7 @@ def analyze_directory(input_path, parameters):
             if day_of_year_from_file is not None:
                 day_of_year = day_of_year_from_file
                 print(f"Day of year from filename: {day_of_year}")
-                read_day_of_year_from_file = True
+                read_day_of_year_from_audiofile = True
 
             # Create an empty output file with header
             # Todo: Since this creates file before data is written into it, aborting the process will leave an empty file, which may cause subsequent analysis to be skipped. Instead write all output first into memory, and into file only after all data is ready.
@@ -301,8 +301,8 @@ def analyze_directory(input_path, parameters):
             raise
 
     metadata_dict = {
-        "day_of_year": day_of_year,
-        "read_day_of_year_from_file": read_day_of_year_from_file,
+        "day_of_year_from_metadata": metadata["day_of_year"],
+        "read_day_of_year_from_audiofile": read_day_of_year_from_audiofile,
         "lat": lat,
         "lon": lon,
         "threshold": THRESHOLD,
