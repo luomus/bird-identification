@@ -15,7 +15,7 @@ Overall process:
 '''
 
 import os   
-from typing import Optional, Dict, Tuple
+from typing import Dict, Any, Optional, Tuple
 from datetime import datetime
 import pandas as pd
 
@@ -29,6 +29,135 @@ import time
 import tracemalloc
 import matplotlib.pyplot as plt
 import numpy as np
+
+from dataclasses import dataclass
+
+
+@dataclass
+class AnalysisParameters:
+    """Class to validate and store analysis parameters."""
+    directory: str
+    threshold: float = 0.5
+    padding: int = 1
+    examples: int = 5
+
+
+    @staticmethod
+    def validate_directory(directory: str) -> Tuple[Optional[str], Optional[str]]:
+        """Validate directory path.
+        Returns: (validated_path, error_message)"""
+
+        if directory is None:
+            return None, "Directory path cannot be empty"
+
+        data_directory, error_message = functions.get_data_directory(directory)
+        if error_message:
+            return None, error_message
+
+        return data_directory, None
+
+
+    @staticmethod
+    def validate_threshold(threshold: Any) -> Tuple[float, Optional[str]]:
+        """Validate threshold value.
+        Returns: (validated_value, warning_message)"""
+        default_value = 0.5
+        
+        # Handle type conversion
+        try:
+            threshold = float(threshold)
+        except (TypeError, ValueError):
+            return default_value, f"Invalid threshold value '{threshold}', using default {default_value}"
+
+        # Handle range validation
+        if not (0 <= threshold <= 1):
+            return default_value, f"Threshold must be between 0 and 1, using default {default_value}"
+            
+        return threshold, None
+
+
+    @staticmethod
+    def validate_padding(padding: int) -> Tuple[int, Optional[str]]:
+        """Validate padding value.
+        Returns: (validated_value, warning_message)"""
+        default_value = 1
+        
+        try:
+            padding = int(padding)
+        except (TypeError, ValueError):
+            return default_value, f"Invalid padding value '{padding}', using default {default_value}"
+
+        # Check if padding is between 0 and 10
+        if padding < 0:
+            return 0, f"Padding must be between 0 and 10, using 0"
+        if padding > 10:
+            return 10, f"Padding must be between 0 and 10, using 10"
+
+        return padding, None
+
+
+    @staticmethod
+    def validate_examples(examples: int) -> Tuple[int, Optional[str]]:
+        """Validate examples value.
+        Returns: (validated_value, warning_message)"""
+        default_value = 5
+
+        try:
+            examples = int(examples)
+        except (TypeError, ValueError):
+            return default_value, f"Invalid examples value '{examples}', using default {default_value}"
+        
+        if examples < 5:
+            return 5, f"Examples must be at least 5, using default {default_value}"
+        if examples > 50:
+            return 50, f"Examples must be at most 50, using default {default_value}"
+
+        return examples, None
+
+
+    @classmethod
+    def create(cls, directory: str, threshold: Any = 0.5, 
+               padding: Any = 1, examples: Any = 5) -> Tuple['AnalysisParameters', list[str]]:
+        """Factory method to create and validate parameters.
+        Returns: (parameters, warning_messages)"""
+        warnings = []
+        
+        # Validate directory (required parameter)
+        valid_dir, dir_error = cls.validate_directory(directory)
+        if dir_error:
+            raise ValueError(dir_error)
+        
+        # Validate threshold
+        valid_threshold, thr_warning = cls.validate_threshold(threshold)
+        if thr_warning:
+            warnings.append(thr_warning)
+            
+        # Validate padding
+        valid_padding, padding_warning = cls.validate_padding(padding)
+        if padding_warning:
+            warnings.append(padding_warning)
+            
+        # Validate examples
+        valid_examples, examples_warning = cls.validate_examples(examples)
+        if examples_warning:
+            warnings.append(examples_warning)
+
+        return cls(
+            directory=valid_dir,
+            threshold=valid_threshold,
+            padding=valid_padding,
+            examples=valid_examples
+        ), warnings
+
+
+    def to_dict(self) -> Dict[str, Any]:
+        """Convert parameters to dictionary format."""
+        return {
+            'threshold': self.threshold,
+            'padding': self.padding,
+            'examples': self.examples
+        }
+
 
 def get_datafile_list(directory: str) -> Optional[list]:
     """
@@ -563,8 +692,8 @@ def handle_files(main_directory: str, parameters: dict) -> None:
 
     # Extract parameters with defaults
     THRESHOLD = parameters["threshold"]
-    PADDING_SECONDS = parameters["padding_seconds"]
-    EXAMPLE_COUNT = parameters["example_count"]
+    PADDING_SECONDS = parameters["padding"]
+    EXAMPLE_COUNT = parameters["examples"]
 
     # Settings for development
     pd.set_option('display.max_colwidth', None) # Prevent truncating cell content

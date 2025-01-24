@@ -27,19 +27,19 @@ def main():
         '--thr',
         type=float,
         default=0.5,
-        help='Threshold for species prediction filtering.'
+        help='Threshold for species prediction filtering. Minimum 0, maximum 1, default 0.5.'
     )
     parser.add_argument(
         '--padding',
         type=int,
         default=1,
-        help='Padding in seconds for example audio files. Default 1.'
+        help='Padding in seconds for example audio files. Minimum 0, maximum 10, default 1.'
     )
     parser.add_argument(
         '--examples',
         type=int,
         default=5,
-        help='Number of example audio files to pick for each species. Minimum 5, default 5.'
+        help='Number of example audio files to pick for each species. Minimum 5, maximum 50, default 5.'
     )
 
     # Parse arguments
@@ -47,31 +47,30 @@ def main():
         args = parser.parse_args()
     except SystemExit:
         # Handle --help or invalid arguments
+        print("Error: Invalid arguments", file=sys.stderr)
         return
 
-    # Validate
-    # Check if directory exists
-    data_directory, _ = functions.get_data_directory(args.dir)
-    if data_directory is None:
-        print(f"Error: Directory '{args.dir}' not found", file=sys.stderr)
-        return
+    # Create and validate parameters
+    try:
+        parameters, warnings = handle_files.AnalysisParameters.create(
+            directory=args.dir,
+            threshold=args.thr,
+            padding=args.padding,
+            examples=args.examples
+        )
+        
+        # Print any warnings about parameter adjustments
+        for warning in warnings:
+            print(f"Warning: {warning}", file=sys.stderr)
 
-    # Check if threshold is within valid range
-    if args.thr < 0 or args.thr > 1:
-        print("Error: Threshold must be between 0 and 1", file=sys.stderr)
+    except ValueError as e:
+        print(f"Error: Value error: {str(e)}", file=sys.stderr)
         return
-    
-    # Set parameters
-    parameters = {
-        'threshold': args.thr,
-        'padding_seconds': args.padding,
-        'example_count': args.examples
-    }
 
     # Main report generation
     try:
         print("Starting report generation")
-        success = handle_files.handle_files(data_directory, parameters)
+        success = handle_files.handle_files(parameters.directory, parameters.to_dict())
     except Exception as e:
         print(f"Error during analysis: {str(e)}", file=sys.stderr)
         raise
