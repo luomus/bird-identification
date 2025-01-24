@@ -3,7 +3,6 @@ import numpy as np
 import os
 import gc
 import functions
-import traceback
 
 import librosa
 import soundfile as sf
@@ -11,7 +10,6 @@ import tempfile
 
 from typing import Dict, Any, Optional, Tuple
 from dataclasses import dataclass
-from pathlib import Path
 
 
 def write_inference_metadata(output_path: str, metadata_dict: Dict[str, Any]) -> None:
