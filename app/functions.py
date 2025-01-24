@@ -17,22 +17,23 @@ def get_data_directory(directory: str) -> Optional[Dict]:
         directory (str): The name of the main directory to search within the "../input/" path.
 
     Returns:
-        Optional[str]: The path to the directory that contains audio and data files, or `None` if the directory is not found.
+        path (str): The path to the directory that contains audio and data files, or `None` if the directory is not found.
+        error_message (str): Error message if the directory is not found, or `None` if no errors.
     """
     # Check if main directory exists
     directory = f"../input/{directory}"
     if not os.path.isdir(directory):
         print(f"Directory {directory} doesn't exist")
-        return None
+        return None, f"Directory {directory} doesn't exist"
     
     # Check for data subdirectory (case variations)
     for data_dir in ['data', 'Data']:
         potential_path = os.path.join(directory, data_dir)
         if os.path.isdir(potential_path):
-            return potential_path
+            return potential_path, None
     
     # If no data subdirectory found, return main directory
-    return directory
+    return directory, None
 
 
 def get_day_of_year_from_filename(file_name: str) -> Optional[int]:
@@ -346,9 +347,9 @@ def read_metadata(folder_path: str) -> Optional[Dict]:
             # if day_of_year not set, warn and use 100 as default
             if "day_of_year" not in metadata:
                 day_of_year = 100
-                print(f"WARNING: day_of_year not set in metadata, using default value {day_of_year}")
+                print(f"Warning: day_of_year not set in metadata, using default value {day_of_year}")
                 metadata["day_of_year"] = day_of_year
 
             return metadata
-    except (FileNotFoundError, yaml.YAMLError, IOError):
+    except (FileNotFoundError, yaml.YAMLError, IOError):    
         return None

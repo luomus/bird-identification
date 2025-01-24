@@ -4,10 +4,7 @@
 
 import argparse
 import sys
-import os
 import run_model
-from typing import Optional, Dict
-import functions
 
 
 def main():
@@ -21,28 +18,28 @@ def main():
         '--dir',
         type=str,
         required=True,
-        help='Directory that contains the audio files'
+        help='Directory that contains the audio files. Required.'
     )
     parser.add_argument(
         '--thr',
         type=float,
         default=0.5,
-        help='Threshold for species prediction filtering.'
+        help='Threshold for species prediction filtering. Optional, default 0.5.'
     )
     parser.add_argument(
         '--noise',
         action='store_true',
-        help='Ignore non-bird species predictions.'
+        help='Ignore non-bird predictions, e.g. engine noise. Optional, default False.'
     )
     parser.add_argument(
         '--sdm',
         action='store_true',
-        help='Enable species distribution model adjustments.'
+        help='Enable species distribution model adjustments. Optional, default False.'
     )
     parser.add_argument(
         '--skip',
         action='store_true',
-        help='Whether to skip analyzing a file if output file already exists.'
+        help='Whether to skip analyzing a file if output file already exists. Optional, default False.'
     )
 
     # Parse arguments
@@ -50,34 +47,33 @@ def main():
         args = parser.parse_args()
     except SystemExit:
         # Handle --help or invalid arguments
+        print("Error: Invalid arguments", file=sys.stderr)
         return
 
-    # Validate
-    # Check if directory exists
-    data_directory = functions.get_data_directory(args.dir)
-    if data_directory is None:
-        print(f"Error: Directory '{args.dir}' not found", file=sys.stderr)
-        return
+    # Create and validate parameters
+    try:
+        parameters, warnings = run_model.AnalysisParameters.create(
+            directory=args.dir,
+            threshold=args.thr,
+            noise=args.noise,
+            sdm=args.sdm,
+            skip=args.skip
+        )
+        
+        # Print any warnings about parameter adjustments
+        for warning in warnings:
+            print(f"Warning: {warning}", file=sys.stderr)
 
-    # Check if threshold is within valid range
-    if args.thr < 0 or args.thr > 1:
-        print("Error: Threshold must be between 0 and 1", file=sys.stderr)
+    except ValueError as e:
+        print(f"Error: Value error: {str(e)}", file=sys.stderr)
         return
-    
-    # Set parameters
-    parameters = {
-        'threshold': args.thr,
-        'noise': args.noise,
-        'sdm': args.sdm,
-        'skip': args.skip
-    }
 
     # Main analysis
     try:
         print("Starting analysis")
-        success = run_model.analyze_directory(data_directory, parameters)
+        success = run_model.analyze_directory(parameters.directory, parameters.to_dict())
     except Exception as e:
-        print(f"Error during analysis: {str(e)}", file=sys.stderr)
+        print(f"Error: An error occurred during analysis: {str(e)}", file=sys.stderr)
         raise
 
 if __name__ == "__main__":

@@ -51,7 +51,7 @@ def main():
 
     # Validate
     # Check if directory exists
-    data_directory = functions.get_data_directory(args.dir)
+    data_directory, _ = functions.get_data_directory(args.dir)
     if data_directory is None:
         print(f"Error: Directory '{args.dir}' not found", file=sys.stderr)
         return

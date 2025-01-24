@@ -571,7 +571,7 @@ def handle_files(main_directory: str, parameters: dict) -> None:
     pd.set_option('display.width', 0)           # Adjust width for large data
 
     # Check input data is ok
-    datafile_directory = functions.get_data_directory(main_directory)
+    datafile_directory, _ = functions.get_data_directory(main_directory)
     print("Getting data from ", datafile_directory)
 
     data_files = get_datafile_list(datafile_directory)
