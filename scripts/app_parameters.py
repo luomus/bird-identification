@@ -4,8 +4,8 @@ import functions
 
 
 @dataclass
-class BaseAnalysisParameters:
-    """Base class for analysis parameters validation and storage."""
+class BaseParameters:
+    """Base class for parameters validation and storage."""
     directory: str
     threshold: float = 0.5
 
@@ -42,7 +42,7 @@ class BaseAnalysisParameters:
 
 
 @dataclass
-class AnalysisParameters(BaseAnalysisParameters):
+class AnalysisParameters(BaseParameters):
     """Parameters for model analysis."""
     noise: bool = False
     sdm: bool = False
@@ -106,7 +106,7 @@ class AnalysisParameters(BaseAnalysisParameters):
 
 
 @dataclass
-class ReportParameters(BaseAnalysisParameters):
+class ReportParameters(BaseParameters):
     """Parameters for report."""
     padding: int = 1
     examples: int = 5
