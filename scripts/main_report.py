@@ -5,6 +5,7 @@
 import argparse
 import sys
 import os
+from app_parameters import ReportParameters
 import handle_files
 from typing import Optional, Dict
 import functions
@@ -52,7 +53,7 @@ def main():
 
     # Create and validate parameters
     try:
-        parameters, warnings = handle_files.AnalysisParameters.create(
+        parameters, warnings = ReportParameters.create(
             directory=args.dir,
             threshold=args.thr,
             padding=args.padding,

@@ -5,6 +5,7 @@
 import argparse
 import sys
 import run_model
+from app_parameters import AnalysisParameters
 
 
 def main():
@@ -52,7 +53,7 @@ def main():
 
     # Create and validate parameters
     try:
-        parameters, warnings = run_model.AnalysisParameters.create(
+        parameters, warnings = AnalysisParameters.create(
             directory=args.dir,
             threshold=args.thr,
             noise=args.noise,
