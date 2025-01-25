@@ -27,7 +27,6 @@ A bird audio identification tool designed to analyze recordings and generate a l
 - `docker compose up --build; docker compose down;`
 - Access the running docker container:
   - `docker exec -ti bird-identification bash`
-  - `cd scripts`
   - Run the scripts, see below
 
 ## Usage
