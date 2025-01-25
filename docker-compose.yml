@@ -4,10 +4,9 @@ services:
     container_name: bird-identification
     build: .
     volumes:
-      - ./app:/app/app
+      - ./app:/app/scripts
       - ./models:/app/models
       - ./input:/app/input
-      - ./output:/app/output
-    command: tail -f /dev/null          # Keeps the container running
+    command: tail -f /dev/null
     stdin_open: true
     tty: true

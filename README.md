@@ -23,8 +23,7 @@ A bird audio identification tool designed to analyze recordings and generate a l
 
 - `git clone`
 - `cd bird-identification`
-- `mkdir input && mkdir output && mkdir app/models`
-- Place models to the `app/models` folder: BirdNET and Muuttolintujen kevät
+- Place models to the `/models` folder: BirdNET and Muuttolintujen kevät
 - `docker compose up --build; docker compose down;`
 - Access the running docker container:
   - `docker exec -ti bird-identification bash`
@@ -37,7 +36,7 @@ A bird audio identification tool designed to analyze recordings and generate a l
 
 This analyzes audio files and generates tabular text files containing the identifications, one file for each audio file.
 
-- Place audio files to a subfolder of the `input` folder, for example `my_backyard_2025-01`. The script will search the audio files here in this order, and will load files from the first one that contains at least one of them:
+- Place audio files to a subfolder of the `/input` folder, for example `/input/my_backyard_2025-01`. The script will search the audio files here in this order, and will load files from the first one that contains at least one of them:
   1) `./subfolder/data`
   2) `./subfolder/Data`
   3. `.subfolder`

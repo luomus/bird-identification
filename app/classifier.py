@@ -9,13 +9,13 @@ import time
 # Classifier
 
 class Classifier():
-    def __init__(self, path_to_model='', sr=48000, clip_dur=3.0, TFLITE_THREADS = 1, offset=0, dur=0):
+    def __init__(self, path_to_mlk_model='', sr=48000, clip_dur=3.0, TFLITE_THREADS = 1, offset=0, dur=0):
         self.sr = sr
         self.clip_dur = 3.0
         self.dur=dur
         self.offset=offset
-        self.path_to_model = path_to_model
-        self.MODEL_PATH: str = 'models/BirdNET_GLOBAL_6K_V2.4_Model_FP32.tflite'
+        self.MLK_MODEL_PATH = path_to_mlk_model
+        self.BIRDNED_MODEL_PATH: str = '../models/BirdNET_GLOBAL_6K_V2.4_Model_FP32.tflite'
         self.TFLITE_THREADS = TFLITE_THREADS # can be as high as number of CPUs
         ######################################
         # Initialize BirdNET feature extractor
@@ -24,7 +24,7 @@ class Classifier():
             import tflite_runtime.interpreter as tflite
         except ModuleNotFoundError:
             from tensorflow import lite as tflite
-        self.INTERPRETER = tflite.Interpreter(model_path=self.MODEL_PATH, num_threads=self.TFLITE_THREADS)
+        self.INTERPRETER = tflite.Interpreter(model_path=self.BIRDNED_MODEL_PATH, num_threads=self.TFLITE_THREADS)
         self.INTERPRETER.allocate_tensors()
         # Get input and output tensors.
         input_details = self.INTERPRETER.get_input_details()
@@ -36,7 +36,7 @@ class Classifier():
         ################################
         # Initialize classification head
         ################################
-        self.model = keras.models.load_model(self.path_to_model)
+        self.model = keras.models.load_model(self.MLK_MODEL_PATH)
 
     def embeddings(self, sample):
         # Reshape input tensor

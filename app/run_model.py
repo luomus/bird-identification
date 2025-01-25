@@ -157,13 +157,13 @@ def analyze_directory(input_path, parameters):
 
     # Standard settings
     output_path = input_path
-    MODEL_PATH = "models/model_v3_5.keras"
+    MODEL_PATH = "../models/model_v3_5.keras"
     TFLITE_THREADS = 1
 
     # Load classification model
     # TFLITE_THREADS can be as high as number of CPUs available, the rest of the parameters should not be changed
     CLIP_DURATION = 3.0
-    audio_classifier = Classifier(path_to_model=MODEL_PATH, sr=48000, clip_dur=CLIP_DURATION, TFLITE_THREADS=TFLITE_THREADS, offset=0, dur=0)
+    audio_classifier = Classifier(path_to_mlk_model=MODEL_PATH, sr=48000, clip_dur=CLIP_DURATION, TFLITE_THREADS=TFLITE_THREADS, offset=0, dur=0)
 
     # Load species name list and post-processing tables for prediction calibration
     species_name_list = pd.read_csv("classes.csv")
