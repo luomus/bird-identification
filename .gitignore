@@ -1,7 +1,8 @@
 
 models/*
 input/*
-output/*
+!models/readme.txt
+!input/readme.txt
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
