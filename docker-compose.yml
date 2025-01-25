@@ -4,7 +4,7 @@ services:
     container_name: bird-identification
     build: .
     volumes:
-      - ./app:/app/scripts
+      - ./scripts:/app/scripts
       - ./models:/app/models
       - ./input:/app/input
     command: tail -f /dev/null
