@@ -12,6 +12,95 @@ from typing import Dict, Any, Optional, Tuple
 from dataclasses import dataclass
 
 
+def process_audio_segment(
+    segment_path: str,
+    classifier,
+    calibration_params: np.ndarray,
+    threshold: float,
+    include_sdm: bool,
+    include_noise: bool,
+    migration_params: np.ndarray,
+    lat: float,
+    lon: float,
+    day_of_year: int,
+    species_name_list: pd.DataFrame,
+    start_time: float
+) -> pd.DataFrame:
+    """Process an audio segment and return predictions as a DataFrame.
+    
+    Args:
+        segment_path: Path to audio segment file
+        classifier: Audio classifier instance
+        calibration_params: Calibration parameters
+        threshold: Confidence threshold
+        include_sdm: Whether to apply species distribution model
+        include_noise: Whether to include noise detections
+        migration_params: Migration parameters for SDM
+        lat: Latitude
+        lon: Longitude
+        day_of_year: Day of year
+        species_name_list: DataFrame with species names
+        start_time: Start time of segment in original file
+        
+    Returns:
+        DataFrame with columns: start_time, end_time, scientific_name, common_name, confidence
+    """
+    # Get predictions from classifier
+    species_predictions, detection_timestamps = classifier.classify(segment_path, max_pred=False)
+    
+    if len(species_predictions) == 0:
+        return pd.DataFrame()
+    
+    # Convert to numpy arrays
+    species_predictions = np.array(species_predictions)
+    detection_timestamps = np.array(detection_timestamps)
+    
+    # Adjust timestamps relative to original file
+    detection_timestamps += start_time
+    
+    # Calibrate predictions
+    for i in range(len(species_predictions)):
+        species_predictions[i, :] = functions.calibrate(
+            species_predictions[i, :],
+            calibration_params
+        )
+    
+    # Apply threshold filter
+    species_predictions, species_class_indices, detection_timestamps = functions.threshold_filter(
+        species_predictions,
+        detection_timestamps,
+        threshold
+    )
+    
+    # Apply species distribution model adjustment
+    if include_sdm and len(species_predictions) > 0:
+        species_predictions = functions.adjust(
+            species_predictions,
+            species_class_indices,
+            migration_params,
+            lat,
+            lon,
+            day_of_year
+        )
+    
+    # Build DataFrame with results
+    results = []
+    for i in range(len(species_predictions)):
+        # Skip noise/human detections if configured
+        if species_class_indices[i] <= 1 and not include_noise:
+            continue
+            
+        results.append({
+            'start_time': detection_timestamps[i],
+            'end_time': detection_timestamps[i] + classifier.clip_dur,
+            'scientific_name': species_name_list['luomus_name'].iloc[species_class_indices[i]],
+            'common_name': species_name_list['common_name'].iloc[species_class_indices[i]],
+            'confidence': round(float(species_predictions[i]), 4)
+        })
+    
+    return pd.DataFrame(results)
+
+
 def write_inference_metadata(output_path: str, metadata_dict: Dict[str, Any]) -> None:
     """Write model inference metadata to a YAML file with timestamp in the filename.
 
@@ -128,60 +217,25 @@ def analyze_directory(input_path, parameters):
                     temp_file_path = os.path.join(temp_dir, f"segment_{start_time}.wav")
                     sf.write(temp_file_path, segment, sample_rate)
                     
-                    # Predict species for segment
-                    # Todo: this fails if max_pred is True
-                    species_predictions, detection_timestamps = audio_classifier.classify(temp_file_path, max_pred=False)
+                    # Process audio segment and get predictions as DataFrame
+                    predictions_df = process_audio_segment(
+                        temp_file_path,
+                        audio_classifier,
+                        calibration_parameters,
+                        THRESHOLD,
+                        INCLUDE_SDM,
+                        INCLUDE_NOISE,
+                        migration_parameters,
+                        lat,
+                        lon,
+                        day_of_year,
+                        species_name_list,
+                        start_time
+                    )
                     
-                    if len(species_predictions) > 0:
-                        # Convert predictions to numpy array if not already
-                        species_predictions = np.array(species_predictions)
-                        # Convert timestamps to numpy array if not already
-                        detection_timestamps = np.array(detection_timestamps)
-                        
-                        # Adjust timestamps to be relative to original file
-                        detection_timestamps = detection_timestamps + start_time
-                        
-                        # Calibrate prediction based on calibration parameters
-                        for detection_index in range(len(species_predictions)):
-                            species_predictions[detection_index, :] = functions.calibrate(
-                                species_predictions[detection_index, :], 
-                                calibration_parameters
-                            )
-                        
-                        # Filter predictions with a threshold 
-                        species_predictions, species_class_indices, detection_timestamps = functions.threshold_filter(
-                            species_predictions, 
-                            detection_timestamps, 
-                            THRESHOLD
-                        )
-                        
-                        # Adjust prediction based on time of the year and latitude
-                        # Todo: Why this is after thresholding? Shouldn't it be before?
-                        if INCLUDE_SDM and len(species_predictions) > 0:
-                            species_predictions = functions.adjust(
-                                species_predictions, 
-                                species_class_indices, 
-                                migration_parameters, 
-                                lat, 
-                                lon, 
-                                day_of_year
-                            )
-                        
-                        # Loop through predictions
-                        for detection_index in range(len(species_predictions)):
-                            # Exclude classes 0 and 1, which are humans and noise
-                            if species_class_indices[detection_index] <= 1 and not INCLUDE_NOISE:
-                                continue
-                            
-                            # Append results to output file
-                            with open(output_file_path, "a") as output_file_writer:
-                                output_file_writer.write(
-                                    f"{detection_timestamps[detection_index]},"
-                                    f"{detection_timestamps[detection_index] + CLIP_DURATION},"
-                                    f"{species_name_list['luomus_name'].iloc[species_class_indices[detection_index]]},"
-                                    f"{species_name_list['common_name'].iloc[species_class_indices[detection_index]]},"
-                                    f"{round(float(species_predictions[detection_index]), 4)}\n"
-                                )
+                    if not predictions_df.empty:
+                        # Append results to output file
+                        predictions_df.to_csv(output_file_path, mode='a', header=False, index=False)
                         print(f"Wrote predictions to {output_file_path}")
                     
                 # After each file

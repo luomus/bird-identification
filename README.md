@@ -27,7 +27,6 @@ A bird audio identification tool designed to analyze recordings and generate a l
 - `docker compose up --build; docker compose down;`
 - Access the running docker container:
   - `docker exec -ti bird-identification bash`
-  - `cd scripts`
   - Run the scripts, see below
 
 ## Usage
@@ -73,6 +72,21 @@ This reads tabular files containing species identifications, and generates an HT
   - `--thr`: Detection threshold as a decimal number between 0<>1, default 0.5
   - `--padding`: Padding in seconds for example audio files, default 1.
   - `--examples`: Number of example audio files to pick for each species, minimum 5, default 5.
+
+### Identifying species using API
+
+#### /classify
+
+A bare minimum call with mandatory `latitude` and `longitude` parameters looks like this:
+```bash
+curl -X POST "http://localhost:8000/classify?latitude=60.1699&longitude=24.9384" \
+  -H "accept: application/json" \
+  -H "Content-Type: multipart/form-data" \
+  -F "file=@input/suomenoja/Suomenoja_20240517_000000.flac"
+```
+
+There are also many other parameters that can be set.
+
 
 ## Todo
 

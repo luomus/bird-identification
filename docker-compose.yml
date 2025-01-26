@@ -3,10 +3,17 @@ services:
   tensorflow:
     container_name: bird-identification
     build: .
+    restart: unless-stopped
     volumes:
       - ./scripts:/app/scripts
       - ./models:/app/models
       - ./input:/app/input
-    command: tail -f /dev/null
+    ports:
+      - "8000:8000"
     stdin_open: true
     tty: true
+    logging:
+      options:
+        max-size: 100m
+        max-file: "3"
+
