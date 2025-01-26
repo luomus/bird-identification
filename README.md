@@ -73,6 +73,21 @@ This reads tabular files containing species identifications, and generates an HT
   - `--padding`: Padding in seconds for example audio files, default 1.
   - `--examples`: Number of example audio files to pick for each species, minimum 5, default 5.
 
+### Identifying species using API
+
+#### /classify
+
+A bare minimum call with mandatory `latitude` and `longitude` parameters looks like this:
+```bash
+curl -X POST "http://localhost:8000/classify?latitude=60.1699&longitude=24.9384" \
+  -H "accept: application/json" \
+  -H "Content-Type: multipart/form-data" \
+  -F "file=@input/suomenoja/Suomenoja_20240517_000000.flac"
+```
+
+There are also many other parameters that can be set.
+
+
 ## Todo
 
 - Next:
