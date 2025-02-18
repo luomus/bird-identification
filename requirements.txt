@@ -6,3 +6,7 @@ matplotlib==3.9.*
 pandas==2.2.*
 resampy==0.4.*
 PyYAML==6.0.*
+fastapi==0.109.*
+pydantic==2.6.*
+uvicorn==0.27.*
+python-multipart
