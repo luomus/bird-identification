@@ -78,6 +78,7 @@ This reads tabular files containing species identifications, and generates an HT
 #### /classify
 
 A bare minimum call with mandatory `latitude` and `longitude` parameters looks like this:
+
 ```bash
 curl -X POST "http://localhost:8000/classify?latitude=60.1699&longitude=24.9384" \
   -H "accept: application/json" \
@@ -85,8 +86,14 @@ curl -X POST "http://localhost:8000/classify?latitude=60.1699&longitude=24.9384"
   -F "file=@input/suomenoja/Suomenoja_20240517_000000.flac"
 ```
 
-There are also many other parameters that can be set.
+Call with all parameters:
 
+```bash
+curl -X POST "http://localhost:8000/classify?latitude=60.1699&longitude=24.9384&threshold=0.5&include_sdm=True&include_noise=True&day_of_year=1&chunk_size=500" \
+  -H "accept: application/json" \
+  -H "Content-Type: multipart/form-data" \
+  -F "file=@input/suomenoja/Suomenoja_20240517_000000.flac"
+```
 
 ## Todo
 

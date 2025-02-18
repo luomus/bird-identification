@@ -7,7 +7,8 @@ WORKDIR /app/scripts
 RUN pip install --no-cache-dir --timeout=1000 tensorflow==2.14.0
 
 RUN apt-get update
-RUN apt-get install libexpat1
+RUN apt-get install libexpat1 -y
+RUN apt-get install curl -y
 
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
