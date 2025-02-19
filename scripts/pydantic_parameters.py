@@ -53,7 +53,8 @@ class AnalysisParameters(BaseParameters):
             metadata=Metadata(lat=42.0, lon=-71.0, day_of_year=180),
             threshold=0.6,
             noise=True,
-            overlap=1
+            overlap=1,
+            chunk_size=600
         )
         ```
     """
@@ -72,10 +73,10 @@ class AnalysisParameters(BaseParameters):
     )
     chunk_size: int = Field(
         default=600,
-        ge=60,
+        ge=10,
+        le=1200,
         description="Chunk size in seconds"
     )
-
     overlap: float = Field(
         default=1,
         ge=0,

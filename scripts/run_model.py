@@ -134,6 +134,7 @@ def analyze_directory(input_path, parameters):
     INCLUDE_SDM = parameters["sdm"]
     SKIP_IF_OUTPUT_EXISTS = parameters["skip"]
     OVERLAP = parameters["overlap"]
+    CHUNK_SIZE = parameters["chunk_size"]
     print("Parameters: ", parameters)
 
     # Standard settings
@@ -157,7 +158,7 @@ def analyze_directory(input_path, parameters):
     number_of_files = len(files)
 
     # As the model cannot handle long audio files, split them into segments of SEGMENT_LENGTH seconds
-    SEGMENT_LENGTH = 600
+    SEGMENT_LENGTH = CHUNK_SIZE
 
     # Loop each audio file in input folder
     analyzed_files_count = 0

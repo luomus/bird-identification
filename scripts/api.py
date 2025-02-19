@@ -159,9 +159,9 @@ async def classify_audio_file(
                 params.sdm,
                 params.noise,
                 migration_params,
-                params.lat,
-                params.lon,
-                params.day_of_year,
+                params.metadata.lat,
+                params.metadata.lon,
+                params.metadata.day_of_year,
                 species_name_list,
                 i / sr,  # start_time
                 params.overlap

@@ -5,6 +5,7 @@ A bird audio identification tool designed to analyze recordings and generate a l
 ## Features
 
 - Analyzes audio recordings (WAV, MP3, FLAC) to detect bird species, either locally or via API
+  - Files are divided into smaller chunks based on chunk_size parameter, because the model has a limit on the input size. There chunks are then divided into segments of clip_dur seconds (currently fixed to 3 seconds), and overlap parameter defines how much of each segment is overlapped with the next segment.
 - Uses species distribution and temporal modeling to improve detection accuracy
 - Handles batch processing of multiple audio files
 - Generates reports with species statistics and sample audio clips to help verifying the results
@@ -64,6 +65,7 @@ day_of_year: 152
   - `--sdm`: Use species distribution model to adjust confidence values, default False
   - `--skip`: Skip audio files that already have a corresponding result file, default False
   - `--overlap`: Overlap of segments to be analyzed in seconds, default 1.
+  - `--chunk-size`: Segment chunk size in seconds, default 600.
 
 #### Note
 
@@ -117,6 +119,7 @@ curl -X POST "http://localhost:8000/classify?latitude=60.1699&longitude=24.9384&
 - Maybe later:
   - If data from one day only, don't create date histogram
   - Refactor to handle settings in a centralized way, so that adding new parameters is easier
+  - Add clip_dur as a parameter
   - Include inference metadata into the report, so that it can be shared independently. But what to do if there are multiple inference files?
   - Include both sdm and non-sdm predictions in the output
   - Add taxon MX codes to the output

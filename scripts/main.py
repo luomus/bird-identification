@@ -49,6 +49,12 @@ def main():
         action='store_true',
         help='Whether to skip analyzing a file if output file already exists. Optional, default False.'
     )
+    parser.add_argument(
+        '--chunk_size',
+        type=int,
+        default=600,
+        help='Segment chunk size in seconds. Optional, default 600.'
+    )
 
     # Parse arguments
     try:
@@ -81,6 +87,7 @@ def main():
             sdm=args.sdm,
             skip=args.skip,
             overlap=args.overlap,
+            chunk_size=args.chunk_size,
             metadata=metadata_model
         )
     except ValueError as e:
