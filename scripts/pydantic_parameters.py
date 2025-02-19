@@ -5,7 +5,12 @@ from pathlib import Path
 
 
 class BaseParameters(BaseModel):
-    """Base class for parameters validation."""
+    """Base parameter validation for audio analysis tasks.
+    
+    This class provides common validation logic for directory paths and confidence
+    thresholds used across different analysis and reporting stages. 
+    All parameter classes inherit from this base class.
+    """
     directory: str
     threshold: float = Field(
         default=0.5,
@@ -25,14 +30,32 @@ class BaseParameters(BaseModel):
 
 
 class Metadata(BaseModel):
-    """Metadata for audio analysis."""
+    """Geographic and temporal metadata for audio analysis.
+    
+    This model is used as a nested component within AnalysisParameters to provide
+    data that remains constant across different analysis.
+    """
     lat: float = Field(..., description="Latitude")
     lon: float = Field(..., description="Longitude")
     day_of_year: int = Field(..., ge=1, le=366, description="Day of year")
 
 
 class AnalysisParameters(BaseParameters):
-    """Parameters for model analysis."""
+    """Parameters for the initial audio analysis and species detection phase.
+    
+    This class extends BaseParameters to include settings for the audio
+    processing pipeline.
+
+    Example:
+        ```python
+        params = AnalysisParameters(
+            directory="path/to/audio",
+            metadata=Metadata(lat=42.0, lon=-71.0, day_of_year=180),
+            threshold=0.6,
+            noise=True
+        )
+        ```
+    """
     metadata: Metadata
     noise: bool = Field(
         default=False,
@@ -64,7 +87,20 @@ class AnalysisParameters(BaseParameters):
 
 
 class ReportParameters(BaseParameters):
-    """Parameters for report generation."""
+    """Parameters for generating analysis reports with audio examples.
+    
+    This class extends BaseParameters to customize the post-analysis report.
+
+    Example:
+        ```python
+        params = ReportParameters(
+            directory="path/to/results",
+            threshold=0.7,
+            padding=2,
+            examples=10
+        )
+        ```
+    """
     padding: int = Field(
         default=1,
         ge=0,

@@ -1,21 +1,18 @@
-"""An HTTP API for bird audio classification tasks
+"""An HTTP API for bird audio classification tasks.
 
-Example call:
+This module provides a FastAPI-based HTTP server that processes audio files to detect
+and classify bird species.
 
-curl -X POST "http://localhost:8000/classify?latitude=60.1699&longitude=24.9384&threshold=0.5&day_of_year=25" \
-  -H "accept: application/json" \
-  -H "Content-Type: multipart/form-data" \
-  -F "file=@input/suomenoja/Suomenoja_20240517_000000.flac"
+See README.md for example calls.
 
 Examine:
-docker logs bird-identification --follow
-
+`docker logs bird-identification --follow`
 """
 
 
 import logging
-from fastapi import FastAPI, File, UploadFile, Depends, Query
-from pydantic import BaseModel, Field
+from fastapi import FastAPI, File, UploadFile
+from pydantic import BaseModel
 from typing import List, Optional
 from datetime import datetime
 import numpy as np
@@ -24,7 +21,7 @@ import librosa
 import soundfile as sf
 import tempfile
 import os
-from classifier import Classifier  # Import the Classifier class directly
+from classifier import Classifier
 from run_model import process_audio_segment
 from pydantic_parameters import Metadata, AnalysisParameters
 
@@ -50,11 +47,16 @@ audio_classifier = Classifier(
     dur=0
 )
 
+
 def get_current_day_of_year() -> int:
     return datetime.now().timetuple().tm_yday
 
+
 class ClassificationResult(BaseModel):
-    """Structure of a single element of /classify end point result"""
+    """Response model for bird species detections.
+    
+    Each detection includes the time window, species information, and confidence score.
+    """
     start_time: float
     end_time: float
     scientific_name: str
@@ -72,6 +74,24 @@ async def classify_audio_file(
     chunk_size: Optional[int] = None,
     file: UploadFile = File(...)
 ):
+    """Process an audio file and detect bird species.
+
+    The function processes the audio file in chunks, applying the ML model and various
+    filtering steps based on the provided parameters.
+
+    Args:
+        latitude: Recording location latitude
+        longitude: Recording location longitude
+        threshold: Minimum confidence threshold for detections (optional)
+        include_sdm: Whether to apply species distribution modeling (optional)
+        include_noise: Whether to apply noise filtering (optional)
+        day_of_year: Day of year for seasonal adjustments (optional, defaults to current day)
+        chunk_size: Size of audio chunks to process (optional)
+        file: Audio file to analyze
+        
+    Returns:
+        List of ClassificationResult objects containing detected species and their metadata
+    """
     
     # If day_of_year is not provided, use the current day of year. This default is set here, because it is only used in the API.
     if day_of_year is None:
@@ -152,6 +172,7 @@ async def classify_audio_file(
     
     logger.info("Completed processing with %d total detections", len(all_results))
     return all_results.to_dict('records')
+
 
 if __name__ == "__main__":
     import uvicorn
