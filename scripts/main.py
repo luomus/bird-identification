@@ -29,6 +29,12 @@ def main():
         help='Threshold for species prediction filtering. Optional, default 0.5.'
     )
     parser.add_argument(
+        '--overlap',
+        type=float,
+        default=1,
+        help='Overlap in seconds. Optional, default 1.'
+    )
+    parser.add_argument(
         '--noise',
         action='store_true',
         help='Ignore non-bird predictions, e.g. engine noise. Optional, default False.'
@@ -74,6 +80,7 @@ def main():
             noise=args.noise,
             sdm=args.sdm,
             skip=args.skip,
+            overlap=args.overlap,
             metadata=metadata_model
         )
     except ValueError as e:

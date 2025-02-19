@@ -52,7 +52,8 @@ class AnalysisParameters(BaseParameters):
             directory="path/to/audio",
             metadata=Metadata(lat=42.0, lon=-71.0, day_of_year=180),
             threshold=0.6,
-            noise=True
+            noise=True,
+            overlap=1
         )
         ```
     """
@@ -75,6 +76,13 @@ class AnalysisParameters(BaseParameters):
         description="Chunk size in seconds"
     )
 
+    overlap: float = Field(
+        default=1,
+        ge=0,
+        le=1,
+        description="Overlap in seconds"
+    )
+
     def to_dict(self) -> Dict[str, Any]:
         """Convert parameters to dictionary format."""
         return {
@@ -82,6 +90,8 @@ class AnalysisParameters(BaseParameters):
             'noise': self.noise,
             'sdm': self.sdm,
             'skip': self.skip,
+            'chunk_size': self.chunk_size,
+            'overlap': self.overlap,
             'metadata': self.metadata.model_dump()
         }
 

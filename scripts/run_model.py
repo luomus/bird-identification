@@ -24,7 +24,8 @@ def process_audio_segment(
     lon: float,
     day_of_year: int,
     species_name_list: pd.DataFrame,
-    start_time: float
+    start_time: float,
+    overlap: float
 ) -> pd.DataFrame:
     """Process an audio segment and return predictions as a DataFrame.
     
@@ -46,7 +47,7 @@ def process_audio_segment(
         DataFrame with columns: start_time, end_time, scientific_name, common_name, confidence
     """
     # Get predictions from classifier
-    species_predictions, detection_timestamps = classifier.classify(segment_path, max_pred=False)
+    species_predictions, detection_timestamps = classifier.classify(segment_path, overlap=overlap, max_pred=False)
     
     if len(species_predictions) == 0:
         return pd.DataFrame()
@@ -132,7 +133,7 @@ def analyze_directory(input_path, parameters):
     INCLUDE_NOISE = parameters["noise"]
     INCLUDE_SDM = parameters["sdm"]
     SKIP_IF_OUTPUT_EXISTS = parameters["skip"]
-
+    OVERLAP = parameters["overlap"]
     print("Parameters: ", parameters)
 
     # Standard settings
@@ -225,7 +226,8 @@ def analyze_directory(input_path, parameters):
                         lon,
                         day_of_year,
                         species_name_list,
-                        start_time
+                        start_time,
+                        OVERLAP
                     )
                     
                     if not predictions_df.empty:
@@ -251,6 +253,7 @@ def analyze_directory(input_path, parameters):
         "threshold": THRESHOLD,
         "include_noise": INCLUDE_NOISE,
         "include_sdm": INCLUDE_SDM,
+        "overlap": OVERLAP,
         "skip_if_output_exists": SKIP_IF_OUTPUT_EXISTS,
         "model": MODEL_PATH,
         "skipped_files_count": skipped_files_count,

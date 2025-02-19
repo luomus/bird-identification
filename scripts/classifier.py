@@ -52,6 +52,8 @@ class Classifier():
         # Start timing
         start = time.time()
 
+        print(f"Using overlap: {overlap}")
+
         print(f"Loading file {data_path}")
         if self.dur>0:
                 sig, sr = librosa.load(data_path, sr=self.sr, mono=True, res_type='kaiser_fast', offset=self.offset, duration=self.dur)

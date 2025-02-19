@@ -72,6 +72,7 @@ async def classify_audio_file(
     include_noise: Optional[bool] = None,
     day_of_year: Optional[int] = None,
     chunk_size: Optional[int] = None,
+    overlap: Optional[float] = None,
     file: UploadFile = File(...)
 ):
     """Process an audio file and detect bird species.
@@ -110,7 +111,9 @@ async def classify_audio_file(
         metadata=metadata,
         threshold=threshold,
         sdm=include_sdm,
-        noise=include_noise
+        noise=include_noise,
+        overlap=overlap,
+        chunk_size=chunk_size
     )
     
     logger.info("Received classification request with params: %s", params.to_dict())
@@ -160,7 +163,8 @@ async def classify_audio_file(
                 params.lon,
                 params.day_of_year,
                 species_name_list,
-                i / sr  # start_time
+                i / sr,  # start_time
+                params.overlap
             )
             
             if not results_df.empty:

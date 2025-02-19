@@ -70,6 +70,9 @@ day_of_year: 152
   - Audio filenames are in format `[part1].[extension]`
   - Extension is `wav`, `mp3` or `flac`
 - If classification stops with message "Killed", try restarting the Docker container. It's unclear what causes this issue.
+- The model and/or classifier has limitations:
+  - Segments can't be too long. 10 minutes seem to work fine, 30 minutes are too long.
+  - Overlap can't be too high. 1 second works fine, 2 seconds doesn't. Longer overlap leads to "Killed" message.
 
 ### Generating validation report
 
@@ -112,6 +115,7 @@ curl -X POST "http://localhost:8000/classify?latitude=60.1699&longitude=24.9384&
   - How to handle multiple species being detected in the same time frame?
 - Maybe later:
   - If data from one day only, don't create date histogram
+  - Refactor to handle settings in a centralized way, so that adding new parameters is easier
   - Include inference metadata into the report, so that it can be shared independently. But what to do if there are multiple inference files?
   - Include both sdm and non-sdm predictions in the output
   - Add taxon MX codes to the output
