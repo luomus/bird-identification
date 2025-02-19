@@ -5,7 +5,7 @@
 import argparse
 import sys
 import os
-from app_parameters import ReportParameters
+from pydantic_parameters import ReportParameters
 import handle_files
 from typing import Optional, Dict
 import functions
@@ -51,21 +51,22 @@ def main():
         print("Error: Invalid arguments", file=sys.stderr)
         return
 
+    # Check that directory exists
+    data_directory = "../input/" + args.dir
+    if not os.path.exists(data_directory):
+        print(f"Error: Directory {data_directory} does not exist", file=sys.stderr)
+        return
+
     # Create and validate parameters
     try:
-        parameters, warnings = ReportParameters.create(
-            directory=args.dir,
+        parameters = ReportParameters(
+            directory=data_directory,
             threshold=args.thr,
             padding=args.padding,
             examples=args.examples
         )
-        
-        # Print any warnings about parameter adjustments
-        for warning in warnings:
-            print(f"Warning: {warning}", file=sys.stderr)
-
     except ValueError as e:
-        print(f"Error: Value error: {str(e)}", file=sys.stderr)
+        print(f"Error: {str(e)}", file=sys.stderr)
         return
 
     # Main report generation

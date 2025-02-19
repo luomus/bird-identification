@@ -9,33 +9,6 @@ import re
 from datetime import datetime
 
 
-def get_data_directory(directory: str) -> Optional[Dict]:
-    """
-    Checks where audio and data file directory is located, and returns the full path to it.
-
-    Args:
-        directory (str): The name of the main directory to search within the "../input/" path.
-
-    Returns:
-        path (str): The path to the directory that contains audio and data files, or `None` if the directory is not found.
-        error_message (str): Error message if the directory is not found, or `None` if no errors.
-    """
-    # Check if main directory exists
-    directory = f"../input/{directory}"
-    if not os.path.isdir(directory):
-        print(f"Directory {directory} doesn't exist")
-        return None, f"Directory {directory} doesn't exist"
-    
-    # Check for data subdirectory (case variations)
-    for data_dir in ['data', 'Data']:
-        potential_path = os.path.join(directory, data_dir)
-        if os.path.isdir(potential_path):
-            return potential_path, None
-    
-    # If no data subdirectory found, return main directory
-    return directory, None
-
-
 def get_day_of_year_from_filename(file_name: str) -> Optional[int]:
     """
     Extracts the day of the year from a filename. Supported formats:
@@ -330,7 +303,7 @@ def read_metadata(folder_path: str) -> Optional[Dict]:
         Optional[Dict]: The contents of the `metadata.yaml` file as a dictionary if successfully read and parsed, or `None` if the file does not exist, cannot be read, or contains invalid YAML.
     """
     file_path = os.path.join(folder_path, 'metadata.yaml')
-    
+
     try:
         with open(file_path, 'r') as file:
             metadata = yaml.safe_load(file)

@@ -4,9 +4,10 @@
 
 import argparse
 import sys
+import os
 import run_model
-from app_parameters import AnalysisParameters
-
+from pydantic_parameters import AnalysisParameters, Metadata
+import functions
 
 def main():
     # Set up argument parser
@@ -51,23 +52,33 @@ def main():
         print("Error: Invalid arguments", file=sys.stderr)
         return
 
+
+    # Check that directory exists
+    data_directory = "../input/" + args.dir
+    if not os.path.exists(data_directory):
+        print(f"Error: Directory {data_directory} does not exist", file=sys.stderr)
+        return
+
+    # Read metadata first
+    metadata = functions.read_metadata(data_directory)
+    if metadata is None:
+        print(f"Error: Proper metadata file not found at {data_directory}", file=sys.stderr)
+        return
+
     # Create and validate parameters
     try:
-        parameters, warnings = AnalysisParameters.create(
-            directory=args.dir,
+        metadata_model = Metadata(**metadata)
+        parameters = AnalysisParameters(
+            directory=data_directory,
             threshold=args.thr,
             noise=args.noise,
             sdm=args.sdm,
-            skip=args.skip
+            skip=args.skip,
+            metadata=metadata_model
         )
-        
-        # Print any warnings about parameter adjustments
-        for warning in warnings:
-            print(f"Warning: {warning}", file=sys.stderr)
-
     except ValueError as e:
-        print(f"Error: Value error: {str(e)}", file=sys.stderr)
-        return
+        print(f"Error: {str(e)}", file=sys.stderr)
+        raise
 
     # Main analysis
     try:

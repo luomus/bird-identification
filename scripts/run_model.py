@@ -116,12 +116,7 @@ def write_inference_metadata(output_path: str, metadata_dict: Dict[str, Any]) ->
 
 
 def analyze_directory(input_path, parameters):
-    # Read folder-specific metadata
-    metadata = functions.read_metadata(input_path)
-    if metadata is None:
-        print(f"Error: Proper metadata file not found at {input_path}")
-        return False
-    
+    metadata = parameters["metadata"]
     print("Metadata loaded: ", metadata)
     lat = metadata["lat"]
     lon = metadata["lon"]

@@ -116,12 +116,12 @@ def check_audio_files(data_file_paths: list[str], audio_extensions: tuple[str, .
     return None
 
 
-def make_output_directory(main_directory: str) -> Optional[str]:
+def make_output_directory(datafile_directory: str) -> Optional[str]:
     """
     Creates a new output directory for the report.
 
     Args:
-        main_directory (str): The name of the main directory for the report.
+        datafile_directory (str): The name of the main directory for the report.
     
     Returns:
         str: The name of the new output directory, or `None` if the directory couldn't be created.
@@ -129,7 +129,7 @@ def make_output_directory(main_directory: str) -> Optional[str]:
 
     current_datetime = datetime.now()
     formatted_datetime = current_datetime.strftime('%Y%m%d_%H%M%S')
-    output_directory = f"../input/{ main_directory }/report_{ formatted_datetime }"
+    output_directory = f"{ datafile_directory }/report_{ formatted_datetime }"
 
     try:
         os.makedirs(output_directory)
@@ -382,7 +382,7 @@ def seconds_to_time(seconds: float) -> str:
     return f"{minutes} min {remaining_seconds} s"
 
 
-def generate_html_report(example_species_predictions_df: pd.DataFrame, species_counts: pd.Series, parameters: dict, main_directory: str, output_directory: str) -> Optional[str]:
+def generate_html_report(example_species_predictions_df: pd.DataFrame, species_counts: pd.Series, parameters: dict, datafile_directory: str, output_directory: str) -> Optional[str]:
     """
     Generates a HTML report for the example species predictions. Each example is displayed as a card with these information:
     - Scientific name
@@ -396,7 +396,7 @@ def generate_html_report(example_species_predictions_df: pd.DataFrame, species_c
     - example_species_predictions_df (pd.DataFrame): DataFrame containing the example species predictions.
     - species_counts (pd.Series): Series containing the counts of each species in the DataFrame.
     - parameters (dict): Dictionary containing the parameters used to generate the report.
-    - main_directory (str): The directory sound files are loaded from, acts as a name for them.
+    - datafile_directory (str): The directory sound files are loaded from, acts as a name for them.
     - output_directory (str): The directory to save the audio segments.
 
     Returns:
@@ -478,7 +478,7 @@ def generate_html_report(example_species_predictions_df: pd.DataFrame, species_c
         """)
         f.write("</head>\n")
         f.write("<body>\n")
-        f.write(f"<h1>Report for { main_directory }</h1>\n")
+        f.write(f"<h1>Report for { datafile_directory }</h1>\n")
         f.write(f"<p>Generated at { datetime.now().strftime('%Y-%m-%d %H:%M:%S') }</p>\n")
         f.write(f"<p>Threshold { parameters['threshold'] }, audio padding { parameters['padding_seconds'] } seconds, { parameters['example_count'] } examples per species</p>\n")
 
@@ -551,12 +551,12 @@ def sort_by_species_count(example_species_predictions_df: pd.DataFrame, species_
     return example_species_predictions_df_sorted
 
 
-def handle_files(main_directory: str, parameters: dict) -> None:
+def handle_files(datafile_directory: str, parameters: dict) -> None:
     """
     Processes analysis and audio files to create a report.
 
     Args:
-        main_directory (str): The directory where the data files are located.
+        datafile_directory (str): The directory where the data files are located.
         parameters (dict): Dictionary containing:
             - threshold (float): The threshold value for filtering predictions
             - padding_seconds (int): Seconds to add to segment start/end
@@ -575,8 +575,6 @@ def handle_files(main_directory: str, parameters: dict) -> None:
     pd.set_option('display.max_colwidth', None) # Prevent truncating cell content
     pd.set_option('display.width', 0)           # Adjust width for large data
 
-    # Check input data is ok
-    datafile_directory, _ = functions.get_data_directory(main_directory)
     print("Getting data from ", datafile_directory)
 
     data_files = get_datafile_list(datafile_directory)
@@ -596,7 +594,7 @@ def handle_files(main_directory: str, parameters: dict) -> None:
     print(species_counts)
 
     # Prepare report
-    output_directory = make_output_directory(main_directory)
+    output_directory = make_output_directory(datafile_directory)
     print("Created directory ", output_directory)
 
     # Save data to serialized format, so that it can later bre re-read into Pandas dataframe
@@ -624,7 +622,7 @@ def handle_files(main_directory: str, parameters: dict) -> None:
 
     # Generate HTML report
     parameters = dict(threshold=THRESHOLD, padding_seconds=PADDING_SECONDS, example_count=EXAMPLE_COUNT)
-    report_filepath = generate_html_report(example_species_predictions_df, species_counts, parameters, main_directory, output_directory)
+    report_filepath = generate_html_report(example_species_predictions_df, species_counts, parameters, datafile_directory, output_directory)
     print("Report saved to ", report_filepath)
 
     # End benchmarking
