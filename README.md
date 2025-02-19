@@ -63,6 +63,7 @@ day_of_year: 152
   - `--noise`: Include noise in the output, default False
   - `--sdm`: Use species distribution model to adjust confidence values, default False
   - `--skip`: Skip audio files that already have a corresponding result file, default False
+  - `--overlap`: Overlap of segments to be analyzed in seconds, default 1.
 
 #### Note
 
@@ -103,7 +104,7 @@ curl -X POST "http://localhost:8000/classify?latitude=60.1699&longitude=24.9384"
 Call with all parameters:
 
 ```bash
-curl -X POST "http://localhost:8000/classify?latitude=60.1699&longitude=24.9384&threshold=0.5&include_sdm=True&include_noise=True&day_of_year=1&chunk_size=500" \
+curl -X POST "http://localhost:8000/classify?latitude=60.1699&longitude=24.9384&threshold=0.5&include_sdm=True&include_noise=True&day_of_year=1&chunk_size=500&overlap=1" \
   -H "accept: application/json" \
   -H "Content-Type: multipart/form-data" \
   -F "file=@<path_to_audio_file>"
