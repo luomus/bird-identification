@@ -1,10 +1,10 @@
 # Bird Identification
 
-A bird audio identification tool designed to analyze recordings and generate a list of bird species detected using an AI model. Built with TensorFlow and Python, it operates within a Docker environment. The project is a work in progress and currently in a very preliminary stage.
+A bird audio identification tool designed to analyze recordings and generate a list of bird species detected using an AI model. Built with TensorFlow and Python, it operates within a Docker environment. The project is a work in progress and currently in a preliminary stage.
 
 ## Features
 
-- Analyzes audio recordings (WAV, MP3, FLAC) to detect bird species
+- Analyzes audio recordings (WAV, MP3, FLAC) to detect bird species, either locally or via API
 - Uses species distribution and temporal modeling to improve detection accuracy
 - Handles batch processing of multiple audio files
 - Generates reports with species statistics and sample audio clips to help verifying the results
@@ -31,7 +31,7 @@ A bird audio identification tool designed to analyze recordings and generate a l
 
 ## Usage
 
-### Identifying species
+### Identifying species locally
 
 This analyzes audio files and generates tabular text files containing the identifications, one file for each audio file.
 
@@ -58,15 +58,15 @@ day_of_year: 152
 - Expects that
   - Audio filenames are in format `[part1].[extension]`
   - Extension is `wav`, `mp3` or `flac`
-  - If data files have already been generated with another application (e.g. BirdNET), they are in the same directory as the audio files and in format `[part1].[part2].results.csv`
-  - Data files have columns: `Start (s), End (s), Scientific name, Common name, Confidence, [Optional columns]`
 - If classification stops with message "Killed", try restarting the Docker container. It's unclear what causes this issue.
 
 ### Generating validation report
 
 This reads tabular files containing species identifications, and generates an HTML report with example audio files for validation, and statistics and charts of the species.
 
-- First do species identification, see above
+- First do species identification, see above. Validation report generation expects that:
+  - Data files are in the same directory as the audio files and in format `[part1].[part2].results.csv`
+  - Data files have columns: `Start (s), End (s), Scientific name, Common name, Confidence, [Optional columns]`
 - Run the script with `python main_report.py --dir <subfolder>`
 - Optional parameters:
   - `--thr`: Detection threshold as a decimal number between 0<>1, default 0.5
@@ -75,7 +75,7 @@ This reads tabular files containing species identifications, and generates an HT
 
 ### Identifying species using API
 
-#### /classify
+Submit data to endpoint `/classify`.
 
 A bare minimum call with mandatory `latitude` and `longitude` parameters looks like this:
 
@@ -83,7 +83,7 @@ A bare minimum call with mandatory `latitude` and `longitude` parameters looks l
 curl -X POST "http://localhost:8000/classify?latitude=60.1699&longitude=24.9384" \
   -H "accept: application/json" \
   -H "Content-Type: multipart/form-data" \
-  -F "file=@input/suomenoja/Suomenoja_20240517_000000.flac"
+  -F "file=@<path_to_audio_file>"
 ```
 
 Call with all parameters:
@@ -92,7 +92,7 @@ Call with all parameters:
 curl -X POST "http://localhost:8000/classify?latitude=60.1699&longitude=24.9384&threshold=0.5&include_sdm=True&include_noise=True&day_of_year=1&chunk_size=500" \
   -H "accept: application/json" \
   -H "Content-Type: multipart/form-data" \
-  -F "file=@input/suomenoja/Suomenoja_20240517_000000.flac"
+  -F "file=@<path_to_audio_file>"
 ```
 
 ## Todo
@@ -100,6 +100,7 @@ curl -X POST "http://localhost:8000/classify?latitude=60.1699&longitude=24.9384&
 - Next:
   - How to handle multiple species being detected in the same time frame?
 - Maybe later:
+  - If data from one day only, don't create date histogram
   - Include inference metadata into the report, so that it can be shared independently. But what to do if there are multiple inference files?
   - Include both sdm and non-sdm predictions in the output
   - Add taxon MX codes to the output

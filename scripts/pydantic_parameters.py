@@ -46,6 +46,11 @@ class AnalysisParameters(BaseParameters):
         default=False,
         description="Skip analyzing if output file exists"
     )
+    chunk_size: int = Field(
+        default=600,
+        ge=60,
+        description="Chunk size in seconds"
+    )
 
     def to_dict(self) -> Dict[str, Any]:
         """Convert parameters to dictionary format."""

@@ -14,9 +14,9 @@ docker logs bird-identification --follow
 
 
 import logging
-from fastapi import FastAPI, File, UploadFile, Depends
+from fastapi import FastAPI, File, UploadFile, Depends, Query
 from pydantic import BaseModel, Field
-from typing import List
+from typing import List, Optional
 from datetime import datetime
 import numpy as np
 import pandas as pd
@@ -26,6 +26,7 @@ import tempfile
 import os
 from classifier import Classifier  # Import the Classifier class directly
 from run_model import process_audio_segment
+from pydantic_parameters import Metadata, AnalysisParameters
 
 # Configure logging
 logging.basicConfig(
@@ -52,19 +53,6 @@ audio_classifier = Classifier(
 def get_current_day_of_year() -> int:
     return datetime.now().timetuple().tm_yday
 
-class ClassificationParams(BaseModel):
-    """Parameters for the /classify endpoint.
-
-    latitude and longitude are required. Other parameters have default values.
-    """
-    latitude: float = Field(..., ge=-90, le=90)
-    longitude: float = Field(..., ge=-180, le=180)
-    threshold: float = Field(0.5, ge=0, le=1)
-    include_sdm: bool = False
-    include_noise: bool = False
-    day_of_year: int = Field(get_current_day_of_year(), ge=1, le=366)
-    chunk_size: int = Field(600, ge=60, description="Chunk size in seconds")
-
 class ClassificationResult(BaseModel):
     """Structure of a single element of /classify end point result"""
     start_time: float
@@ -75,11 +63,37 @@ class ClassificationResult(BaseModel):
 
 @app.post("/classify", response_model=List[ClassificationResult])
 async def classify_audio_file(
-    file: UploadFile = File(...),
-    params: ClassificationParams = Depends()
+    latitude: float,
+    longitude: float,
+    threshold: Optional[float] = None,
+    include_sdm: Optional[bool] = None,
+    include_noise: Optional[bool] = None,
+    day_of_year: Optional[int] = None,
+    chunk_size: Optional[int] = None,
+    file: UploadFile = File(...)
 ):
     
-    logger.info("Received classification request with params: %s", params.dict())
+    # If day_of_year is not provided, use the current day of year. This default is set here, because it is only used in the API.
+    if day_of_year is None:
+        day_of_year = get_current_day_of_year()
+
+    # Create metadata object for validation
+    metadata = Metadata(
+        lat=latitude,
+        lon=longitude,
+        day_of_year=day_of_year
+    )
+    
+    # Create analysis parameters object
+    params = AnalysisParameters(
+        directory=".",  # Not used but required by the base class
+        metadata=metadata,
+        threshold=threshold,
+        sdm=include_sdm,
+        noise=include_noise
+    )
+    
+    logger.info("Received classification request with params: %s", params.to_dict())
 
     # Load audio file
     logger.info("Loading audio file with sample rate 16000")
@@ -99,7 +113,7 @@ async def classify_audio_file(
     with tempfile.TemporaryDirectory() as temp_dir:
         logger.debug("Created temp directory at: %s", temp_dir)
         # Process in chunks
-        chunk_size = params.chunk_size * sr
+        chunk_size = chunk_size * sr
         
         for i in range(0, len(audio_data), chunk_size):
             chunk = audio_data[i:i + chunk_size]
@@ -119,11 +133,11 @@ async def classify_audio_file(
                 audio_classifier,
                 calibration_params,
                 params.threshold,
-                params.include_sdm,
-                params.include_noise,
+                params.sdm,
+                params.noise,
                 migration_params,
-                params.latitude,
-                params.longitude,
+                params.lat,
+                params.lon,
                 params.day_of_year,
                 species_name_list,
                 i / sr  # start_time
