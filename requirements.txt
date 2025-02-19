@@ -9,4 +9,5 @@ PyYAML==6.0.*
 fastapi==0.109.*
 pydantic==2.6.*
 uvicorn==0.27.*
-python-multipart
+python-multipart==0.0.20
+pytest==8.3.*

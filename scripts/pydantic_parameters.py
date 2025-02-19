@@ -1,6 +1,5 @@
-from pydantic import BaseModel, Field, validator
-from typing import Optional, Dict, Any, Tuple
-import functions
+from pydantic import BaseModel, Field, field_validator
+from typing import Dict, Any
 from pathlib import Path
 
 
@@ -19,7 +18,8 @@ class BaseParameters(BaseModel):
         description="Threshold for species prediction filtering"
     )
 
-    @validator('directory')
+    @field_validator('directory')
+    @classmethod
     def validate_directory(cls, v):
         path = Path(v)
         if not path.exists():
@@ -82,7 +82,7 @@ class AnalysisParameters(BaseParameters):
             'noise': self.noise,
             'sdm': self.sdm,
             'skip': self.skip,
-            'metadata': self.metadata.dict()
+            'metadata': self.metadata.model_dump()
         }
 
 
