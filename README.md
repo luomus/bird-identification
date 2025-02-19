@@ -29,6 +29,17 @@ A bird audio identification tool designed to analyze recordings and generate a l
   - `docker exec -ti bird-identification bash`
   - Run the scripts, see below
 
+### Running unit tests
+
+Test can be run from the host machine using Docker Compose:
+
+- `docker compose run --rm test`
+
+Test can also be run from within the container:
+
+- `docker exec -ti bird-identification bash`
+- `pytest /app/tests -v`
+
 ## Usage
 
 ### Identifying species locally

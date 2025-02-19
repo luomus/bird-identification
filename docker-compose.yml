@@ -1,4 +1,3 @@
-
 services:
   tensorflow:
     container_name: bird-identification
@@ -17,4 +16,12 @@ services:
       options:
         max-size: 100m
         max-file: "3"
+
+  test:
+    container_name: test-bird-identification
+    build: .
+    volumes:
+      - ./scripts:/app/scripts
+      - ./tests:/app/tests
+    command: pytest /app/tests -v
 
