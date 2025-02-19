@@ -67,11 +67,13 @@ day_of_year: 152
   - `--overlap`: Overlap of segments to be analyzed in seconds, default 1.
   - `--chunk-size`: Segment chunk size in seconds, default 600.
 
+
 #### Note
 
 - Expects that
   - Audio filenames are in format `[part1].[extension]`
   - Extension is `wav`, `mp3` or `flac`
+- Day of year is taken from the metadata file, but if filename has date, that is used instead.
 - If classification stops with message "Killed", try restarting the Docker container. It's unclear what causes this issue.
 - The model and/or classifier has limitations:
   - Segments can't be too long. 10 minutes seem to work fine, 30 minutes are too long.
@@ -112,11 +114,16 @@ curl -X POST "http://localhost:8000/classify?latitude=60.1699&longitude=24.9384&
   -F "file=@<path_to_audio_file>"
 ```
 
+#### Note
+
+- Day of year can be set as a parameter, but if not, today's date is used.
+
 ## Todo
 
 - Next:
   - How to handle multiple species being detected in the same time frame?
 - Maybe later:
+  - Somehow include inference details in the analysis result file, or at least identify the inference file?
   - If data from one day only, don't create date histogram
   - Refactor to handle settings in a centralized way, so that adding new parameters is easier
   - Add clip_dur as a parameter
@@ -124,14 +131,13 @@ curl -X POST "http://localhost:8000/classify?latitude=60.1699&longitude=24.9384&
   - Include both sdm and non-sdm predictions in the output
   - Add taxon MX codes to the output
   - Check why comparison-audio files are sometimes split into 5, 6 or 7 segments
-  - Spectrograms
   - Species commonness: how many % of observations from that area (+- 100 km) and time (+-10 days) are this species
   - Normalize x-axis for all temporal charts. Get first and last time from the original data when it's loaded?
   - Organizing the repos: continue with this repo, include baim features. Then rethink whether this tool and analysis (Bart) tool should be bundled together. And how to manage web interface vs. desktop app.
   - Error handling when functions return None
   - Prepare for missing audio files & missing data files
   - Running analysis should save settings to a metadata file. Report should show those settings.
-  - Unit testing
+  - More unit testing
   - Handle file paths in a more consistent ways (directory path, file name, datetime from filename)
   - Histograms are not made for species with only few detections. However, <img> tag is generated for these on the result service. Would be elegant not to have broken image links, though they are not visible for users.
 
