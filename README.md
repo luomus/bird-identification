@@ -47,17 +47,15 @@ Test can also be run from within the container:
 
 This analyzes audio files and generates tabular text files containing the identifications, one file for each audio file.
 
-- Place audio files to a subfolder of the `/input` folder, for example `/input/my_backyard_2025-01`. The script will search the audio files here in this order, and will load files from the first one that contains at least one of them:
-  1) `./subfolder/data`
-  2) `./subfolder/Data`
-  3. `.subfolder`
-- Place `metadata.yaml` file in the subfolder. Example format:
+- Place audio files to a folder under `/input`, for example `/input/my_backyard_2025-01`.
+- Place `metadata.yaml` file in the same folder. This contains information that is shared by all the files. Example format:
 
 ```yaml
 lat: 60.123
 lon: 24.123 
-day_of_year: 152
+day_of_year: 152 # Note: this will be overridden if audio file names include a date
 ```
+
 - Run the script with `python main.py --dir <subfolder>`
 - Optional parameters:
   - `--thr`: Detection threshold as a decimal number between 0<>1, default 0.5
@@ -65,15 +63,13 @@ day_of_year: 152
   - `--sdm`: Use species distribution model to adjust confidence values, default False
   - `--skip`: Skip audio files that already have a corresponding result file, default False
   - `--overlap`: Overlap of segments to be analyzed in seconds, default 1.
-  - `--chunk-size`: Segment chunk size in seconds, default 600.
-
+  - `--chunk_size`: Audio files are cut into chunks for analysis. This defines the size in seconds, default 600.
 
 #### Note
 
 - Expects that
   - Audio filenames are in format `[part1].[extension]`
   - Extension is `wav`, `mp3` or `flac`
-- Day of year is taken from the metadata file, but if filename has date, that is used instead.
 - If classification stops with message "Killed", try restarting the Docker container. It's unclear what causes this issue.
 - The model and/or classifier has limitations:
   - Segments can't be too long. 10 minutes seem to work fine, 30 minutes are too long.
@@ -83,7 +79,8 @@ day_of_year: 152
 
 This reads tabular files containing species identifications, and generates an HTML report with example audio files for validation, and statistics and charts of the species.
 
-- First do species identification, see above. Validation report generation expects that:
+- First do species identification, see above. You can also use BirdNET to do the identifications (use csv export format.)
+- Validation report generation expects that:
   - Data files are in the same directory as the audio files and in format `[part1].[part2].results.csv`
   - Data files have columns: `Start (s), End (s), Scientific name, Common name, Confidence, [Optional columns]`
 - Run the script with `python main_report.py --dir <subfolder>`
@@ -120,25 +117,23 @@ curl -X POST "http://localhost:8000/classify?latitude=60.1699&longitude=24.9384&
 
 ## Todo
 
-- Next:
-  - How to handle multiple species being detected in the same time frame?
-- Maybe later:
+- Analysis
   - Somehow include inference details in the analysis result file, or at least identify the inference file?
-  - If data from one day only, don't create date histogram
   - Refactor to handle settings in a centralized way, so that adding new parameters is easier
   - Add clip_dur as a parameter
-  - Include inference metadata into the report, so that it can be shared independently. But what to do if there are multiple inference files?
   - Include both sdm and non-sdm predictions in the output
   - Add taxon MX codes to the output
   - Check why comparison-audio files are sometimes split into 5, 6 or 7 segments
+- Report
+  - If data from one day only, don't create date histogram
+  - Include inference metadata into the report, so that it can be shared independently. But what to do if there are multiple inference files?
   - Species commonness: how many % of observations from that area (+- 100 km) and time (+-10 days) are this species
   - Normalize x-axis for all temporal charts. Get first and last time from the original data when it's loaded?
+  - Histograms are not made for species with only few detections. However, <img> tag is generated for these on the result service. Would be elegant not to have broken image links, though they are not visible for users.
+- Misc
   - Organizing the repos: continue with this repo, include baim features. Then rethink whether this tool and analysis (Bart) tool should be bundled together. And how to manage web interface vs. desktop app.
   - Error handling when functions return None
-  - Prepare for missing audio files & missing data files
-  - Running analysis should save settings to a metadata file. Report should show those settings.
   - More unit testing
   - Handle file paths in a more consistent ways (directory path, file name, datetime from filename)
-  - Histograms are not made for species with only few detections. However, <img> tag is generated for these on the result service. Would be elegant not to have broken image links, though they are not visible for users.
 
 
