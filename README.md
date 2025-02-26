@@ -1,6 +1,8 @@
 # Bird Identification
 
-A bird audio identification tool designed to analyze recordings and generate a list of bird species detected using an AI model. Built with TensorFlow and Python, it operates within a Docker environment. The project is a work in progress and currently in a preliminary stage.
+A bird audio identification and quality control tool, designed to analyze recordings and generate a list of bird species detected using an AI model from the University of Jyväskylä [Muuttolintujen kevät -project](https://www.jyu.fi/en/research/muuttolintujen-kevat). 
+
+Built with TensorFlow, Python and Docker. The tool is a work in progress and currently in a preliminary stage.
 
 ## Features
 
@@ -118,7 +120,7 @@ curl -X POST "http://localhost:8000/classify?latitude=60.1699&longitude=24.9384&
 ## Todo
 
 - Analysis
-  - Somehow include inference details in the analysis result file, or at least identify the inference file?
+  - Include inference details in the analysis result file, or at least identify the inference file?
   - Refactor to handle settings in a centralized way, so that adding new parameters is easier
   - Add clip_dur as a parameter
   - Include both sdm and non-sdm predictions in the output
