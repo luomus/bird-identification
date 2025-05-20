@@ -65,14 +65,14 @@ class ClassificationResult(BaseModel):
 
 @app.post("/classify", response_model=List[ClassificationResult])
 async def classify_audio_file(
-    latitude: float,
-    longitude: float,
-    threshold: Optional[float] = None,
-    include_sdm: Optional[bool] = None,
-    include_noise: Optional[bool] = None,
+    latitude: Optional[float] = 0.0,
+    longitude: Optional[float] = 0.0,
+    threshold: Optional[float] = 0.5,
+    include_sdm: Optional[bool] = False,
+    include_noise: Optional[bool] = False,
     day_of_year: Optional[int] = None,
-    chunk_size: Optional[int] = None,
-    overlap: Optional[float] = None,
+    chunk_size: Optional[int] = 5,
+    overlap: Optional[float] = 1,
     file: UploadFile = File(...)
 ):
     """Process an audio file and detect bird species.
