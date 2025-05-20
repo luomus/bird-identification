@@ -71,7 +71,7 @@ async def classify_audio_file(
     include_sdm: Optional[bool] = False,
     include_noise: Optional[bool] = False,
     day_of_year: Optional[int] = None,
-    chunk_size: Optional[int] = 5,
+    chunk_size: Optional[int] = 600,
     overlap: Optional[float] = 1,
     file: UploadFile = File(...)
 ):
