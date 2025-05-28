@@ -280,6 +280,7 @@ def make_output_file_path(output_path, file_name):
 def get_audio_file_names(input_path):
     """
     Returns a list of audio files in the input folder. Includes only files with specific extensions.
+    The check is case-insensitive.
 
     Args:
         input_path (str): The directory where the audio files are.
@@ -288,7 +289,7 @@ def get_audio_file_names(input_path):
         list: A list of audio file names.
     """
     supported_extensions = [".wav", ".mp3", ".flac"]
-    files = [f for f in os.listdir(input_path) if os.path.isfile(os.path.join(input_path, f)) and f.endswith(tuple(supported_extensions))]
+    files = [f for f in os.listdir(input_path) if os.path.isfile(os.path.join(input_path, f)) and f.lower().endswith(tuple(supported_extensions))]
     return files
 
 
