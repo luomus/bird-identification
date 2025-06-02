@@ -201,9 +201,11 @@ def get_audio_file_path(file_path: str) -> Optional[str]:
 
     # Check for each audio extension
     for ext in audio_extensions:
-        new_path = os.path.join(dir_name, new_file_name + ext)
-        if os.path.exists(new_path):
-            return new_path  # Return the first found audio file path
+        # Try both lowercase and uppercase extensions
+        for case_ext in [ext.lower(), ext.upper()]:
+            new_path = os.path.join(dir_name, new_file_name + case_ext)
+            if os.path.exists(new_path):
+                return new_path  # Return the first found audio file path
 
     # If no file with the given extensions is found
     print(f"Error: No audio file found for {file_path}")
@@ -579,7 +581,6 @@ def handle_files(datafile_directory: str, parameters: dict) -> None:
 
     data_files = get_datafile_list(datafile_directory)
     print(f"Got list of { len(data_files) } data files")
-#    print(data_files)
 
     # Load data
     species_predictions_df = load_csv_files_to_dataframe(data_files, THRESHOLD)
@@ -587,7 +588,6 @@ def handle_files(datafile_directory: str, parameters: dict) -> None:
 
     # Add row-level timestamps
     species_predictions_df['Timestamp'] = species_predictions_df['File timestamp'] + pd.to_timedelta(species_predictions_df['Start (s)'], unit='s')
-#    print(species_predictions_df) # DEBUG
 
     # Generate statistics
     species_counts = species_predictions_df['Scientific name'].value_counts()
@@ -614,7 +614,6 @@ def handle_files(datafile_directory: str, parameters: dict) -> None:
 
     # Pick examples for validation
     example_species_predictions_df = get_detection_examples(species_predictions_df_sorted, EXAMPLE_COUNT)
-#    print(example_species_predictions_df) # DEBUG
     print(f"Selected { len(example_species_predictions_df) } examples for validation")
 
     # Loop through the example rows and generate audio segments
