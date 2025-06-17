@@ -80,7 +80,7 @@ class AnalysisParameters(BaseParameters):
     overlap: float = Field(
         default=1,
         ge=0,
-        le=1,
+        le=3,
         description="Overlap in seconds"
     )
 
