@@ -1,0 +1,10 @@
+PySide6==6.9.*
+# Use pre-compiled wheels to avoid compilation issues
+numpy>=1.24.0,<2.0
+scipy>=1.10.0
+librosa>=0.10.0
+soundfile>=0.12.0
+pandas>=2.0.0
+PyYAML>=6.0
+# TensorFlow for Windows (CPU only for MVP)
+tensorflow>=2.14.0,<2.16.0

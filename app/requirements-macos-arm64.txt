@@ -1,0 +1,11 @@
+PySide6==6.9.*
+numpy<2.0
+scipy==1.13.*
+librosa==0.10.*
+soundfile==0.12.*
+pandas==2.2.*
+PyYAML==6.0.*
+# TensorFlow for Apple Silicon (install via pip on macOS arm64)
+tensorflow-macos==2.15.*
+tensorflow-metal==1.1.*
+

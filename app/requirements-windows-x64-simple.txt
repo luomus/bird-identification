@@ -1,0 +1,9 @@
+# Simplified requirements for Windows - uses pre-compiled wheels only
+PySide6>=6.8.0
+numpy>=1.24.0,<2.0
+scipy>=1.10.0
+librosa>=0.10.0
+soundfile>=0.12.0
+pandas>=2.0.0
+PyYAML>=6.0
+tensorflow>=2.14.0

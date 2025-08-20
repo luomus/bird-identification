@@ -1,0 +1,16 @@
+name: bird-id-windows
+channels:
+  - conda-forge
+dependencies:
+  - python=3.13
+  - numpy=1.24.3
+  - scipy=1.10.1
+  - pandas=2.0.3
+  - pyyaml=6.0.1
+  - pip
+  - pip:
+    - pyside6==6.9.1
+    - librosa==0.10.1
+    - soundfile==0.12.1
+    - tensorflow==2.14.0
+    - pyinstaller
