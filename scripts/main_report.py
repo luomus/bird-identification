@@ -5,11 +5,8 @@
 import argparse
 import sys
 import os
-from pydantic_parameters import ReportParameters
-import handle_files
-from typing import Optional, Dict
-import functions
-
+from scripts.pydantic_parameters import ReportParameters
+from scripts import handle_files
 
 def main():
     # Set up argument parser

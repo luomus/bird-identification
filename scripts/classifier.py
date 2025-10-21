@@ -3,19 +3,19 @@ from tensorflow import keras
 import numpy as np
 import librosa
 import os
-from functions import pad, split_signal
+from scripts.functions import pad, split_signal
 import time
 
 # Classifier
 
 class Classifier():
-    def __init__(self, path_to_mlk_model='', sr=48000, clip_dur=3.0, TFLITE_THREADS = 1, offset=0, dur=0):
+    def __init__(self, path_to_mlk_model='', path_to_birdnet_model='', sr=48000, clip_dur=3.0, TFLITE_THREADS = 1, offset=0, dur=0):
         self.sr = sr
         self.clip_dur = 3.0
         self.dur=dur
         self.offset=offset
         self.MLK_MODEL_PATH = path_to_mlk_model
-        self.BIRDNED_MODEL_PATH: str = '../models/BirdNET_GLOBAL_6K_V2.4_Model_FP32.tflite'
+        self.BIRDNED_MODEL_PATH = path_to_birdnet_model
         self.TFLITE_THREADS = TFLITE_THREADS # can be as high as number of CPUs
         ######################################
         # Initialize BirdNET feature extractor

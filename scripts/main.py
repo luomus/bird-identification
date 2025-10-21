@@ -6,8 +6,8 @@ import argparse
 import sys
 import os
 import run_model
-from pydantic_parameters import AnalysisParameters, Metadata
-import functions
+from scripts.pydantic_parameters import AnalysisParameters, Metadata
+import scripts.functions
 
 def main():
     # Set up argument parser

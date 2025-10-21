@@ -21,9 +21,9 @@ import librosa
 import soundfile as sf
 import tempfile
 import os
-from classifier import Classifier
-from run_model import process_audio_segment
-from pydantic_parameters import Metadata, AnalysisParameters
+from scripts.classifier import Classifier
+from scripts.run_model import process_audio_segment
+from scripts.pydantic_parameters import Metadata, AnalysisParameters
 
 # Configure logging
 logging.basicConfig(
@@ -35,11 +35,13 @@ logger = logging.getLogger(__name__)
 app = FastAPI()
 
 # Initialize classifier with same parameters as run_model.py
-MODEL_PATH = "../models/model_v3_5.keras"
+MODEL_PATH = "models/model_v3_5.keras"
+BIRDNET_MODEL_PATH = "models/BirdNET_GLOBAL_6K_V2.4_Model_FP32.tflite"
 TFLITE_THREADS = 1
 CLIP_DURATION = 3.0
 audio_classifier = Classifier(
     path_to_mlk_model=MODEL_PATH,
+    path_to_birdnet_model=BIRDNET_MODEL_PATH,
     sr=48000,
     clip_dur=CLIP_DURATION,
     TFLITE_THREADS=TFLITE_THREADS,
@@ -126,9 +128,9 @@ async def classify_audio_file(
     
     # Load required data
     logger.info("Loading calibration and migration parameters")
-    calibration_params = np.load("Pred_adjustment/calibration_params.npy")
-    migration_params = np.load("Pred_adjustment/migration_params.npy")
-    species_name_list = pd.read_csv("classes.csv")
+    calibration_params = np.load("models/Pred_adjustment/calibration_params.npy")
+    migration_params = np.load("models/Pred_adjustment/migration_params.npy")
+    species_name_list = pd.read_csv("models/classes.csv")
     logger.debug("Loaded species list with %d entries", len(species_name_list))
     
     # Create temporary directory for chunks

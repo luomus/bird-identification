@@ -96,7 +96,7 @@ class TestAnalysisParameters:
             AnalysisParameters(
                 directory=temp_dir,
                 metadata=Metadata(lat=60.1699, lon=24.9384, day_of_year=1),
-                chunk_size=59
+                chunk_size=9
             )
 
     def test_to_dict(self, temp_dir):

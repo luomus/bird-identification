@@ -1,0 +1,15 @@
+[project]
+name = "scripts"
+version = "0.1.0"
+description = "Scripts for bird identification"
+dynamic = ["dependencies"]
+
+[build-system]
+requires = ["setuptools", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools]
+packages = ["scripts"]
+
+[tool.setuptools.dynamic]
+dependencies = {file = ["requirements.txt", "requirements-extra.txt"]}

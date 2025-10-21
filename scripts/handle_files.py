@@ -22,8 +22,7 @@ import pandas as pd
 import librosa
 import soundfile as sf
 
-import functions
-import stats_functions
+from scripts import functions, stats_functions
 
 import time
 import tracemalloc
