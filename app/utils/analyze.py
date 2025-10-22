@@ -14,7 +14,7 @@ from utils.utils import is_audio_file, get_model_file_path
 from scripts.classifier import Classifier
 from scripts.run_model import process_audio_segment
 
-MODEL_PATH = get_model_file_path("model_v3_5.keras")
+MODEL_PATH = get_model_file_path("model_v3_5.h5")
 BIRDNET_MODEL_PATH = get_model_file_path("BirdNET_GLOBAL_6K_V2.4_Model_FP32.tflite")
 TFLITE_THREADS = 1
 CLIP_DURATION = 3.0
