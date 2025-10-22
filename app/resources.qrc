@@ -1,0 +1,11 @@
+<!DOCTYPE RCC>
+<RCC version="1.0">
+    <qresource prefix="icons">
+        <file alias="headphones-solid-full.svg">icons/headphones-solid-full.svg</file>
+        <file alias="play-solid-full.svg">icons/play-solid-full.svg</file>
+        <file alias="xmark-solid-full.svg">icons/xmark-solid-full.svg</file>
+    </qresource>
+    <qresource prefix="styles">
+        <file alias="styles.qss">styles/styles.qss</file>
+    </qresource>
+</RCC>

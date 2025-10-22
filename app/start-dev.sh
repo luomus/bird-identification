@@ -1,0 +1,1 @@
+QT_QPA_PLATFORM=xcb LOCAL=true watchmedo auto-restart -p "*.py" -R --kill-after 0 --no-restart-on-command-exit python -- app.py
