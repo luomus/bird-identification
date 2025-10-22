@@ -1,20 +1,17 @@
-.MainWindow {
-    background-color: #f1f3f4;
-}
 QPushButton#analyzeButton {
     background-color: rgb(15, 89, 138);
     color: white;
     font-size: 13pt;
     font-weight: 500;
 }
+QPushButton#analyzeButton:pressed {
+    background-color: rgb(14, 85, 131);
+}
 .AudioDragAndDrop {
     border: 2px dashed #cacaca;
 }
 .AudioPlayer QLabel {
     font-size: 8pt;
-}
-.AudioPlayer {
-    background-color: #eee;
 }
 .MainAudioPlayer QLabel {
     font-size: 8pt;

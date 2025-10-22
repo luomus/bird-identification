@@ -1,43 +1,42 @@
 # Resource object code (Python 3)
 # Created by: object code
-# Created by: The Resource Compiler for Qt version 6.9.1
+# Created by: The Resource Compiler for Qt version 6.8.3
 # WARNING! All changes made in this file will be lost!
 
 from PySide6 import QtCore
 
 qt_resource_data = b"\
-\x00\x00\x01\xda\
-.\
-MainWindow {\x0a   \
- background-colo\
-r: #f1f3f4;\x0a}\x0aQP\
-ushButton#analyz\
-eButton {\x0a    ba\
-ckground-color: \
-rgb(15, 89, 138)\
-;\x0a    color: whi\
-te;\x0a    font-siz\
-e: 13pt;\x0a    fon\
-t-weight: 500;\x0a}\
-\x0a.AudioDragAndDr\
-op {\x0a    border:\
- 2px dashed #cac\
-aca;\x0a}\x0a.AudioPla\
-yer QLabel {\x0a   \
- font-size: 8pt;\
-\x0a}\x0a.AudioPlayer \
-{\x0a    background\
--color: #eee;\x0a}\x0a\
-.MainAudioPlayer\
- QLabel {\x0a    fo\
-nt-size: 8pt;\x0a  \
-  color: #777;\x0a \
-   margin-top: -\
-3px;\x0a}\x0a.Waveform\
-View QGraphicsVi\
-ew {\x0a    backgro\
-und-color: trans\
-parent;\x0a}\
+\x00\x00\x01\xcc\
+Q\
+PushButton#analy\
+zeButton {\x0a    b\
+ackground-color:\
+ rgb(15, 89, 138\
+);\x0a    color: wh\
+ite;\x0a    font-si\
+ze: 13pt;\x0a    fo\
+nt-weight: 500;\x0a\
+}\x0aQPushButton#an\
+alyzeButton:pres\
+sed {\x0a    backgr\
+ound-color: rgb(\
+14, 85, 131);\x0a}\x0a\
+.AudioDragAndDro\
+p {\x0a    border: \
+2px dashed #caca\
+ca;\x0a}\x0a.AudioPlay\
+er QLabel {\x0a    \
+font-size: 8pt;\x0a\
+}\x0a.MainAudioPlay\
+er QLabel {\x0a    \
+font-size: 8pt;\x0a\
+    color: #777;\
+\x0a    margin-top:\
+ -3px;\x0a}\x0a.Wavefo\
+rmView QGraphics\
+View {\x0a    backg\
+round-color: tra\
+nsparent;\x0a}\
 \x00\x00\x02\x7f\
 <\
 svg xmlns=\x22http:\
@@ -196,13 +195,13 @@ qt_resource_struct = b"\
 \x00\x00\x00\x10\x00\x02\x00\x00\x00\x01\x00\x00\x00\x03\
 \x00\x00\x00\x00\x00\x00\x00\x00\
 \x00\x00\x00\x22\x00\x00\x00\x00\x00\x01\x00\x00\x00\x00\
-\x00\x00\x01\x9a\x00\xe4w\xe0\
-\x00\x00\x00<\x00\x00\x00\x00\x00\x01\x00\x00\x01\xde\
-\x00\x00\x01\x99\xce\x1d\xe7)\
-\x00\x00\x00j\x00\x00\x00\x00\x00\x01\x00\x00\x04a\
-\x00\x00\x01\x99\xce\x16b\x85\
-\x00\x00\x00\x96\x00\x00\x00\x00\x00\x01\x00\x00\x06;\
-\x00\x00\x01\x98\xd1\x11K)\
+\x00\x00\x01\x9a\x0ct\xd1\x1e\
+\x00\x00\x00<\x00\x00\x00\x00\x00\x01\x00\x00\x01\xd0\
+\x00\x00\x01\x9a\x06\xf7\x01\x85\
+\x00\x00\x00j\x00\x00\x00\x00\x00\x01\x00\x00\x04S\
+\x00\x00\x01\x9a\x06\xf7\x01\x85\
+\x00\x00\x00\x96\x00\x00\x00\x00\x00\x01\x00\x00\x06-\
+\x00\x00\x01\x9a\x06\xf7\x01\x85\
 "
 
 def qInitResources():
