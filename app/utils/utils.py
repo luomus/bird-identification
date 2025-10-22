@@ -13,8 +13,9 @@ def show_alert(parent: QWidget, msg: str):
     dlg.show()
 
 def get_model_file_path(file_name: str) -> str:
-    if os.environ.get("LOCAL") == "true":
-        return os.path.join("..", "models", file_name)
-
     bundle_dir = Path(__file__).parent.parent
+
+    if os.environ.get("LOCAL") == "true":
+        bundle_dir = bundle_dir.parent
+
     return str(Path.cwd() / bundle_dir / "models" / file_name)
