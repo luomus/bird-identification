@@ -1,7 +1,7 @@
 import numpy as np
 from typing import Optional, Union
 
-from PySide6.QtCore import Signal, QBuffer, QByteArray, QIODevice, QTimer
+from PySide6.QtCore import Signal, QBuffer, QByteArray, QIODevice, QTimer, QTime
 from PySide6.QtWidgets import QWidget
 from PySide6.QtMultimedia import QAudioFormat, QMediaDevices, QAudioSink, QAudio, QAudioDevice
 
@@ -17,6 +17,9 @@ def float_to_pcm(data: np.ndarray, dtype="int16") -> np.ndarray:
 class RawAudioPlayer(QWidget):
     playingChanged = Signal(bool)
     playTimeChanged = Signal(int)
+
+    start_duration: int = 0
+    start_time: Optional[QTime] = None
 
     def __init__(self):
         super().__init__()
@@ -50,35 +53,47 @@ class RawAudioPlayer(QWidget):
         self.set_sample_rate(sample_rate)
 
     def start(self):
-        if self.sink.processedUSecs() > 0:
+        state = self.sink.state()
+
+        if state == QAudio.State.SuspendedState:
             self.sink.resume()
-        else:
+        elif state == QAudio.State.StoppedState:
             self.buffer.open(QIODevice.OpenModeFlag.ReadOnly)
             self.sink.start(self.buffer)
 
     def stop(self):
-        self.sink.suspend()
+        if self.sink.state() == QAudio.State.ActiveState:
+            self.sink.suspend()
 
     def state_changed(self):
         state = self.sink.state()
 
         if state == QAudio.State.IdleState:
             self.sink.reset()
+            self.buffer.close()
         elif state == QAudio.State.StoppedState or state == QAudio.State.SuspendedState:
-            if state == QAudio.State.StoppedState:
-                self.buffer.close()
+            duration = self.start_duration + self.start_time.msecsTo(QTime.currentTime())
 
-            self.update_played_time()
+            if state == QAudio.State.StoppedState:
+                self.start_duration = 0
+            else:
+                self.start_duration = duration
+
             self.timer.stop()
+            self.playTimeChanged.emit(duration)
 
             self.playingChanged.emit(False)
         elif state == QAudio.State.ActiveState:
+            self.start_time = QTime.currentTime()
+
             self.timer.start(50)
 
             self.playingChanged.emit(True)
 
     def update_played_time(self):
-        self.playTimeChanged.emit(self.sink.processedUSecs())
+        played_time = self.start_duration + self.start_time.msecsTo(QTime.currentTime())
+
+        self.playTimeChanged.emit(played_time)
 
     def set_sample_rate(self, sample_rate: Optional[Union[int, float]]):
         if sample_rate is not None and self.sink.format().sampleRate != sample_rate:

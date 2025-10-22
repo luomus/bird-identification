@@ -125,7 +125,7 @@ class WaveformView(QWidget):
         if len(self.lines) == 0:
             return
 
-        nbr_of_samples = round(time * self.sample_rate / (1000 * 1000))
+        nbr_of_samples = round(time * self.sample_rate / 1000)
         nbr_of_pixels = floor(nbr_of_samples / self.samples_per_pixel)
 
         for i, line in enumerate(self.lines):
