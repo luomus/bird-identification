@@ -1,8 +1,6 @@
 # Bird Identification
 
-A bird audio identification and quality control tool, designed to analyze recordings and generate a list of bird species detected using an AI model from the University of Jyväskylä [Muuttolintujen kevät -project](https://www.jyu.fi/en/research/muuttolintujen-kevat). 
-
-Built with TensorFlow, Python and Docker. The tool is a work in progress and currently in a preliminary stage.
+This repository provides tools for automated bird species detection from audio recordings and for generating quality control reports. It supports local processing and API-based workflows and is built on an AI model developed at the University of Jyväskylä as part of the [Muuttolintujen kevät -project](https://www.jyu.fi/en/research/muuttolintujen-kevat).
 
 ## Features
 
@@ -11,6 +9,7 @@ Built with TensorFlow, Python and Docker. The tool is a work in progress and cur
 - Uses species distribution and temporal modeling to improve detection accuracy
 - Handles batch processing of multiple audio files
 - Generates reports with species statistics and sample audio clips to help verifying the results
+- Desktop application in development
 
 ## Setup
 
