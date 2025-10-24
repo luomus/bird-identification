@@ -11,7 +11,12 @@ a = Analysis(
     ['app.py'],
     pathex=[],
     binaries=[],
-    datas=[('../models', 'models')],
+    datas=[
+        ('../models/Pred_adjustment', 'models/Pred_adjustment'),
+        ('../models/classes.csv', 'models'),
+        ('../models/BirdNET_GLOBAL_6K_V2.4_Model_FP32.tflite', 'models'),
+        ('../models/model_v3_5.h5', 'models')
+    ],
     hiddenimports=additional_packages,
     hookspath=[],
     hooksconfig={},
@@ -32,7 +37,7 @@ exe = EXE(
     bootloader_ignore_signals=False,
     strip=False,
     upx=True,
-    console=True,
+    console=False,
     disable_windowed_traceback=False,
     argv_emulation=False,
     target_arch=None,
