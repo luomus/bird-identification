@@ -13,6 +13,8 @@ from widgets.audio_player.audio_player import AudioPlayer
 class SingleFileTab(QWidget):
     audioDataChanged = Signal(object)
 
+    file_path = None
+
     def __init__(self):
         super().__init__()
 
@@ -31,6 +33,7 @@ class SingleFileTab(QWidget):
         self.threadpool = QThreadPool()
 
     def file_selected(self, file_path):
+        self.file_path = file_path
         self.audio_player.set_file_name(Path(file_path).name)
 
         self.drag_and_drop.setVisible(False)
@@ -46,11 +49,12 @@ class SingleFileTab(QWidget):
         self.drag_and_drop.setVisible(True)
         self.audio_player.setVisible(False)
 
+        self.file_path = None
         self.audio_player.set_file_name(None)
-        self.audio_player.set_audio_data(None, None)
+        self.audio_player.clear_audio()
         self.audioDataChanged.emit(None)
 
     def audio_loaded(self, data: Tuple[np.ndarray, Union[int, float]]):
-        self.audio_player.set_audio_data(data[0], data[1])
+        self.audio_player.set_audio_data(self.file_path, data[0], data[1])
         self.audio_player.set_loading(False)
         self.audioDataChanged.emit(data)

@@ -32,5 +32,8 @@ class AudioPlayer(QWidget):
     def set_file_name(self, file_name: Optional[str]):
         self.top_bar.set_file_name(file_name)
 
-    def set_audio_data(self, audio_data: Optional[np.ndarray], sample_rate: Optional[Union[int, float]]):
-        self.main_view.set_audio_data(audio_data, sample_rate)
+    def set_audio_data(self, file_path: str, audio_data: np.ndarray, sample_rate: Union[int, float]):
+        self.main_view.set_audio_data(file_path, audio_data, sample_rate)
+
+    def clear_audio(self):
+        self.main_view.clear_audio()

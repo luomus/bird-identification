@@ -1,11 +1,11 @@
-from typing import Optional, Union
+from typing import Union
 import numpy as np
 
-from PySide6.QtCore import Qt
+from PySide6.QtCore import Qt, QUrl
+from PySide6.QtMultimedia import QMediaPlayer, QAudioOutput
 from PySide6.QtWidgets import QWidget, QVBoxLayout, QLabel, QHBoxLayout
 from PySide6.QtGui import QIcon
 
-from widgets.audio_player.raw_audio_player import RawAudioPlayer
 from widgets.audio_player.waveform_view import WaveformView
 from widgets.common.icon_button import IconButton
 
@@ -38,34 +38,37 @@ class MainAudioPlayer(QWidget):
         self.play_button.setEnabled(False)
         layout.addWidget(self.play_button)
 
-        self.player = RawAudioPlayer()
+        self.player = QMediaPlayer()
+        self.audio_output = QAudioOutput()
+        self.player.setAudioOutput(self.audio_output)
         self.player.playingChanged.connect(self.playing_changed)
-        self.player.playTimeChanged.connect(self.play_time_changed)
+        self.player.positionChanged.connect(self.play_time_changed)
 
     def set_loading(self, loading: bool):
         self.play_button.setEnabled(not loading)
         self.waveform.set_loading(loading)
 
-    def set_audio_data(self, audio_data: Optional[np.ndarray], sample_rate: Optional[Union[int, float]]):
-        self.player.set_audio(audio_data, sample_rate)
+    def set_audio_data(self, file_path: str, audio_data: np.ndarray, sample_rate: Union[int, float]):
+        self.player.setSource(QUrl.fromLocalFile(file_path))
         self.waveform.set_audio(audio_data, sample_rate)
-        self.play_button.setEnabled(audio_data is not None)
+        self.play_button.setEnabled(True)
 
-        end_time = "00:00:00"
-
-        if audio_data is not None and sample_rate is not None:
-            duration = len(audio_data) / sample_rate
-            hours, remainder = divmod(duration, 3600)
-            minutes, seconds = divmod(remainder, 60)
-            end_time = "{:02}:{:02}:{:02}".format(int(hours), int(minutes), int(seconds))
-
+        duration = len(audio_data) / sample_rate
+        hours, remainder = divmod(duration, 3600)
+        minutes, seconds = divmod(remainder, 60)
+        end_time = "{:02}:{:02}:{:02}".format(int(hours), int(minutes), int(seconds))
         self.end_time_label.setText(end_time)
+
+    def clear_audio(self):
+        self.waveform.set_audio(None, None)
+        self.play_button.setEnabled(False)
+        self.end_time_label.setText("00:00:00")
 
     def the_button_was_toggled(self, checked: bool):
         if checked:
-            self.player.start()
+            self.player.play()
         else:
-            self.player.stop()
+            self.player.pause()
 
     def playing_changed(self, playing: bool):
         if playing:
