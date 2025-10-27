@@ -21,6 +21,7 @@ class MainAudioPlayer(QWidget):
 
         self.waveform = WaveformView()
         self.waveform.setFixedHeight(50)
+        self.waveform.timeClicked.connect(self.time_clicked)
         layout.addWidget(self.waveform)
 
         time_layout = QHBoxLayout()
@@ -78,3 +79,7 @@ class MainAudioPlayer(QWidget):
 
     def play_time_changed(self, duration: int):
         self.waveform.set_play_time(duration)
+
+    def time_clicked(self, time: int):
+        self.player.setPosition(time)
+        self.player.play()

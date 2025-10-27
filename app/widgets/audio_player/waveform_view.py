@@ -3,7 +3,7 @@ from math import floor
 import numpy as np
 from PySide6 import QtGui
 from PySide6.QtWidgets import QWidget, QGraphicsView, QGraphicsScene, QGraphicsLineItem, QVBoxLayout
-from PySide6.QtCore import Qt, QThreadPool
+from PySide6.QtCore import Qt, QThreadPool, Signal
 from PySide6.QtGui import QColor, QPen
 
 from numpy import interp
@@ -47,6 +47,8 @@ def calculate_lines(audio_data: np.ndarray, width: int, height: int, **kwargs) -
 
 
 class WaveformView(QWidget):
+    timeClicked = Signal(int)
+
     default_pen = QtGui.QPen(QtGui.QColor("#777"))
     active_pen = QPen(QColor(15, 89, 138))
 
@@ -84,8 +86,18 @@ class WaveformView(QWidget):
             self.loading_spinner.setVisible(False)
             self.view.setVisible(True)
 
-    def resizeEvent(self, event):
+    def resizeEvent(self, event: QtGui.QMouseEvent):
         self.view.fitInView(self.scene.sceneRect())
+
+    def mousePressEvent(self, event: QtGui.QMouseEvent):
+        if len(self.lines) == 0:
+            return
+
+        pixel = self.view.mapToScene(event.pos()).x()
+        samples = pixel * self.samples_per_pixel
+        time = round(samples / self.sample_rate * 1000)
+
+        self.timeClicked.emit(time)
 
     def draw(self):
         self.scene.clear()
@@ -95,9 +107,8 @@ class WaveformView(QWidget):
         if self.audio_data is None or self.sample_rate is None:
             return
 
-        margin_bottom = 0
         width = int(self.scene.width())
-        height = int(self.scene.height()) - margin_bottom
+        height = int(self.scene.height())
 
         self.samples_per_pixel = get_samples_per_pixel(self.audio_data, width)
 
