@@ -32,8 +32,7 @@ class MainAudioPlayer(QWidget):
         self.end_time_label = QLabel("00:00:00")
         time_layout.addWidget(self.end_time_label, 0, Qt.AlignmentFlag.AlignRight)
 
-        icon = QIcon(":/icons/play-solid-full.svg")
-        self.play_button = IconButton(icon)
+        self.play_button = IconButton(":/icons/play-solid-full.svg", ":/icons/play-solid-full-dark.svg")
         self.play_button.setCheckable(True)
         self.play_button.clicked.connect(self.the_button_was_toggled)
         self.play_button.setEnabled(False)

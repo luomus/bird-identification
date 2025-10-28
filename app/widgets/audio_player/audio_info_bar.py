@@ -20,8 +20,7 @@ class AudioInfoBar(QWidget):
         self.file_name_label = QLabel(file_name)
         layout.addWidget(self.file_name_label)
 
-        icon = QIcon(":/icons/xmark-solid-full.svg")
-        remove_button = IconButton(icon)
+        remove_button = IconButton(":/icons/xmark-solid-full.svg", ":/icons/xmark-solid-full-dark.svg")
         remove_button.clicked.connect(self.removeClick)
         layout.addWidget(remove_button)
 
