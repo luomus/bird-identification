@@ -17,6 +17,7 @@ class NumberSetting(QWidget):
         self.spin_box.setRange(min_value, max_value)
         self.spin_box.setValue(default_value)
         self.spin_box.setSingleStep(0.01)
+        self.spin_box.setMinimumHeight(25)
         self.spin_box.valueChanged.connect(self.spin_box_change)
         self.layout.addWidget(self.spin_box)
 

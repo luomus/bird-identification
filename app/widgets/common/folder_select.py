@@ -16,9 +16,11 @@ class FolderSelect(QWidget):
         layout.addWidget(QLabel(label), 0, 0)
 
         self.filename_edit = QLineEdit()
+        self.filename_edit.setMinimumHeight(25)
         layout.addWidget(self.filename_edit, 1, 0)
 
         file_browse = QPushButton("Browse")
+        file_browse.setMinimumHeight(25)
         file_browse.clicked.connect(self.open_file_dialog)
         layout.addWidget(file_browse, 1, 1)
 
