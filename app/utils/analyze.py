@@ -29,7 +29,10 @@ audio_classifier = Classifier(
 )
 
 def load_audio(file_path: str) -> Tuple[np.ndarray, Union[int, float]]:
-    return librosa.load(file_path, sr=None)
+    y, sr = librosa.load(file_path, sr=None)
+    if len(y) == 0:
+        raise ValueError("Invalid audio file")
+    return y, sr
 
 def analyze_single_file(audio_data: Tuple[np.ndarray, Union[int, float]], progress_callback: Signal, **kwargs: dict[str, Any]) -> pd.DataFrame:
     def on_progress(data: dict[str, Any]) -> None:
@@ -61,10 +64,13 @@ def analyze_multiple_files(input_folder_path: str, output_folder_path: str, prog
 
     for current_file, file_path in enumerate(file_paths):
         progress_callback.emit({"file": current_file + 1, "total_files": total_files})
-        audio_data = load_audio(file_path)
-        results = _analyze(audio_data, on_progress, **{**params, **kwargs})
-        csv_path = os.path.join(output_folder_path, Path(file_path).stem + ".csv")
-        results.to_csv(csv_path, index=False)
+        try:
+            audio_data = load_audio(file_path)
+            results = _analyze(audio_data, on_progress, **{**params, **kwargs})
+            csv_path = os.path.join(output_folder_path, Path(file_path).stem + ".csv")
+            results.to_csv(csv_path, index=False)
+        except Exception:
+            continue
 
 def _load_default_params() -> dict[str, Any]:
     return {

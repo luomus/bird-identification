@@ -11,7 +11,8 @@ from widgets.audio_player.audio_player import AudioPlayer
 
 
 class SingleFileTab(QWidget):
-    audioDataChanged = Signal(object)
+    fileSelected = Signal(str)
+    audioDataLoaded = Signal(object)
 
     file_path = None
 
@@ -22,17 +23,17 @@ class SingleFileTab(QWidget):
         self.setLayout(self.layout)
 
         self.drag_and_drop = AudioDragAndDrop()
-        self.drag_and_drop.selectedFilePath.connect(self.file_selected)
+        self.drag_and_drop.selectedFilePath.connect(self.on_file_selected)
         self.layout.addWidget(self.drag_and_drop)
 
         self.audio_player = AudioPlayer()
-        self.audio_player.removeClicked.connect(self.file_removed)
+        self.audio_player.removeClicked.connect(self.on_file_removed)
         self.audio_player.setVisible(False)
         self.layout.addWidget(self.audio_player)
 
         self.threadpool = QThreadPool()
 
-    def file_selected(self, file_path):
+    def on_file_selected(self, file_path):
         self.file_path = file_path
         self.audio_player.set_file_name(Path(file_path).name)
 
@@ -41,20 +42,30 @@ class SingleFileTab(QWidget):
         self.audio_player.set_loading(True)
 
         worker = Worker(load_audio, file_path)
-        worker.signals.result.connect(self.audio_loaded)
+        worker.signals.result.connect(self.on_audio_load)
+        worker.signals.error.connect(self.on_audio_load_error)
 
         self.threadpool.start(worker)
 
-    def file_removed(self):
+        self.fileSelected.emit(file_path)
+
+    def on_file_removed(self):
         self.drag_and_drop.setVisible(True)
         self.audio_player.setVisible(False)
 
         self.file_path = None
         self.audio_player.set_file_name(None)
         self.audio_player.clear_audio()
-        self.audioDataChanged.emit(None)
 
-    def audio_loaded(self, data: Tuple[np.ndarray, Union[int, float]]):
+        self.fileSelected.emit("")
+
+    def on_audio_load(self, data: Tuple[np.ndarray, Union[int, float]]):
         self.audio_player.set_audio_data(self.file_path, data[0], data[1])
         self.audio_player.set_loading(False)
-        self.audioDataChanged.emit(data)
+
+        self.audioDataLoaded.emit(data)
+
+    def on_audio_load_error(self):
+        show_alert(self, "Loading audio failed!")
+
+        self.on_file_removed()
