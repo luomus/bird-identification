@@ -2,8 +2,9 @@ from typing import Tuple, Union, Optional, Any
 import numpy as np
 import pandas as pd
 
-from PySide6.QtCore import QSize, QThreadPool, QFile, QTextStream
+from PySide6.QtCore import QSize, QThreadPool
 from PySide6.QtWidgets import QMainWindow, QVBoxLayout, QPushButton, QWidget, QSizePolicy, QLabel
+from PySide6.QtGui import QPalette, QColor, QFont
 
 from utils.analyze import analyze_single_file, analyze_multiple_files
 from utils.worker import Worker
@@ -60,7 +61,14 @@ class MainWindow(QMainWindow):
         self.layout.addWidget(settings)
 
         self.analyze_button = QPushButton("Analyze")
-        self.analyze_button.setObjectName("analyzeButton")
+        palette = self.analyze_button.palette()
+        palette.setColor(QPalette.ColorRole.Button, QColor("#0f598a"))
+        palette.setColor(QPalette.ColorRole.ButtonText, QColor("white"))
+        self.analyze_button.setPalette(palette)
+        font = self.analyze_button.font()
+        font.setPointSize(13)
+        font.setWeight(QFont.Weight.Medium)
+        self.analyze_button.setFont(font)
         self.analyze_button.setFixedHeight(40)
         self.analyze_button.clicked.connect(self.analyze_clicked)
         self.layout.addWidget(self.analyze_button)
@@ -75,12 +83,6 @@ class MainWindow(QMainWindow):
         self.layout.addWidget(self.result_table, stretch=1)
 
         self.layout.addStretch()
-
-        style_file = QFile(":/styles/styles.qss")
-        style_file.open(QFile.OpenModeFlag.ReadOnly)
-        style_text = QTextStream(style_file)
-        self.setStyleSheet(style_text.readAll())
-        style_file.close()
 
         self.threadpool = QThreadPool()
 

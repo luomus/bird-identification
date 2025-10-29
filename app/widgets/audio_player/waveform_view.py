@@ -4,7 +4,7 @@ import numpy as np
 from PySide6 import QtGui
 from PySide6.QtWidgets import QWidget, QGraphicsView, QGraphicsScene, QGraphicsLineItem, QVBoxLayout
 from PySide6.QtCore import Qt, QThreadPool, Signal
-from PySide6.QtGui import QColor, QPen
+from PySide6.QtGui import QColor, QPen, QPalette
 
 from numpy import interp
 
@@ -68,6 +68,7 @@ class WaveformView(QWidget):
         self.scene = QGraphicsScene(0, 0, 700, 50)
         self.view = QGraphicsView(self.scene)
         self.view.setFixedHeight(50)
+        self.view.setStyleSheet("background: transparent; border: none")
         layout.addWidget(self.view)
 
         self.loading_spinner = WaitingSpinner(self)

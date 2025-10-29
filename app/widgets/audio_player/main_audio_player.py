@@ -4,7 +4,7 @@ import numpy as np
 from PySide6.QtCore import Qt, QUrl
 from PySide6.QtMultimedia import QMediaPlayer, QAudioOutput
 from PySide6.QtWidgets import QWidget, QVBoxLayout, QLabel, QHBoxLayout
-from PySide6.QtGui import QIcon
+from PySide6.QtGui import QPalette
 
 from widgets.audio_player.waveform_view import WaveformView
 from widgets.common.icon_button import IconButton
@@ -28,8 +28,17 @@ class MainAudioPlayer(QWidget):
         layout.addLayout(time_layout)
 
         start_time_label = QLabel("00:00:00")
+        palette = self.waveform.palette()
+        muted = palette.color(QPalette.ColorGroup.Disabled, QPalette.ColorRole.Text)
+        palette.setColor(QPalette.ColorRole.WindowText, muted)
+        start_time_label.setPalette(palette)
+        font = self.waveform.font()
+        font.setPointSize(8)
+        start_time_label.setFont(font)
         time_layout.addWidget(start_time_label, 0, Qt.AlignmentFlag.AlignLeft)
         self.end_time_label = QLabel("00:00:00")
+        self.end_time_label.setPalette(palette)
+        self.end_time_label.setFont(font)
         time_layout.addWidget(self.end_time_label, 0, Qt.AlignmentFlag.AlignRight)
 
         self.play_button = IconButton(":/icons/play-solid-full.svg", ":/icons/play-solid-full-dark.svg")

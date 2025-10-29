@@ -1,7 +1,7 @@
 from typing import Optional, Union
 import numpy as np
 
-from PySide6.QtCore import Qt, Signal
+from PySide6.QtCore import Signal
 from PySide6.QtWidgets import QWidget, QVBoxLayout
 
 from widgets.audio_player.audio_info_bar import AudioInfoBar
@@ -13,8 +13,6 @@ class AudioPlayer(QWidget):
 
     def __init__(self, file_name: Optional[str] = None):
         super().__init__()
-
-        self.setAttribute(Qt.WidgetAttribute.WA_StyledBackground, True)
 
         layout = QVBoxLayout()
         self.setLayout(layout)
@@ -37,3 +35,4 @@ class AudioPlayer(QWidget):
 
     def clear_audio(self):
         self.main_view.clear_audio()
+3

@@ -18,8 +18,8 @@ class IconButton(QPushButton):
 
         self.setIcon(QIcon(path))
         self.setIconSize(QSize(25, 25))
-        self.setMinimumSize(30, 30)
-        self.setMaximumSize(30, 30)
+        self.setMinimumSize(32, 32)
+        self.setMaximumSize(32, 32)
 
         hints.colorSchemeChanged.connect(self.color_scheme_changed)
 

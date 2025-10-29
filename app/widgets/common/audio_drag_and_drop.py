@@ -1,11 +1,12 @@
 from PySide6.QtCore import Qt, Signal, QSize
 from PySide6.QtGui import QIcon
-from PySide6.QtWidgets import QVBoxLayout, QLabel, QFrame, QFileDialog
+from PySide6.QtWidgets import QVBoxLayout, QLabel, QFrame, QFileDialog, QSizePolicy
 
 from utils.utils import is_audio_file
+from widgets.common.dashed_frame import DashedFrame
 
 
-class AudioDragAndDrop(QFrame):
+class AudioDragAndDrop(DashedFrame):
 
     selectedFilePath = Signal(str)
 
@@ -16,6 +17,7 @@ class AudioDragAndDrop(QFrame):
 
         layout = QVBoxLayout()
         layout.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        layout.setContentsMargins(20, 20, 20, 20)
         self.setLayout(layout)
 
         audio_icon = QIcon(":/icons/headphones-solid-full.svg")
