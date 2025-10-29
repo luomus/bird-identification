@@ -35,4 +35,3 @@ class AudioPlayer(QWidget):
 
     def clear_audio(self):
         self.main_view.clear_audio()
-3

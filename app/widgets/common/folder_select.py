@@ -21,7 +21,7 @@ class FolderSelect(QWidget):
 
         file_browse = QPushButton("Browse")
         file_browse.setMinimumHeight(25)
-        file_browse.clicked.connect(self.open_file_dialog)
+        file_browse.clicked.connect(self.on_file_browse_click)
         layout.addWidget(file_browse, 1, 1)
 
         self.dialog = QFileDialog()
@@ -31,7 +31,7 @@ class FolderSelect(QWidget):
         self.dialog.finished.connect(self.on_finished)
 
 
-    def open_file_dialog(self):
+    def on_file_browse_click(self):
         self.dialog.open()
 
     def on_finished(self):

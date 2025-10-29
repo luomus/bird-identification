@@ -12,17 +12,17 @@ from utils.worker import Worker
 from widgets.common.spinner import WaitingSpinner
 
 
-def get_samples_per_pixel(audio_data: np.ndarray, width: int) -> float:
+def _get_samples_per_pixel(audio_data: np.ndarray, width: int) -> float:
     total_samples = len(audio_data)
     return total_samples / float(width)
 
 
-def calculate_lines(audio_data: np.ndarray, width: int, height: int, **kwargs) -> np.ndarray:
+def _calculate_lines(audio_data: np.ndarray, width: int, height: int, **kwargs) -> np.ndarray:
     lines = np.ndarray(shape=(width, 4))
 
     y_middle = height / 2
 
-    samples_per_pixel = get_samples_per_pixel(audio_data, width)
+    samples_per_pixel = _get_samples_per_pixel(audio_data, width)
 
     total_max = np.max(audio_data)
     total_min = np.min(audio_data)
@@ -100,38 +100,10 @@ class WaveformView(QWidget):
 
         self.timeClicked.emit(time)
 
-    def draw(self):
-        self.scene.clear()
-
-        self.lines = []
-
-        if self.audio_data is None or self.sample_rate is None:
-            return
-
-        width = int(self.scene.width())
-        height = int(self.scene.height())
-
-        self.samples_per_pixel = get_samples_per_pixel(self.audio_data, width)
-
-        worker = Worker(calculate_lines, self.audio_data, width, height)
-        worker.signals.result.connect(self.lines_calculated)
-
-        self.threadpool.start(worker)
-
-    def lines_calculated(self, result: np.ndarray):
-        for line_data in result:
-            line = QGraphicsLineItem(*line_data)
-            line.setPen(self.default_pen)
-
-            self.lines.append(line)
-            self.scene.addItem(line)
-
-            self.view.fitInView(self.scene.sceneRect())
-
     def set_audio(self, audio_data, sample_rate):
         self.audio_data = audio_data
         self.sample_rate = sample_rate
-        self.draw()
+        self._draw()
 
     def set_play_time(self, time):
         if len(self.lines) == 0:
@@ -145,3 +117,31 @@ class WaveformView(QWidget):
                 line.setPen(self.active_pen)
             else:
                 line.setPen(self.default_pen)
+
+    def _draw(self):
+        self.scene.clear()
+
+        self.lines = []
+
+        if self.audio_data is None or self.sample_rate is None:
+            return
+
+        width = int(self.scene.width())
+        height = int(self.scene.height())
+
+        self.samples_per_pixel = _get_samples_per_pixel(self.audio_data, width)
+
+        worker = Worker(_calculate_lines, self.audio_data, width, height)
+        worker.signals.result.connect(self.on_lines_calculated)
+
+        self.threadpool.start(worker)
+
+    def on_lines_calculated(self, result: np.ndarray):
+        for line_data in result:
+            line = QGraphicsLineItem(*line_data)
+            line.setPen(self.default_pen)
+
+            self.lines.append(line)
+            self.scene.addItem(line)
+
+            self.view.fitInView(self.scene.sceneRect())

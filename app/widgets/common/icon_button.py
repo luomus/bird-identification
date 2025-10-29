@@ -18,7 +18,7 @@ class IconButton(QPushButton):
         self.setMinimumSize(32, 32)
         self.setMaximumSize(32, 32)
 
-        QApplication.styleHints().colorSchemeChanged.connect(self.color_scheme_changed)
+        QApplication.styleHints().colorSchemeChanged.connect(self.on_color_scheme_change)
 
     def set_icon(self, icon_path: Optional[str] = None, dark_icon_path: Optional[str] = None):
         hints = QApplication.styleHints()
@@ -31,6 +31,6 @@ class IconButton(QPushButton):
 
         self.setIcon(icon)
 
-    def color_scheme_changed(self, color_scheme: Qt.ColorScheme):
+    def on_color_scheme_change(self, color_scheme: Qt.ColorScheme):
         path = self.dark_icon_path if color_scheme == Qt.ColorScheme.Dark else self.icon_path
         self.setIcon(QIcon(path))

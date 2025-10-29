@@ -21,7 +21,7 @@ class MainAudioPlayer(QWidget):
 
         self.waveform = WaveformView()
         self.waveform.setFixedHeight(50)
-        self.waveform.timeClicked.connect(self.time_clicked)
+        self.waveform.timeClicked.connect(self.on_time_click)
         layout.addWidget(self.waveform)
 
         time_layout = QHBoxLayout()
@@ -42,16 +42,16 @@ class MainAudioPlayer(QWidget):
         time_layout.addWidget(self.end_time_label, 0, Qt.AlignmentFlag.AlignRight)
 
         self.play_button = IconButton()
-        self.update_play_button_icon(False)
-        self.play_button.clicked.connect(self.the_button_was_toggled)
+        self.on_playing_changed(False)
+        self.play_button.clicked.connect(self.on_play_button_click)
         self.play_button.setEnabled(False)
         layout.addWidget(self.play_button)
 
         self.player = QMediaPlayer()
         self.audio_output = QAudioOutput()
         self.player.setAudioOutput(self.audio_output)
-        self.player.playingChanged.connect(self.update_play_button_icon)
-        self.player.positionChanged.connect(self.play_time_changed)
+        self.player.playingChanged.connect(self.on_playing_changed)
+        self.player.positionChanged.connect(self.on_play_time_changed)
 
     def set_loading(self, loading: bool):
         self.play_button.setEnabled(not loading)
@@ -73,21 +73,21 @@ class MainAudioPlayer(QWidget):
         self.play_button.setEnabled(False)
         self.end_time_label.setText("00:00:00")
 
-    def the_button_was_toggled(self):
+    def on_play_button_click(self):
         if self.player.isPlaying():
             self.player.pause()
         else:
             self.player.play()
 
-    def update_play_button_icon(self, playing: bool):
+    def on_playing_changed(self, playing: bool):
         if playing:
             self.play_button.set_icon(":/icons/pause-solid-full.svg", ":/icons/pause-solid-full-dark.svg")
         else:
             self.play_button.set_icon(":/icons/play-solid-full.svg", ":/icons/play-solid-full-dark.svg")
 
-    def play_time_changed(self, duration: int):
+    def on_play_time_changed(self, duration: int):
         self.waveform.set_play_time(duration)
 
-    def time_clicked(self, time: int):
+    def on_time_click(self, time: int):
         self.player.setPosition(time)
         self.player.play()

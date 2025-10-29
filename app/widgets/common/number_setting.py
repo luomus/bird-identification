@@ -18,23 +18,23 @@ class NumberSetting(QWidget):
         self.spin_box.setValue(default_value)
         self.spin_box.setSingleStep(0.01)
         self.spin_box.setMinimumHeight(25)
-        self.spin_box.valueChanged.connect(self.spin_box_change)
+        self.spin_box.valueChanged.connect(self.on_spin_box_change)
         self.layout.addWidget(self.spin_box)
 
         self.slider = QSlider(Qt.Orientation.Horizontal)
         self.slider.setRange(int(min_value * 100), int(max_value * 100))
         self.slider.setValue(int(default_value * 100))
-        self.slider.valueChanged.connect(self.slider_change)
+        self.slider.valueChanged.connect(self.on_slider_change)
         self.layout.addWidget(self.slider)
 
-    def spin_box_change(self, value: float):
+    def on_spin_box_change(self, value: float):
         new_slider_value = int(value * 100)
         if self.slider.value() != new_slider_value:
             self.slider.setValue(new_slider_value)
 
         self.valueChanged.emit(value)
 
-    def slider_change(self, value: int):
+    def on_slider_change(self, value: int):
         new_spin_box_value = round(value / 100, 2)
         if round(self.spin_box.value(), 2) != new_spin_box_value:
             self.spin_box.setValue(new_spin_box_value)
