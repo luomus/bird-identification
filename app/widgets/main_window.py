@@ -2,8 +2,8 @@ from typing import Tuple, Union, Optional, Any
 import numpy as np
 import pandas as pd
 
-from PySide6.QtCore import QSize, QThreadPool
-from PySide6.QtWidgets import QMainWindow, QVBoxLayout, QPushButton, QWidget, QSizePolicy, QLabel
+from PySide6.QtCore import Qt, QSize, QThreadPool
+from PySide6.QtWidgets import QApplication, QMainWindow, QVBoxLayout, QPushButton, QWidget, QSizePolicy, QLabel
 from PySide6.QtGui import QPalette, QColor, QFont
 
 from utils.analyze import analyze_single_file, analyze_multiple_files
@@ -61,10 +61,7 @@ class MainWindow(QMainWindow):
         self.layout.addWidget(settings)
 
         self.analyze_button = QPushButton("Analyze")
-        palette = self.analyze_button.palette()
-        palette.setColor(QPalette.ColorRole.Button, QColor("#0f598a"))
-        palette.setColor(QPalette.ColorRole.ButtonText, QColor("white"))
-        self.analyze_button.setPalette(palette)
+        self.update_analyze_button_palette()
         font = self.analyze_button.font()
         font.setPointSize(13)
         font.setWeight(QFont.Weight.Medium)
@@ -85,6 +82,8 @@ class MainWindow(QMainWindow):
         self.layout.addStretch()
 
         self.threadpool = QThreadPool()
+
+        QApplication.instance().paletteChanged.connect(self.update_analyze_button_palette, Qt.ConnectionType.QueuedConnection)
 
     def audio_data_changed(self, audio_data: Optional[Tuple[np.ndarray, Union[int, float]]]):
         self.audio_data = audio_data
@@ -168,6 +167,14 @@ class MainWindow(QMainWindow):
             progress_text = "Processing chunk {}/{}".format(data["chunk"], data["total_chunks"])
 
         self.progress_label.setText(progress_text)
+
+    def update_analyze_button_palette(self):
+        palette = self.analyze_button.palette()
+        palette.setColor(QPalette.ColorRole.Button, QColor("#0f598a"))
+        palette.setColor(QPalette.ColorRole.ButtonText, QColor("white"))
+        palette.setColor(QPalette.ColorGroup.Disabled, QPalette.ColorRole.Button, palette.window().color())
+        palette.setColor(QPalette.ColorGroup.Disabled, QPalette.ColorRole.ButtonText, QColor("#73828c"))
+        self.analyze_button.setPalette(palette)
 
     def sizeHint(self) -> QSize:
         return QSize(800, 300)
