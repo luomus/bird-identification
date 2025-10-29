@@ -41,8 +41,8 @@ class MainAudioPlayer(QWidget):
         self.end_time_label.setFont(font)
         time_layout.addWidget(self.end_time_label, 0, Qt.AlignmentFlag.AlignRight)
 
-        self.play_button = IconButton(":/icons/play-solid-full.svg", ":/icons/play-solid-full-dark.svg")
-        self.play_button.setCheckable(True)
+        self.play_button = IconButton()
+        self.update_play_button_icon(False)
         self.play_button.clicked.connect(self.the_button_was_toggled)
         self.play_button.setEnabled(False)
         layout.addWidget(self.play_button)
@@ -50,7 +50,7 @@ class MainAudioPlayer(QWidget):
         self.player = QMediaPlayer()
         self.audio_output = QAudioOutput()
         self.player.setAudioOutput(self.audio_output)
-        self.player.playingChanged.connect(self.playing_changed)
+        self.player.playingChanged.connect(self.update_play_button_icon)
         self.player.positionChanged.connect(self.play_time_changed)
 
     def set_loading(self, loading: bool):
@@ -73,17 +73,17 @@ class MainAudioPlayer(QWidget):
         self.play_button.setEnabled(False)
         self.end_time_label.setText("00:00:00")
 
-    def the_button_was_toggled(self, checked: bool):
-        if checked:
-            self.player.play()
-        else:
+    def the_button_was_toggled(self):
+        if self.player.isPlaying():
             self.player.pause()
-
-    def playing_changed(self, playing: bool):
-        if playing:
-            self.play_button.setChecked(True)
         else:
-            self.play_button.setChecked(False)
+            self.player.play()
+
+    def update_play_button_icon(self, playing: bool):
+        if playing:
+            self.play_button.set_icon(":/icons/pause-solid-full.svg", ":/icons/pause-solid-full-dark.svg")
+        else:
+            self.play_button.set_icon(":/icons/play-solid-full.svg", ":/icons/play-solid-full-dark.svg")
 
     def play_time_changed(self, duration: int):
         self.waveform.set_play_time(duration)

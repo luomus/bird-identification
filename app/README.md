@@ -28,10 +28,11 @@
     python app.py
     ```
 
-### Compile resources after making changes to icons or style files:
+### Compile resources after making changes to icons:
 ```
 pyside6-rcc resources.qrc -o resources.py
 ```
+If you add/delete resources, remember to update file resources.qrc
 
 ## Build app
 ```

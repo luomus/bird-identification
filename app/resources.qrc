@@ -2,6 +2,8 @@
 <RCC version="1.0">
     <qresource prefix="icons">
         <file alias="headphones-solid-full.svg">icons/headphones-solid-full.svg</file>
+        <file alias="pause-solid-full.svg">icons/pause-solid-full.svg</file>
+        <file alias="pause-solid-full-dark.svg">icons/pause-solid-full-dark.svg</file>
         <file alias="play-solid-full.svg">icons/play-solid-full.svg</file>
         <file alias="play-solid-full-dark.svg">icons/play-solid-full-dark.svg</file>
         <file alias="xmark-solid-full.svg">icons/xmark-solid-full.svg</file>
