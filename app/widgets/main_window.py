@@ -15,8 +15,6 @@ from widgets.detector_settings import DetectorSettings
 from widgets.multiple_file_tab import MultipleFileTab
 from widgets.single_file_tab import SingleFileTab
 
-import resources # noqa
-
 
 class MainWindow(QMainWindow):
     audio_data: Optional[Tuple[np.ndarray, Union[int, float]]] = None

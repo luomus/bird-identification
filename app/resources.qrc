@@ -8,5 +8,6 @@
         <file alias="play-solid-full-dark.svg">icons/play-solid-full-dark.svg</file>
         <file alias="xmark-solid-full.svg">icons/xmark-solid-full.svg</file>
         <file alias="xmark-solid-full-dark.svg">icons/xmark-solid-full-dark.svg</file>
+        <file alias="splash.png">icons/splash.png</file>
     </qresource>
 </RCC>

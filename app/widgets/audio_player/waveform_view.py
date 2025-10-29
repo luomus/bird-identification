@@ -58,7 +58,7 @@ class WaveformView(QWidget):
     lines = []
     samples_per_pixel = 0
 
-    def __init__(self, /):
+    def __init__(self):
         super().__init__()
 
         layout = QVBoxLayout()

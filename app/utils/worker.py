@@ -1,8 +1,9 @@
-# https://www.pythonguis.com/tutorials/multithreading-pyside6-applications-qthreadpool
+# Originally from https://www.pythonguis.com/tutorials/multithreading-pyside6-applications-qthreadpool
 
 import sys
 import time
 import traceback
+import inspect
 
 from PySide6.QtCore import (
     QObject,
@@ -61,8 +62,12 @@ class Worker(QRunnable):
         self.args = args
         self.kwargs = kwargs
         self.signals = WorkerSignals()
-        # Add the callback to our kwargs
-        self.kwargs["progress_callback"] = self.signals.progress
+
+        sig = inspect.signature(fn)
+        params = sig.parameters.values()
+        for param in params:
+            if param.name == "progress_callback":
+                self.kwargs["progress_callback"] = self.signals.progress
 
     @Slot()
     def run(self):

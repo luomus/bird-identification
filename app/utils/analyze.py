@@ -28,7 +28,7 @@ audio_classifier = Classifier(
     dur=0
 )
 
-def load_audio(file_path: str, **kwargs: dict[str, Any]) -> Tuple[np.ndarray, Union[int, float]]:
+def load_audio(file_path: str) -> Tuple[np.ndarray, Union[int, float]]:
     return librosa.load(file_path, sr=None)
 
 def analyze_single_file(audio_data: Tuple[np.ndarray, Union[int, float]], progress_callback: Signal, **kwargs: dict[str, Any]) -> pd.DataFrame:
