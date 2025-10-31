@@ -53,6 +53,9 @@ def analyze_single_file(audio_data: Tuple[np.ndarray, Union[int, float]], progre
     return results
 
 def analyze_multiple_files(input_folder_path: str, output_folder_path: str, progress_callback: Signal, **kwargs: dict[str, Any]):
+    successes = 0
+    errors = 0
+
     default_params = _load_default_params()
     params = {**default_params, **kwargs}
 
@@ -85,8 +88,16 @@ def analyze_multiple_files(input_folder_path: str, output_folder_path: str, prog
 
             os.makedirs(os.path.dirname(result_file_path), exist_ok=True)
             results.to_csv(result_file_path, index=False)
-        except Exception as e:
+
+            successes += 1
+        except Exception:
+            errors += 1
             continue
+
+    return {
+        "successes": successes,
+        "errors": errors
+    }
 
 def _load_default_params() -> dict[str, Any]:
     return {

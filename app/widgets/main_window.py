@@ -23,7 +23,6 @@ class MainWindow(QMainWindow):
     single_file_audio_data: Optional[Tuple[np.ndarray, Union[int, float]]] = None
     single_file_analyze_started: bool = False
     single_file_results: Optional[pd.DataFrame] = None
-    single_file_result_table: Optional[Datatable] = None
 
     multiple_files_input_folder_path: Optional[str] = None
     multiple_files_output_folder_path: Optional[str] = None
@@ -44,7 +43,6 @@ class MainWindow(QMainWindow):
 
         self.tabs = TabWidget(self)
         self.tabs.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Fixed)
-        self.tabs.currentChanged.connect(self.on_tab_change)
 
         self.single_file_tab = SingleFileTab()
         self.single_file_tab.fileSelected.connect(self.on_single_file_select)
@@ -56,6 +54,7 @@ class MainWindow(QMainWindow):
         multiple_file_tab.outputFolderChanged.connect(self.on_output_folder_change)
         self.tabs.addTab(multiple_file_tab, "Multiple Files")
 
+        self.tabs.currentChanged.connect(self.on_tab_change)
         self.layout.addWidget(self.tabs)
 
         settings = DetectorSettings()
@@ -74,12 +73,16 @@ class MainWindow(QMainWindow):
         self.layout.addWidget(self.analyze_button)
 
         progress_layout = QHBoxLayout()
+        progress_layout.setAlignment(Qt.AlignmentFlag.AlignLeft)
         self.layout.addLayout(progress_layout)
 
         self.progress_spinner = WaitingSpinner(self, False, lines=10, line_length=5, radius=5)
         progress_layout.addWidget(self.progress_spinner)
         self.progress_label = QLabel("")
         progress_layout.addWidget(self.progress_label)
+        self.multiple_files_analyze_result_label = QLabel("")
+        self.multiple_files_analyze_result_label.setVisible(False)
+        progress_layout.addWidget(self.multiple_files_analyze_result_label)
 
         self.single_file_result_table = Datatable()
         self.single_file_result_table.setMinimumHeight(150)
@@ -110,14 +113,17 @@ class MainWindow(QMainWindow):
         self.overlap = value
 
     def on_tab_change(self, active_idx: int):
-        if self.single_file_result_table is not None:
-            if active_idx == 0 and self.single_file_results is not None:
+        if active_idx == 0:
+            if self.single_file_results is not None:
                 self.single_file_result_table.setVisible(True)
-            else:
-                self.single_file_result_table.setVisible(False)
+            self.multiple_files_analyze_result_label.setVisible(False)
+        else:
+            self.single_file_result_table.setVisible(False)
+            self.multiple_files_analyze_result_label.setVisible(True)
 
     def on_analyze_click(self):
         self._clear_single_file_results()
+        self.multiple_files_analyze_result_label.setText("")
 
         if self.tabs.currentIndex() == 0:
             if self.single_file_path is None:
@@ -152,6 +158,11 @@ class MainWindow(QMainWindow):
 
         if self.tabs.currentIndex() == 0:
             self.single_file_result_table.setVisible(True)
+
+    def on_analyze_result_for_multiple_files(self, data: dict[str, Any]):
+        self.multiple_files_analyze_result_label.setText(
+            "Processed successfully {} file(s). There were {} error(s).".format(data["successes"], data["errors"])
+        )
 
     def on_analyze_finished(self):
         self.single_file_analyze_started = False
@@ -194,6 +205,7 @@ class MainWindow(QMainWindow):
             threshold=self.threshold,
             overlap=self.overlap
         )
+        worker.signals.result.connect(self.on_analyze_result_for_multiple_files)
 
         self._start_analyze_worker(worker)
 
