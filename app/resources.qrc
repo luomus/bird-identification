@@ -1,6 +1,11 @@
 <!DOCTYPE RCC>
 <RCC version="1.0">
     <qresource prefix="icons">
+        <file alias="icons/bird16x16.png">icons/bird16x16.png</file>
+        <file alias="icons/bird24x24.png">icons/bird24x24.png</file>
+        <file alias="icons/bird32x32.png">icons/bird32x32.png</file>
+        <file alias="icons/bird48x48.png">icons/bird48x48.png</file>
+        <file alias="icons/bird256x256.png">icons/bird256x256.png</file>
         <file alias="headphones-solid-full.svg">icons/headphones-solid-full.svg</file>
         <file alias="pause-solid-full.svg">icons/pause-solid-full.svg</file>
         <file alias="pause-solid-full-dark.svg">icons/pause-solid-full-dark.svg</file>

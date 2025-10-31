@@ -1,6 +1,6 @@
 from PySide6.QtWidgets import QApplication, QSplashScreen
-from PySide6.QtCore import Qt, QTimer, Signal
-from PySide6.QtGui import QPixmap
+from PySide6.QtCore import Qt, QTimer, Signal, QSize
+from PySide6.QtGui import QPixmap, QIcon
 
 import sys
 import resources # noqa
@@ -17,8 +17,15 @@ class SplashScreen(QSplashScreen):
             self.is_ready = True
 
 app = QApplication([])
+app_icon = QIcon()
+app_icon.addFile(":/icons/bird16x16.png", QSize(16,16))
+app_icon.addFile(":/icons/bird24x24.png", QSize(24,24))
+app_icon.addFile(":/icons/bird32x32.png", QSize(32,32))
+app_icon.addFile(":/icons/bird48x48.png", QSize(48,48))
+app_icon.addFile(":/icons/bird256x256.png", QSize(256,256))
+app.setWindowIcon(app_icon)
 
-splash = SplashScreen(QPixmap(":/icons/splash.png"))
+splash = SplashScreen(QPixmap(":/icons/splash.png"), Qt.WindowType.WindowStaysOnTopHint)
 splash.setEnabled(False) # clicking doesn't close it
 
 window = None
