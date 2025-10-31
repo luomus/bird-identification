@@ -3,13 +3,15 @@ import numpy as np
 import pandas as pd
 
 from PySide6.QtCore import Qt, QSize, QThreadPool
-from PySide6.QtWidgets import QApplication, QMainWindow, QVBoxLayout, QPushButton, QWidget, QSizePolicy, QLabel
+from PySide6.QtWidgets import QApplication, QMainWindow, QVBoxLayout, QPushButton, QWidget, QSizePolicy, QLabel, \
+    QHBoxLayout
 from PySide6.QtGui import QPalette, QColor, QFont
 
 from utils.analyze import analyze_single_file, analyze_multiple_files
 from utils.worker import Worker
 from utils.utils import show_alert
 from widgets.common.datatable import Datatable
+from widgets.common.spinner import WaitingSpinner
 from widgets.common.tab_widget import TabWidget
 from widgets.detector_settings import DetectorSettings
 from widgets.multiple_file_tab import MultipleFileTab
@@ -71,9 +73,13 @@ class MainWindow(QMainWindow):
         self.analyze_button.clicked.connect(self.on_analyze_click)
         self.layout.addWidget(self.analyze_button)
 
+        progress_layout = QHBoxLayout()
+        self.layout.addLayout(progress_layout)
+
+        self.progress_spinner = WaitingSpinner(self, False, lines=10, line_length=5, radius=5)
+        progress_layout.addWidget(self.progress_spinner)
         self.progress_label = QLabel("")
-        self.progress_label.setVisible(False)
-        self.layout.addWidget(self.progress_label)
+        progress_layout.addWidget(self.progress_label)
 
         self.single_file_result_table = Datatable()
         self.single_file_result_table.setMinimumHeight(150)
@@ -132,7 +138,7 @@ class MainWindow(QMainWindow):
             self._start_multiple_file_analyze()
 
         self.analyze_button.setDisabled(True)
-        self.progress_label.setVisible(True)
+        self.progress_spinner.start()
 
     def on_audio_load(self, data: Tuple[np.ndarray, Union[int, float]]):
         self.single_file_audio_data = data
@@ -150,8 +156,8 @@ class MainWindow(QMainWindow):
     def on_analyze_finished(self):
         self.single_file_analyze_started = False
         self.analyze_button.setDisabled(False)
+        self.progress_spinner.stop()
         self.progress_label.setText("")
-        self.progress_label.setVisible(False)
 
     def on_analyze_progressed(self, data: dict[str, Any]):
         if "file" in data:
