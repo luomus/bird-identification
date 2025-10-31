@@ -5,6 +5,14 @@ from PySide6.QtGui import QPixmap, QIcon
 import sys
 import resources # noqa
 
+try:
+    from ctypes import windll  # Only exists on Windows.
+    myappid = 'fi.laji.birdIdentification.0.1.0'
+    windll.shell32.SetCurrentProcessExplicitAppUserModelID(myappid)
+except ImportError:
+    pass
+
+
 class SplashScreen(QSplashScreen):
     isReady = Signal()
 
