@@ -1,6 +1,6 @@
 import os
 from pathlib import Path
-from typing import Any, Tuple, Union, Callable
+from typing import Any, Tuple, Union, Generator
 
 import numpy as np
 import pandas as pd
@@ -35,23 +35,26 @@ def load_audio(file_path: str) -> Tuple[np.ndarray, Union[int, float]]:
     return y, sr
 
 def analyze_single_file(audio_data: Tuple[np.ndarray, Union[int, float]], progress_callback: Signal, **kwargs: dict[str, Any]) -> pd.DataFrame:
-    def on_progress(data: dict[str, Any]) -> None:
-        progress_callback.emit(data)
+    results = pd.DataFrame()
 
-    params = _load_default_params()
+    default_params = _load_default_params()
+    params = {**default_params, **kwargs}
 
-    return _analyze(audio_data, on_progress, **{**params, **kwargs})
+    for chunk_file, chunk_idx, total_chunks in _audio_to_chunks(audio_data[0], audio_data[1]):
+        progress_callback.emit({
+            "chunk": chunk_idx + 1,
+            "total_chunks": total_chunks,
+        })
+
+        results = _add_results_for_chunk(chunk_file, results, **params)
+
+    results = _rename_result_columns(results)
+
+    return results
 
 def analyze_multiple_files(input_folder_path: str, output_folder_path: str, progress_callback: Signal, **kwargs: dict[str, Any]):
-    current_file = 0
-    total_files = 0
-
-    def on_progress(data: dict[str, Any]) -> None:
-        data["file"] = current_file + 1
-        data["total_files"] = total_files
-        progress_callback.emit(data)
-
-    params = _load_default_params()
+    default_params = _load_default_params()
+    params = {**default_params, **kwargs}
 
     file_paths = []
 
@@ -62,14 +65,27 @@ def analyze_multiple_files(input_folder_path: str, output_folder_path: str, prog
 
     total_files = len(file_paths)
 
-    for current_file, file_path in enumerate(file_paths):
-        progress_callback.emit({"file": current_file + 1, "total_files": total_files})
+    for file_idx, file_path in enumerate(file_paths):
+        progress_data = {"file": file_idx + 1, "total_files": total_files}
+        progress_callback.emit(progress_data)
+
         try:
-            audio_data = load_audio(file_path)
-            results = _analyze(audio_data, on_progress, **{**params, **kwargs})
-            csv_path = os.path.join(output_folder_path, Path(file_path).stem + ".csv")
-            results.to_csv(csv_path, index=False)
-        except Exception:
+            audio_data, sr = load_audio(file_path)
+
+            results = pd.DataFrame()
+
+            for chunk_file, chunk_idx, total_chunks in _audio_to_chunks(audio_data, sr):
+                progress_callback.emit({**progress_data, "chunk": chunk_idx + 1, "total_chunks": total_chunks})
+
+                results = _add_results_for_chunk(chunk_file, results, **params)
+
+            results = _rename_result_columns(results)
+
+            result_file_path = _get_result_file_path(file_path, input_folder_path, output_folder_path)
+
+            os.makedirs(os.path.dirname(result_file_path), exist_ok=True)
+            results.to_csv(result_file_path, index=False)
+        except Exception as e:
             continue
 
 def _load_default_params() -> dict[str, Any]:
@@ -87,35 +103,44 @@ def _load_default_params() -> dict[str, Any]:
         "overlap": 0.5
     }
 
-def _analyze(data: Tuple[np.ndarray, Union[int, float]], on_progress: Callable[[dict[str, Any]], Any], **kwargs: dict[str, Any]) -> pd.DataFrame:
-    all_results = pd.DataFrame()
-
-    audio_data, sr = data
-    chunk_size = 600
+def _audio_to_chunks(audio_data: np.ndarray, sr: Union[int, float], chunk_size: int = 600) -> Generator[str, None, None]:
+    chunk_size = chunk_size * sr
+    total_chunks = math.ceil(len(audio_data) / chunk_size)
 
     with tempfile.TemporaryDirectory() as temp_dir:
-        chunk_size = chunk_size * sr
-
         for i in range(0, len(audio_data), chunk_size):
-            on_progress({
-                "chunk": int(i / chunk_size) + 1,
-                "total_chunks": math.ceil(len(audio_data) / chunk_size),
-            })
-
             chunk = audio_data[i:i + chunk_size]
-            if len(chunk) == 0:
-                continue
 
             temp_file_path = os.path.join(temp_dir, f"chunk_{i}.wav")
             sf.write(temp_file_path, chunk, sr)
 
-            results_df = process_audio_segment(
-                temp_file_path,
-                audio_classifier,
-                **kwargs
-            )
+            yield temp_file_path, int(i / chunk_size), total_chunks
 
-            if not results_df.empty:
-                all_results = pd.concat([all_results, results_df])
+def _add_results_for_chunk(file_path: str, all_results: pd.DataFrame, **kwargs: dict[str, Any]) -> pd.DataFrame:
+    df = _analyze(file_path, **kwargs)
+
+    if not df.empty:
+        all_results = pd.concat([all_results, df])
 
     return all_results
+
+def _analyze(file_path: str, **kwargs: dict[str, Any]) -> pd.DataFrame:
+    return process_audio_segment(
+        file_path,
+        audio_classifier,
+        **kwargs
+    )
+
+def _rename_result_columns(df: pd.DataFrame) -> pd.DataFrame:
+    columns = ["Start (s)", "End (s)", "Scientific name", "Common name", "Confidence"]
+
+    if not df.empty:
+        df.columns = columns
+        return df
+
+    return pd.DataFrame(columns=columns)
+
+def _get_result_file_path(file_path: str, input_folder_path: str, output_folder_path: str) -> str:
+    dir_rel_path = os.path.relpath(os.path.dirname(file_path), input_folder_path)
+    result_file_name = Path(file_path).stem + ".Muuttolinnut.results.csv"
+    return os.path.join(output_folder_path, dir_rel_path, result_file_name)
