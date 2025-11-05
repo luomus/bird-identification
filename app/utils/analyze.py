@@ -1,6 +1,6 @@
 import os
 from pathlib import Path
-from typing import Any, Tuple, Union, Generator
+from typing import Any, Tuple, Union, Generator, Optional
 
 import numpy as np
 import pandas as pd
@@ -28,8 +28,8 @@ audio_classifier = Classifier(
     dur=0
 )
 
-def load_audio(file_path: str) -> Tuple[np.ndarray, Union[int, float]]:
-    y, sr = librosa.load(file_path, sr=None)
+def load_audio(file_path: str, sample_rate: Optional[str] = 24000) -> Tuple[np.ndarray, Union[int, float]]:
+    y, sr = librosa.load(file_path, sr=sample_rate)
     if len(y) == 0:
         raise ValueError("Invalid audio file")
     return y, sr

@@ -6,6 +6,7 @@ from pathlib import Path
 
 from utils.worker import Worker
 from utils.analyze import load_audio
+from utils.utils import show_alert
 from widgets.common.audio_drag_and_drop import AudioDragAndDrop
 from widgets.audio_player.audio_player import AudioPlayer
 
