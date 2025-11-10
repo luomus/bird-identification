@@ -2,7 +2,7 @@ from PySide6.QtWidgets import QWidget, QPushButton, QLineEdit, QFileDialog, QHBo
 
 
 class FileSelect(QWidget):
-    def __init__(self, file_mode: QFileDialog.FileMode = QFileDialog.FileMode.AnyFile):
+    def __init__(self, file_mode: QFileDialog.FileMode = QFileDialog.FileMode.ExistingFile):
         super().__init__()
 
         layout = QHBoxLayout()
@@ -19,10 +19,11 @@ class FileSelect(QWidget):
         layout.addWidget(file_browse)
 
         self.dialog = QFileDialog()
-        self.dialog.setWindowTitle("Select a folder")
+        window_title = "Select a folder" if file_mode == QFileDialog.FileMode.Directory else "Select a file"
+        self.dialog.setWindowTitle(window_title)
         self.dialog.setFileMode(file_mode)
         self.dialog.setViewMode(QFileDialog.ViewMode.Detail)
-        self.dialog.finished.connect(self.on_dialog_finished)
+        self.dialog.accepted.connect(self.on_dialog_accepted)
 
     def selected_file_path(self):
         return self.filepath_edit.text()
@@ -30,7 +31,7 @@ class FileSelect(QWidget):
     def on_file_browse_click(self):
         self.dialog.open()
 
-    def on_dialog_finished(self):
+    def on_dialog_accepted(self):
         if len(self.dialog.selectedFiles()) > 0:
             file_path = self.dialog.selectedFiles()[0]
             self.filepath_edit.setText(file_path)

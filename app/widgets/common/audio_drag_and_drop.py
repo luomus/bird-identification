@@ -33,9 +33,9 @@ class AudioDragAndDrop(DashedFrame):
         self.dialog = QFileDialog()
         self.dialog.setWindowTitle("Select a file")
         self.dialog.setNameFilter("Audio (*.mp3 *.MP3 *.wav *.WAV *.flac *.FLAC)")
-        self.dialog.finished.connect(self.on_finished)
+        self.dialog.accepted.connect(self.on_accepted)
 
-    def on_finished(self):
+    def on_accepted(self):
         if len(self.dialog.selectedFiles()) > 0:
             file_path = self.dialog.selectedFiles()[0]
             if is_audio_file(file_path):
