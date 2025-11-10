@@ -6,6 +6,9 @@ input/*
 !models/classes.csv
 !input/readme.txt
 
+app/models/*
+app/data/*
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]

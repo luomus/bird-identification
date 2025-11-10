@@ -1,6 +1,6 @@
 from typing import Optional
 
-from PySide6.QtCore import Signal
+from PySide6.QtCore import Signal, Qt
 from PySide6.QtWidgets import QWidget, QHBoxLayout, QLabel
 
 from widgets.common.icon_button import IconButton
@@ -20,11 +20,11 @@ class AudioInfoBar(QWidget):
         font = self.file_name_label.font()
         font.setPointSize(8)
         self.file_name_label.setFont(font)
-        layout.addWidget(self.file_name_label)
+        layout.addWidget(self.file_name_label, alignment=Qt.AlignmentFlag.AlignTop)
 
         remove_button = IconButton(":/icons/xmark-solid-full.svg", ":/icons/xmark-solid-full-dark.svg")
         remove_button.clicked.connect(self.removeClick)
-        layout.addWidget(remove_button)
+        layout.addWidget(remove_button, alignment=Qt.AlignmentFlag.AlignTop)
 
     def set_file_name(self, file_name):
         self.file_name_label.setText(file_name)

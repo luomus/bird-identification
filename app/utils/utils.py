@@ -1,5 +1,6 @@
 from pathlib import Path
-import os
+from typing import List
+
 from PySide6.QtWidgets import QMessageBox, QWidget
 
 def is_audio_file(file_name: str) -> bool:
@@ -12,10 +13,17 @@ def show_alert(parent: QWidget, msg: str):
     dlg.setText(msg)
     dlg.show()
 
-def get_model_file_path(file_name: str) -> str:
+def get_data_folder_path() -> Path:
     bundle_dir = Path(__file__).parent.parent
 
-    if os.environ.get("LOCAL") == "true":
-        bundle_dir = bundle_dir.parent
+    return Path.cwd() / bundle_dir / "data"
 
-    return str(Path.cwd() / bundle_dir / "models" / file_name)
+def get_model_folder_path() -> Path:
+    bundle_dir = Path(__file__).parent.parent
+
+    return Path.cwd() / bundle_dir / "models"
+
+def get_available_models() -> List[str]:
+    models_path = get_model_folder_path()
+
+    return [p.name for p in models_path.iterdir() if p.is_dir()]

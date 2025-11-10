@@ -1,3 +1,4 @@
+import json
 import os
 from pathlib import Path
 from typing import Any, Tuple, Union, Generator, Optional
@@ -10,23 +11,14 @@ import tempfile
 import math
 from PySide6.QtCore import Signal
 
-from utils.utils import is_audio_file, get_model_file_path
+from utils.utils import is_audio_file, get_data_folder_path, get_model_folder_path
 from scripts.classifier import Classifier
 from scripts.run_model import process_audio_segment
 
-MODEL_PATH = get_model_file_path("model_v3_5.h5")
-BIRDNET_MODEL_PATH = get_model_file_path("BirdNET_GLOBAL_6K_V2.4_Model_FP32.tflite")
+BIRDNET_MODEL_PATH = str(get_data_folder_path() / "BirdNET_GLOBAL_6K_V2.4_Model_FP32.tflite")
 TFLITE_THREADS = 1
 CLIP_DURATION = 3.0
-audio_classifier = Classifier(
-    path_to_mlk_model=MODEL_PATH,
-    path_to_birdnet_model=BIRDNET_MODEL_PATH,
-    sr=48000,
-    clip_dur=CLIP_DURATION,
-    TFLITE_THREADS=TFLITE_THREADS,
-    offset=0,
-    dur=0
-)
+
 
 def load_audio(file_path: str, sample_rate: Optional[str] = 24000) -> Tuple[np.ndarray, Union[int, float]]:
     y, sr = librosa.load(file_path, sr=sample_rate)
@@ -34,10 +26,11 @@ def load_audio(file_path: str, sample_rate: Optional[str] = 24000) -> Tuple[np.n
         raise ValueError("Invalid audio file")
     return y, sr
 
-def analyze_single_file(audio_data: Tuple[np.ndarray, Union[int, float]], progress_callback: Signal, **kwargs: dict[str, Any]) -> pd.DataFrame:
+def analyze_single_file(audio_data: Tuple[np.ndarray, Union[int, float]], model_folder: str, progress_callback: Signal, **kwargs: dict[str, Any]) -> pd.DataFrame:
     results = pd.DataFrame()
 
-    default_params = _load_default_params()
+    model_file_paths = _get_model_file_paths(model_folder)
+    default_params = _load_default_params(model_file_paths)
     params = {**default_params, **kwargs}
 
     for chunk_file, chunk_idx, total_chunks in _audio_to_chunks(audio_data[0], audio_data[1]):
@@ -46,17 +39,18 @@ def analyze_single_file(audio_data: Tuple[np.ndarray, Union[int, float]], progre
             "total_chunks": total_chunks,
         })
 
-        results = _add_results_for_chunk(chunk_file, results, **params)
+        results = _add_results_for_chunk(chunk_file, model_file_paths, results, **params)
 
     results = _rename_result_columns(results)
 
     return results
 
-def analyze_multiple_files(input_folder_path: str, output_folder_path: str, progress_callback: Signal, **kwargs: dict[str, Any]):
+def analyze_multiple_files(input_folder_path: str, output_folder_path: str, model_folder: str, progress_callback: Signal, **kwargs: dict[str, Any]):
     successes = 0
     errors = 0
 
-    default_params = _load_default_params()
+    model_file_paths = _get_model_file_paths(model_folder)
+    default_params = _load_default_params(model_file_paths)
     params = {**default_params, **kwargs}
 
     file_paths = []
@@ -80,7 +74,7 @@ def analyze_multiple_files(input_folder_path: str, output_folder_path: str, prog
             for chunk_file, chunk_idx, total_chunks in _audio_to_chunks(audio_data, sr):
                 progress_callback.emit({**progress_data, "chunk": chunk_idx + 1, "total_chunks": total_chunks})
 
-                results = _add_results_for_chunk(chunk_file, results, **params)
+                results = _add_results_for_chunk(chunk_file, model_file_paths, results, **params)
 
             results = _rename_result_columns(results)
 
@@ -99,17 +93,40 @@ def analyze_multiple_files(input_folder_path: str, output_folder_path: str, prog
         "errors": errors
     }
 
-def _load_default_params() -> dict[str, Any]:
+def _get_model_file_paths(model_folder: str) -> dict[str, str]:
+    model_path = get_model_folder_path() / model_folder
+    metadata_path = model_path / "metadata.json"
+
+    with open(metadata_path, "r") as json_data:
+        metadata = json.load(json_data)
+
+    result = {
+        "model": model_path / metadata["model_file"],
+        "classes": model_path / metadata["classes_file"],
+    }
+
+    if "calibration_file" in metadata:
+        result["calibration"] = model_path / metadata["calibration_file"]
+
+    return result
+
+def _load_default_params(model_file_paths: dict[str, str]) -> dict[str, Any]:
+    calibration_params = None
+
+    calibration_params_path = model_file_paths["calibration"] if "calibration" in model_file_paths else None
+    if calibration_params_path is not None:
+        calibration_params = np.load(calibration_params_path)
+
     return {
-        "calibration_params": np.load(get_model_file_path("Pred_adjustment/calibration_params.npy")),
+        "calibration_params": calibration_params,
         "threshold": 0.6,
         "include_sdm": False,
         "include_noise": False,
-        "migration_params": np.load(get_model_file_path("Pred_adjustment/migration_params.npy")),
+        "migration_params": None,
         "lat": None,
         "lon": None,
         "day_of_year": None,
-        "species_name_list": pd.read_csv(get_model_file_path("classes.csv")),
+        "species_name_list": pd.read_csv(model_file_paths["classes"]),
         "start_time": 0,
         "overlap": 0.5
     }
@@ -127,15 +144,25 @@ def _audio_to_chunks(audio_data: np.ndarray, sr: Union[int, float], chunk_size: 
 
             yield temp_file_path, int(i / chunk_size), total_chunks
 
-def _add_results_for_chunk(file_path: str, all_results: pd.DataFrame, **kwargs: dict[str, Any]) -> pd.DataFrame:
-    df = _analyze(file_path, **kwargs)
+def _add_results_for_chunk(file_path: str, model_file_paths: dict[str, str], all_results: pd.DataFrame, **kwargs: dict[str, Any]) -> pd.DataFrame:
+    df = _analyze(file_path, model_file_paths, **kwargs)
 
     if not df.empty:
         all_results = pd.concat([all_results, df])
 
     return all_results
 
-def _analyze(file_path: str, **kwargs: dict[str, Any]) -> pd.DataFrame:
+def _analyze(file_path: str, model_file_paths: dict[str, str], **kwargs: dict[str, Any]) -> pd.DataFrame:
+    audio_classifier = Classifier(
+        path_to_mlk_model=str(model_file_paths["model"]),
+        path_to_birdnet_model=BIRDNET_MODEL_PATH,
+        sr=48000,
+        clip_dur=CLIP_DURATION,
+        TFLITE_THREADS=TFLITE_THREADS,
+        offset=0,
+        dur=0
+    )
+
     return process_audio_segment(
         file_path,
         audio_classifier,

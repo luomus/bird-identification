@@ -27,6 +27,9 @@ class NumberSetting(QWidget):
         self.slider.valueChanged.connect(self.on_slider_change)
         self.layout.addWidget(self.slider)
 
+    def value(self):
+        return self.spin_box.value()
+
     def on_spin_box_change(self, value: float):
         new_slider_value = int(value * 100)
         if self.slider.value() != new_slider_value:

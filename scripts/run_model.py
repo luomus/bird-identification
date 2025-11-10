@@ -60,11 +60,12 @@ def process_audio_segment(
     detection_timestamps += start_time
     
     # Calibrate predictions
-    for i in range(len(species_predictions)):
-        species_predictions[i, :] = functions.calibrate(
-            species_predictions[i, :],
-            calibration_params
-        )
+    if calibration_params is not None:
+        for i in range(len(species_predictions)):
+            species_predictions[i, :] = functions.calibrate(
+                species_predictions[i, :],
+                calibration_params
+            )
     
     # Apply threshold filter
     species_predictions, species_class_indices, detection_timestamps = functions.threshold_filter(
