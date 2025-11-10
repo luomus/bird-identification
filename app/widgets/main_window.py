@@ -38,20 +38,18 @@ class MainWindow(QMainWindow):
         self.on_tab_change(0)
 
     def on_tab_change(self, active_idx: int):
-        show_single_file_tab = False
-        show_multiple_files_tab = False
-        show_model_config_tab = False
-
         if active_idx == 0:
-            show_single_file_tab = True
+            self.multiple_files_tab.setVisible(False)
+            self.model_config_tab.setVisible(False)
+            self.single_file_tab.setVisible(True)
         elif active_idx == 1:
-            show_multiple_files_tab = True
+            self.model_config_tab.setVisible(False)
+            self.single_file_tab.setVisible(False)
+            self.multiple_files_tab.setVisible(True)
         elif active_idx == 2:
-            show_model_config_tab = True
-
-        self.single_file_tab.setVisible(show_single_file_tab)
-        self.multiple_files_tab.setVisible(show_multiple_files_tab)
-        self.model_config_tab.setVisible(show_model_config_tab)
+            self.single_file_tab.setVisible(False)
+            self.multiple_files_tab.setVisible(False)
+            self.model_config_tab.setVisible(True)
 
     def on_models_changed(self):
         self.single_file_tab.update_models()

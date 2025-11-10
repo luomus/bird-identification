@@ -28,14 +28,15 @@ class MainAudioPlayer(QWidget):
         layout.addLayout(time_layout)
 
         start_time_label = QLabel("00:00:00")
-        palette = self.waveform.palette()
+        palette = start_time_label.palette()
         muted = palette.color(QPalette.ColorGroup.Disabled, QPalette.ColorRole.Text)
         palette.setColor(QPalette.ColorRole.WindowText, muted)
         start_time_label.setPalette(palette)
-        font = self.waveform.font()
+        font = start_time_label.font()
         font.setPointSize(8)
         start_time_label.setFont(font)
         time_layout.addWidget(start_time_label, 0, Qt.AlignmentFlag.AlignLeft)
+
         self.end_time_label = QLabel("00:00:00")
         self.end_time_label.setPalette(palette)
         self.end_time_label.setFont(font)

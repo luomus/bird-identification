@@ -2,7 +2,7 @@ from typing import Optional, Union
 import numpy as np
 
 from PySide6.QtCore import Signal
-from PySide6.QtWidgets import QWidget, QVBoxLayout
+from PySide6.QtWidgets import QWidget, QVBoxLayout, QSizePolicy
 
 from widgets.audio_player.audio_info_bar import AudioInfoBar
 from widgets.audio_player.main_audio_player import MainAudioPlayer
@@ -15,6 +15,7 @@ class AudioPlayer(QWidget):
         super().__init__()
 
         layout = QVBoxLayout()
+        self.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Fixed)
         self.setLayout(layout)
 
         self.top_bar = AudioInfoBar(file_name)
