@@ -72,7 +72,7 @@ class WaveformView(QWidget):
         layout.addWidget(self.view)
 
         self.loading_spinner = WaitingSpinner(self)
-        self.loading_spinner.setVisible(False)
+        self.loading_spinner.hide()
         layout.addWidget(self.loading_spinner, alignment=Qt.AlignmentFlag.AlignCenter)
 
         self.threadpool = QThreadPool()
@@ -80,12 +80,12 @@ class WaveformView(QWidget):
     def set_loading(self, loading: bool):
         if loading:
             self.loading_spinner.start()
-            self.loading_spinner.setVisible(True)
-            self.view.setVisible(False)
+            self.view.hide()
+            self.loading_spinner.show()
         else:
             self.loading_spinner.stop()
-            self.loading_spinner.setVisible(False)
-            self.view.setVisible(True)
+            self.loading_spinner.hide()
+            self.view.show()
 
     def resizeEvent(self, event: QtGui.QMouseEvent):
         self.view.fitInView(self.scene.sceneRect())

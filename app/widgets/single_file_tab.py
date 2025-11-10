@@ -39,7 +39,7 @@ class SingleFileTab(QWidget):
 
         self.audio_player = AudioPlayer()
         self.audio_player.removeClicked.connect(self.on_file_removed)
-        self.audio_player.setVisible(False)
+        self.audio_player.hide()
         box_layout.addWidget(self.audio_player)
 
         self.detector_settings = DetectorSettings()
@@ -54,7 +54,7 @@ class SingleFileTab(QWidget):
 
         self.result_table = Datatable()
         self.result_table.setMinimumHeight(150)
-        self.result_table.setVisible(False)
+        self.result_table.hide()
         self.layout.addWidget(self.result_table, stretch=1)
 
         self.layout.addStretch()
@@ -68,8 +68,8 @@ class SingleFileTab(QWidget):
         self.file_path = file_path
         self.audio_player.set_file_name(Path(file_path).name)
 
-        self.drag_and_drop.setVisible(False)
-        self.audio_player.setVisible(True)
+        self.drag_and_drop.hide()
+        self.audio_player.show()
         self.audio_player.set_loading(True)
 
         worker = Worker(load_audio, file_path)
@@ -81,8 +81,8 @@ class SingleFileTab(QWidget):
         self._clear_results()
 
     def on_file_removed(self):
-        self.drag_and_drop.setVisible(True)
-        self.audio_player.setVisible(False)
+        self.audio_player.hide()
+        self.drag_and_drop.show()
 
         self.file_path = None
         self.audio_data = None
@@ -125,7 +125,7 @@ class SingleFileTab(QWidget):
     def on_analyze_result(self, result: pd.DataFrame):
         self.results = result
         self.result_table.set_data(result)
-        self.result_table.setVisible(True)
+        self.result_table.show()
 
     def on_analyze_finished(self):
         self.analyze_started = False
@@ -157,4 +157,4 @@ class SingleFileTab(QWidget):
     def _clear_results(self):
         self.results = None
         self.result_table.set_data(None)
-        self.result_table.setVisible(False)
+        self.result_table.hide()
