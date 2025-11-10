@@ -58,7 +58,15 @@ class MultipleFilesTab(QWidget):
             show_alert(self, "Please select input and output folders first")
             return
 
-        self._start_analyze(input_folder_path, output_folder_path)
+        model_folder = self.detector_settings.active_model()
+        threshold = self.detector_settings.threshold()
+        overlap = self.detector_settings.overlap()
+
+        if not model_folder:
+            show_alert(self, "Please configure a model first")
+            return
+
+        self._start_analyze(input_folder_path, output_folder_path, model_folder, threshold, overlap)
 
         self.analyze_button.setDisabled(True)
         self.progress_label.start_spinner()
@@ -83,14 +91,14 @@ class MultipleFilesTab(QWidget):
         show_alert(self, "An error occurred while analyzing the audio!")
         self.progress_label.set_text("")
 
-    def _start_analyze(self, input_folder_path: str, output_folder_path: str):
+    def _start_analyze(self, input_folder_path: str, output_folder_path: str, model_folder: str, threshold: float, overlap: float):
         worker = Worker(
             analyze_multiple_files,
             input_folder_path,
             output_folder_path,
-            self.detector_settings.active_model(),
-            threshold=self.detector_settings.threshold(),
-            overlap=self.detector_settings.overlap(),
+            model_folder,
+            threshold=threshold,
+            overlap=overlap,
         )
         worker.signals.result.connect(self.on_analyze_result)
         worker.signals.finished.connect(self.on_analyze_finished)

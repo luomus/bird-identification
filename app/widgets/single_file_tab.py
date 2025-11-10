@@ -19,8 +19,13 @@ from widgets.detector_settings import DetectorSettings
 class SingleFileTab(QWidget):
     file_path = None
     audio_data: Optional[Tuple[np.ndarray, Union[int, float]]] = None
+
     results: Optional[pd.DataFrame] = None
+
     analyze_started: bool = False
+    model_folder: str = ""
+    threshold: float = 0
+    overlap: float = 0
 
     def __init__(self):
         super().__init__()
@@ -98,7 +103,7 @@ class SingleFileTab(QWidget):
         self.audio_data = data
 
         if self.analyze_started:
-            self._start_analyze(self.audio_data)
+            self._start_analyze(self.audio_data, self.model_folder, self.threshold, self.overlap)
 
     def on_audio_load_error(self):
         show_alert(self, "Loading audio failed!")
@@ -112,12 +117,20 @@ class SingleFileTab(QWidget):
             show_alert(self, "Please select a file first")
             return
 
+        self.model_folder = self.detector_settings.active_model()
+        self.threshold = self.detector_settings.threshold()
+        self.overlap = self.detector_settings.overlap()
+
+        if not self.model_folder:
+            show_alert(self, "Please configure a model first")
+            return
+
         self.analyze_started = True
 
         if self.audio_data is None:
             self.progress_label.set_text("Loading audio")
         else:
-            self._start_analyze(self.audio_data)
+            self._start_analyze(self.audio_data, self.model_folder, self.threshold, self.overlap)
 
         self.analyze_button.setDisabled(True)
         self.progress_label.start_spinner()
@@ -140,13 +153,13 @@ class SingleFileTab(QWidget):
     def on_analyze_error(self):
         show_alert(self, "An error occurred while analyzing the audio!")
 
-    def _start_analyze(self, audio_data: Tuple[np.ndarray, Union[int, float]]):
+    def _start_analyze(self, audio_data: Tuple[np.ndarray, Union[int, float]], model_folder: str, threshold: float, overlap: float):
         worker = Worker(
             analyze_single_file,
             audio_data,
-            self.detector_settings.active_model(),
-            threshold=self.detector_settings.threshold(),
-            overlap=self.detector_settings.overlap(),
+            model_folder,
+            threshold=threshold,
+            overlap=overlap,
         )
         worker.signals.result.connect(self.on_analyze_result)
         worker.signals.finished.connect(self.on_analyze_finished)
