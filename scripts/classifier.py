@@ -1,9 +1,7 @@
-import tensorflow
 from tensorflow import keras
 import numpy as np
 import librosa
-import os
-from scripts.functions import pad, split_signal
+from scripts.functions import split_signal
 import time
 
 # Classifier

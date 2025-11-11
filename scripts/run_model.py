@@ -8,8 +8,7 @@ import librosa
 import soundfile as sf
 import tempfile
 
-from typing import Dict, Any, Optional, Tuple
-from dataclasses import dataclass
+from typing import Dict, Any
 
 
 def process_audio_segment(

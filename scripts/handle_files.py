@@ -15,7 +15,7 @@ Overall process:
 '''
 
 import os   
-from typing import Dict, Any, Optional, Tuple
+from typing import Optional
 from datetime import datetime
 import pandas as pd
 
