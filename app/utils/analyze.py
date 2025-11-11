@@ -1,5 +1,6 @@
 import json
 import os
+from threading import Event
 from pathlib import Path
 from typing import Any, Tuple, Union, Generator, Optional
 
@@ -26,7 +27,7 @@ def load_audio(file_path: str, sample_rate: Optional[str] = 24000) -> Tuple[np.n
         raise ValueError("Invalid audio file")
     return y, sr
 
-def analyze_single_file(audio_data: Tuple[np.ndarray, Union[int, float]], model_folder: str, progress_callback: Signal, **kwargs: dict[str, Any]) -> pd.DataFrame:
+def analyze_single_file(audio_data: Tuple[np.ndarray, Union[int, float]], model_folder: str, progress_callback: Signal, cancel_requested: Event, **kwargs: dict[str, Any]) -> pd.DataFrame:
     results = pd.DataFrame()
 
     model_file_paths = _get_model_file_paths(model_folder)
@@ -34,6 +35,9 @@ def analyze_single_file(audio_data: Tuple[np.ndarray, Union[int, float]], model_
     params = {**default_params, **kwargs}
 
     for chunk_file, chunk_idx, total_chunks in _audio_to_chunks(audio_data[0], audio_data[1]):
+        if cancel_requested.is_set():
+            raise ValueError("Cancel requested")
+
         progress_callback.emit({
             "chunk": chunk_idx + 1,
             "total_chunks": total_chunks,
@@ -45,7 +49,7 @@ def analyze_single_file(audio_data: Tuple[np.ndarray, Union[int, float]], model_
 
     return results
 
-def analyze_multiple_files(input_folder_path: str, output_folder_path: str, model_folder: str, progress_callback: Signal, **kwargs: dict[str, Any]):
+def analyze_multiple_files(input_folder_path: str, output_folder_path: str, model_folder: str, progress_callback: Signal, cancel_requested: Event, **kwargs: dict[str, Any]):
     successes = 0
     errors = 0
 
@@ -63,6 +67,9 @@ def analyze_multiple_files(input_folder_path: str, output_folder_path: str, mode
     total_files = len(file_paths)
 
     for file_idx, file_path in enumerate(file_paths):
+        if cancel_requested.is_set():
+            raise ValueError("Cancel requested")
+
         progress_data = {"file": file_idx + 1, "total_files": total_files}
         progress_callback.emit(progress_data)
 
@@ -72,6 +79,9 @@ def analyze_multiple_files(input_folder_path: str, output_folder_path: str, mode
             results = pd.DataFrame()
 
             for chunk_file, chunk_idx, total_chunks in _audio_to_chunks(audio_data, sr):
+                if cancel_requested.is_set():
+                    raise ValueError("Cancel requested")
+
                 progress_callback.emit({**progress_data, "chunk": chunk_idx + 1, "total_chunks": total_chunks})
 
                 results = _add_results_for_chunk(chunk_file, model_file_paths, results, **params)

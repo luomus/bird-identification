@@ -4,6 +4,7 @@ import sys
 import time
 import traceback
 import inspect
+from threading import Event
 
 from PySide6.QtCore import (
     QObject,
@@ -63,21 +64,31 @@ class Worker(QRunnable):
         self.kwargs = kwargs
         self.signals = WorkerSignals()
 
+        self.cancel_requested = Event()
+
         sig = inspect.signature(fn)
         params = sig.parameters.values()
+
         for param in params:
             if param.name == "progress_callback":
                 self.kwargs["progress_callback"] = self.signals.progress
+            elif param.name == "cancel_requested":
+                self.kwargs["cancel_requested"] = self.cancel_requested
 
     @Slot()
     def run(self):
         try:
             result = self.fn(*self.args, **self.kwargs)
         except Exception:
-            traceback.print_exc()
-            exctype, value = sys.exc_info()[:2]
-            self.signals.error.emit((exctype, value, traceback.format_exc()))
+            if not self.cancel_requested.is_set():
+                traceback.print_exc()
+                exctype, value = sys.exc_info()[:2]
+                self.signals.error.emit((exctype, value, traceback.format_exc()))
         else:
-            self.signals.result.emit(result)
+            if not self.cancel_requested.is_set():
+                self.signals.result.emit(result)
         finally:
             self.signals.finished.emit()
+
+    def cancel(self):
+        self.cancel_requested.set()

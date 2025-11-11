@@ -27,6 +27,8 @@ class SingleFileTab(QWidget):
     threshold: float = 0
     overlap: float = 0
 
+    active_worker: Optional[Worker] = None
+
     def __init__(self):
         super().__init__()
 
@@ -55,6 +57,7 @@ class SingleFileTab(QWidget):
         self.layout.addWidget(self.analyze_button)
 
         self.progress_label = ProgressLabel()
+        self.progress_label.cancelClicked.connect(self.on_cancel_analyze_click)
         self.layout.addWidget(self.progress_label)
 
         self.result_table = Datatable()
@@ -133,7 +136,7 @@ class SingleFileTab(QWidget):
             self._start_analyze(self.audio_data, self.model_folder, self.threshold, self.overlap)
 
         self.analyze_button.setDisabled(True)
-        self.progress_label.start_spinner()
+        self.progress_label.start_processing()
 
     def on_analyze_result(self, result: pd.DataFrame):
         self.results = result
@@ -143,7 +146,7 @@ class SingleFileTab(QWidget):
     def on_analyze_finished(self):
         self.analyze_started = False
         self.analyze_button.setDisabled(False)
-        self.progress_label.stop_spinner()
+        self.progress_label.stop_processing()
         self.progress_label.set_text("")
 
     def on_analyze_progressed(self, data: dict[str, Any]):
@@ -153,6 +156,13 @@ class SingleFileTab(QWidget):
     def on_analyze_error(self):
         show_alert(self, "An error occurred while analyzing the audio!")
 
+    def on_cancel_analyze_click(self):
+        if self.active_worker is not None:
+            self.active_worker.cancel()
+            self.progress_label.set_text("Canceling")
+        else:
+            self.on_analyze_finished()
+
     def _start_analyze(self, audio_data: Tuple[np.ndarray, Union[int, float]], model_folder: str, threshold: float, overlap: float):
         worker = Worker(
             analyze_single_file,
@@ -161,11 +171,14 @@ class SingleFileTab(QWidget):
             threshold=threshold,
             overlap=overlap,
         )
+
         worker.signals.result.connect(self.on_analyze_result)
         worker.signals.finished.connect(self.on_analyze_finished)
         worker.signals.progress.connect(self.on_analyze_progressed)
         worker.signals.error.connect(self.on_analyze_error)
         self.threadpool.start(worker)
+
+        self.active_worker = worker
 
     def _clear_results(self):
         self.results = None
