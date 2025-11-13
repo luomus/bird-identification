@@ -22,7 +22,7 @@ import pandas as pd
 import librosa
 import soundfile as sf
 
-from scripts import functions, stats_functions
+from scripts import utils, stats_functions
 
 import time
 import tracemalloc
@@ -164,7 +164,7 @@ def load_csv_files_to_dataframe(file_paths: list[str], threshold: float) -> pd.D
             df['Filepath'] = file_path
             df['Audio Filepath'] = df['Filepath'].apply(get_audio_file_path)
 
-            date_str, time_str = functions.get_date_and_time_from_filepath(file_path)
+            date_str, time_str = utils.get_date_and_time_from_filepath(file_path)
             df['File timestamp'] = pd.to_datetime(date_str + time_str, format='%Y%m%d%H%M%S')
 
             dataframes.append(df)

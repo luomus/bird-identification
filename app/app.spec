@@ -1,11 +1,7 @@
 # -*- mode: python ; coding: utf-8 -*-
-import pkgutil
-import rasterio
 
-# include resampy and all rasterio submodules since they are not detected automatically
+# include resampy since it's not detected automatically
 additional_packages = ['resampy']
-for package in pkgutil.iter_modules(rasterio.__path__, prefix="rasterio."):
-    additional_packages.append(package.name)
 
 a = Analysis(
     ['app.py'],
@@ -15,7 +11,7 @@ a = Analysis(
         ('../models/BirdNET_GLOBAL_6K_V2.4_Model_FP32.tflite', 'data'),
         ('../models/Pred_adjustment/calibration_params.npy', 'models/Finnish_model_v3_5'),
         ('../models/classes.csv', 'models/Finnish_model_v3_5'),
-        ('../models/model_v3_5.h5', 'models/Finnish_model_v3_5'),
+        ('../models/model_v3_5.tflite', 'models/Finnish_model_v3_5'),
         ('./build_resources/metadata.json', 'models/Finnish_model_v3_5')
     ],
     hiddenimports=additional_packages,

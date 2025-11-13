@@ -7,7 +7,7 @@ import sys
 import os
 import run_model
 from scripts.pydantic_parameters import AnalysisParameters, Metadata
-import scripts.functions
+from scripts.utils import read_metadata
 
 def main():
     # Set up argument parser
@@ -72,7 +72,7 @@ def main():
         return
 
     # Read metadata first
-    metadata = functions.read_metadata(data_directory)
+    metadata = read_metadata(data_directory)
     if metadata is None:
         print(f"Error: Proper metadata file not found at {data_directory}", file=sys.stderr)
         return

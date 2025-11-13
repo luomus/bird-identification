@@ -2,7 +2,7 @@ import pandas as pd
 import numpy as np
 import os
 import gc
-from scripts import functions
+from scripts import functions, utils
 
 import librosa
 import soundfile as sf
@@ -154,7 +154,7 @@ def analyze_directory(input_path, parameters):
     calibration_parameters = np.load("models/Pred_adjustment/calibration_params.npy")
 
     # Get list of files in input folder
-    files = functions.get_audio_file_names(input_path)
+    files = utils.get_audio_file_names(input_path)
 
     number_of_files = len(files)
 
@@ -168,7 +168,7 @@ def analyze_directory(input_path, parameters):
     for file_index, file_name in enumerate(files):
         try:
             file_path = f"{input_path}/{file_name}"
-            output_file_path, output_file_exists = functions.make_output_file_path(output_path, file_name)
+            output_file_path, output_file_exists = utils.make_output_file_path(output_path, file_name)
 
             if output_file_exists and SKIP_IF_OUTPUT_EXISTS:
                 print(f"Skipping {file_path} because output file exists and skipping is enabled.")
@@ -178,7 +178,7 @@ def analyze_directory(input_path, parameters):
             print(f"Loading file {file_path} ({file_index + 1} of {number_of_files})")
 
             # If filename contains a date, use that instead of the metadata date. Note that only pre-specified date formats are supported.
-            day_of_year_from_file = functions.get_day_of_year_from_filename(file_name)
+            day_of_year_from_file = utils.get_day_of_year_from_filename(file_name)
             if day_of_year_from_file is not None:
                 day_of_year = day_of_year_from_file
                 print(f"Day of year from filename: {day_of_year}")

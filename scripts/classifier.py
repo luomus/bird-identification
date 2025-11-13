@@ -1,8 +1,11 @@
-from tensorflow import keras
 import numpy as np
 import librosa
 from scripts.functions import split_signal
 import time
+try:
+    import tflite_runtime.interpreter as tflite
+except ModuleNotFoundError:
+    from tensorflow import lite as tflite
 
 # Classifier
 
@@ -18,34 +21,32 @@ class Classifier():
         ######################################
         # Initialize BirdNET feature extractor
         ######################################
-        try:
-            import tflite_runtime.interpreter as tflite
-        except ModuleNotFoundError:
-            from tensorflow import lite as tflite
+
         self.INTERPRETER = tflite.Interpreter(model_path=self.BIRDNED_MODEL_PATH, num_threads=self.TFLITE_THREADS)
         self.INTERPRETER.allocate_tensors()
         # Get input and output tensors.
         input_details = self.INTERPRETER.get_input_details()
         output_details = self.INTERPRETER.get_output_details()
         # Get input tensor index
-        self.INPUT_LAYER_INDEX = input_details[0]["index"]
+        self.INTERPRETER_INPUT_LAYER_INDEX = input_details[0]["index"]
         # Get classification output or feature embeddings
-        self.OUTPUT_LAYER_INDEX = output_details[0]["index"] - 1
+        self.INTERPRETER_OUTPUT_LAYER_INDEX = output_details[0]["index"] - 1
         ################################
         # Initialize classification head
         ################################
-        self.model = keras.models.load_model(self.MLK_MODEL_PATH)
+        self.CLASSIFIER = tflite.Interpreter(model_path=self.MLK_MODEL_PATH, num_threads=self.TFLITE_THREADS)
+        self.CLASSIFIER.allocate_tensors()
+        self.CLASSIFIER_INPUT_LAYER_INDEX = self.CLASSIFIER.get_input_details()[0]["index"]
+        self.CLASSIFIER_OUTPUT_LAYER_INDEX = self.CLASSIFIER.get_output_details()[0]["index"]
 
-    def embeddings(self, sample):
-        # Reshape input tensor
-        self.INTERPRETER.resize_tensor_input(self.INPUT_LAYER_INDEX, [len(sample), *sample[0].shape])
-        self.INTERPRETER.allocate_tensors()
-        # Extract feature embeddings
-        self.INTERPRETER.set_tensor(self.INPUT_LAYER_INDEX, np.array(sample, dtype="float32"))
-        self.INTERPRETER.invoke()
-        features = self.INTERPRETER.get_tensor(self.OUTPUT_LAYER_INDEX)
-        return features
-    
+    def interpret(self, interpreter, input_layer_index, output_layer_index, sample):
+        interpreter.resize_tensor_input(input_layer_index, sample.shape)
+        interpreter.allocate_tensors()
+
+        interpreter.set_tensor(input_layer_index, sample)
+        interpreter.invoke()
+        return interpreter.get_tensor(output_layer_index)
+
     def classify(self, data_path, overlap=1.0, max_pred=True):
         # Start timing
         start = time.time()
@@ -63,8 +64,9 @@ class Classifier():
             samples.append(chunks[c])
         X = np.array(samples, dtype='float32')
         print(f"Classifying segment")
-        X = self.model(self.embeddings(X))
-        X = X.numpy()
+
+        X = self.interpret(self.INTERPRETER, self.INTERPRETER_INPUT_LAYER_INDEX, self.INTERPRETER_OUTPUT_LAYER_INDEX, X)
+        X = self.interpret(self.CLASSIFIER, self.CLASSIFIER_INPUT_LAYER_INDEX, self.CLASSIFIER_OUTPUT_LAYER_INDEX, X)
         print("Segment classification done")
 
         # End timing
