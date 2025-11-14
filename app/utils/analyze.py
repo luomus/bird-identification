@@ -34,6 +34,16 @@ def analyze_single_file(audio_data: Tuple[np.ndarray, Union[int, float]], model_
     default_params = _load_default_params(model_file_paths)
     params = {**default_params, **kwargs}
 
+    classifier = Classifier(
+        path_to_mlk_model=str(model_file_paths["model"]),
+        path_to_birdnet_model=BIRDNET_MODEL_PATH,
+        sr=48000,
+        clip_dur=CLIP_DURATION,
+        TFLITE_THREADS=TFLITE_THREADS,
+        offset=0,
+        dur=0
+    )
+
     for chunk_file, chunk_idx, total_chunks in _audio_to_chunks(audio_data[0], audio_data[1]):
         if cancel_requested.is_set():
             raise ValueError("Cancel requested")
@@ -43,7 +53,7 @@ def analyze_single_file(audio_data: Tuple[np.ndarray, Union[int, float]], model_
             "total_chunks": total_chunks,
         })
 
-        results = _add_results_for_chunk(chunk_file, model_file_paths, results, **params)
+        results = _add_results_for_chunk(chunk_file, classifier, results, **params)
 
     results = _rename_result_columns(results)
 
@@ -56,6 +66,16 @@ def analyze_multiple_files(input_folder_path: str, output_folder_path: str, mode
     model_file_paths = _get_model_file_paths(model_folder)
     default_params = _load_default_params(model_file_paths)
     params = {**default_params, **kwargs}
+
+    classifier = Classifier(
+        path_to_mlk_model=str(model_file_paths["model"]),
+        path_to_birdnet_model=BIRDNET_MODEL_PATH,
+        sr=48000,
+        clip_dur=CLIP_DURATION,
+        TFLITE_THREADS=TFLITE_THREADS,
+        offset=0,
+        dur=0
+    )
 
     file_paths = []
 
@@ -84,7 +104,7 @@ def analyze_multiple_files(input_folder_path: str, output_folder_path: str, mode
 
                 progress_callback.emit({**progress_data, "chunk": chunk_idx + 1, "total_chunks": total_chunks})
 
-                results = _add_results_for_chunk(chunk_file, model_file_paths, results, **params)
+                results = _add_results_for_chunk(chunk_file, classifier, results, **params)
 
             results = _rename_result_columns(results)
 
@@ -154,28 +174,18 @@ def _audio_to_chunks(audio_data: np.ndarray, sr: Union[int, float], chunk_size: 
 
             yield temp_file_path, int(i / chunk_size), total_chunks
 
-def _add_results_for_chunk(file_path: str, model_file_paths: dict[str, str], all_results: pd.DataFrame, **kwargs: dict[str, Any]) -> pd.DataFrame:
-    df = _analyze(file_path, model_file_paths, **kwargs)
+def _add_results_for_chunk(file_path: str, classifier: Classifier, all_results: pd.DataFrame, **kwargs: dict[str, Any]) -> pd.DataFrame:
+    df = _analyze(file_path, classifier, **kwargs)
 
     if not df.empty:
         all_results = pd.concat([all_results, df])
 
     return all_results
 
-def _analyze(file_path: str, model_file_paths: dict[str, str], **kwargs: dict[str, Any]) -> pd.DataFrame:
-    audio_classifier = Classifier(
-        path_to_mlk_model=str(model_file_paths["model"]),
-        path_to_birdnet_model=BIRDNET_MODEL_PATH,
-        sr=48000,
-        clip_dur=CLIP_DURATION,
-        TFLITE_THREADS=TFLITE_THREADS,
-        offset=0,
-        dur=0
-    )
-
+def _analyze(file_path: str, classifier: Classifier, **kwargs: dict[str, Any]) -> pd.DataFrame:
     return process_audio_segment(
         file_path,
-        audio_classifier,
+        classifier,
         **kwargs
     )
 

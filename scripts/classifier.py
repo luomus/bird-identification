@@ -2,10 +2,8 @@ import numpy as np
 import librosa
 from scripts.functions import split_signal
 import time
-try:
-    import tflite_runtime.interpreter as tflite
-except ModuleNotFoundError:
-    from tensorflow import lite as tflite
+
+from tensorflow import lite as tflite, keras
 
 # Classifier
 
@@ -28,24 +26,24 @@ class Classifier():
         input_details = self.INTERPRETER.get_input_details()
         output_details = self.INTERPRETER.get_output_details()
         # Get input tensor index
-        self.INTERPRETER_INPUT_LAYER_INDEX = input_details[0]["index"]
+        self.INPUT_LAYER_INDEX = input_details[0]["index"]
         # Get classification output or feature embeddings
-        self.INTERPRETER_OUTPUT_LAYER_INDEX = output_details[0]["index"] - 1
+        self.OUTPUT_LAYER_INDEX = output_details[0]["index"] - 1
         ################################
         # Initialize classification head
         ################################
-        self.CLASSIFIER = tflite.Interpreter(model_path=self.MLK_MODEL_PATH, num_threads=self.TFLITE_THREADS)
-        self.CLASSIFIER.allocate_tensors()
-        self.CLASSIFIER_INPUT_LAYER_INDEX = self.CLASSIFIER.get_input_details()[0]["index"]
-        self.CLASSIFIER_OUTPUT_LAYER_INDEX = self.CLASSIFIER.get_output_details()[0]["index"]
+        self.model = keras.models.load_model(self.MLK_MODEL_PATH)
 
-    def interpret(self, interpreter, input_layer_index, output_layer_index, sample):
-        interpreter.resize_tensor_input(input_layer_index, sample.shape)
-        interpreter.allocate_tensors()
+    def interpret(self, sample):
+        current_shape = self.INTERPRETER.get_input_details()[self.INPUT_LAYER_INDEX]["shape"]
 
-        interpreter.set_tensor(input_layer_index, sample)
-        interpreter.invoke()
-        return interpreter.get_tensor(output_layer_index)
+        if list(current_shape) != list(sample.shape):
+            self.INTERPRETER.resize_tensor_input(self.INPUT_LAYER_INDEX, sample.shape)
+            self.INTERPRETER.allocate_tensors()
+
+        self.INTERPRETER.set_tensor(self.INPUT_LAYER_INDEX, sample)
+        self.INTERPRETER.invoke()
+        return self.INTERPRETER.get_tensor(self.OUTPUT_LAYER_INDEX)
 
     def classify(self, data_path, overlap=1.0, max_pred=True):
         # Start timing
@@ -65,8 +63,9 @@ class Classifier():
         X = np.array(samples, dtype='float32')
         print(f"Classifying segment")
 
-        X = self.interpret(self.INTERPRETER, self.INTERPRETER_INPUT_LAYER_INDEX, self.INTERPRETER_OUTPUT_LAYER_INDEX, X)
-        X = self.interpret(self.CLASSIFIER, self.CLASSIFIER_INPUT_LAYER_INDEX, self.CLASSIFIER_OUTPUT_LAYER_INDEX, X)
+
+        X = self.model(self.interpret(X))
+        X = X.numpy()
         print("Segment classification done")
 
         # End timing

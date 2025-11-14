@@ -1,1 +1,1 @@
-{"model_file": "model_v3_5.tflite", "classes_file": "classes.csv", "calibration_file": "calibration_params.npy"}
+{"model_file": "model_v3_5.h5", "classes_file": "classes.csv", "calibration_file": "calibration_params.npy"}
