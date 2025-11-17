@@ -44,9 +44,7 @@ audio_classifier = Classifier(
     path_to_birdnet_model=BIRDNET_MODEL_PATH,
     sr=48000,
     clip_dur=CLIP_DURATION,
-    TFLITE_THREADS=TFLITE_THREADS,
-    offset=0,
-    dur=0
+    TFLITE_THREADS=TFLITE_THREADS
 )
 
 

@@ -6,7 +6,7 @@ from PySide6.QtCore import QRegularExpression, Signal
 from PySide6.QtGui import QRegularExpressionValidator
 from PySide6.QtWidgets import QGroupBox, QFormLayout, QLineEdit, QHBoxLayout, QPushButton
 
-from utils.utils import show_alert, get_model_folder_path
+from functions.utils import show_alert, get_model_folder_path
 from widgets.common.file_select import FileSelect
 
 

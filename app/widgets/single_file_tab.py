@@ -5,9 +5,9 @@ from typing import Tuple, Union, Optional, Any
 import numpy as np
 from pathlib import Path
 
-from utils.worker import Worker
-from utils.analyze import load_audio, analyze_single_file
-from utils.utils import show_alert
+from functions.worker import Worker
+from functions.analyze import load_audio, analyze_single_file
+from functions.utils import show_alert
 from widgets.common.main_button import MainButton
 from widgets.common.audio_drag_and_drop import AudioDragAndDrop
 from widgets.audio_player.audio_player import AudioPlayer
@@ -22,7 +22,6 @@ class SingleFileTab(QWidget):
 
     results: Optional[pd.DataFrame] = None
 
-    analyze_started: bool = False
     model_folder: str = ""
     threshold: float = 0
     overlap: float = 0
@@ -105,9 +104,6 @@ class SingleFileTab(QWidget):
 
         self.audio_data = data
 
-        if self.analyze_started:
-            self._start_analyze(self.audio_data, self.model_folder, self.threshold, self.overlap)
-
     def on_audio_load_error(self):
         show_alert(self, "Loading audio failed!")
 
@@ -128,12 +124,7 @@ class SingleFileTab(QWidget):
             show_alert(self, "Please configure a model first")
             return
 
-        self.analyze_started = True
-
-        if self.audio_data is None:
-            self.progress_label.set_text("Loading audio")
-        else:
-            self._start_analyze(self.audio_data, self.model_folder, self.threshold, self.overlap)
+        self._start_analyze(self.file_path, self.model_folder, self.threshold, self.overlap)
 
         self.analyze_button.setDisabled(True)
         self.progress_label.start_processing()
@@ -144,7 +135,6 @@ class SingleFileTab(QWidget):
         self.result_table.show()
 
     def on_analyze_finished(self):
-        self.analyze_started = False
         self.analyze_button.setDisabled(False)
         self.progress_label.stop_processing()
         self.progress_label.set_text("")
@@ -160,13 +150,11 @@ class SingleFileTab(QWidget):
         if self.active_worker is not None:
             self.active_worker.cancel()
             self.progress_label.set_text("Canceling")
-        else:
-            self.on_analyze_finished()
 
-    def _start_analyze(self, audio_data: Tuple[np.ndarray, Union[int, float]], model_folder: str, threshold: float, overlap: float):
+    def _start_analyze(self, file_path: str, model_folder: str, threshold: float, overlap: float):
         worker = Worker(
             analyze_single_file,
-            audio_data,
+            file_path,
             model_folder,
             threshold=threshold,
             overlap=overlap,

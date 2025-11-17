@@ -1,5 +1,6 @@
 import json
 import os
+from math import ceil
 from threading import Event
 from pathlib import Path
 from typing import Any, Tuple, Union, Generator, Optional
@@ -7,14 +8,11 @@ from typing import Any, Tuple, Union, Generator, Optional
 import numpy as np
 import pandas as pd
 import librosa
-import soundfile as sf
-import tempfile
-import math
 from PySide6.QtCore import Signal
 
-from utils.utils import is_audio_file, get_data_folder_path, get_model_folder_path
+from scripts import functions
+from functions.utils import is_audio_file, get_data_folder_path, get_model_folder_path
 from scripts.classifier import Classifier
-from scripts.run_model import process_audio_segment
 
 BIRDNET_MODEL_PATH = str(get_data_folder_path() / "BirdNET_GLOBAL_6K_V2.4_Model_FP32.tflite")
 TFLITE_THREADS = 1
@@ -27,54 +25,48 @@ def load_audio(file_path: str, sample_rate: Optional[str] = 24000) -> Tuple[np.n
         raise ValueError("Invalid audio file")
     return y, sr
 
-def analyze_single_file(audio_data: Tuple[np.ndarray, Union[int, float]], model_folder: str, progress_callback: Signal, cancel_requested: Event, **kwargs: dict[str, Any]) -> pd.DataFrame:
+def analyze_single_file(file_path: str, model_folder: str, threshold: float, overlap: float, progress_callback: Signal, cancel_requested: Event) -> pd.DataFrame:
     results = pd.DataFrame()
 
-    model_file_paths = _get_model_file_paths(model_folder)
-    default_params = _load_default_params(model_file_paths)
-    params = {**default_params, **kwargs}
+    model_path, classes, calibration_params = _get_model_data(model_folder)
 
     classifier = Classifier(
-        path_to_mlk_model=str(model_file_paths["model"]),
+        path_to_mlk_model=model_path,
         path_to_birdnet_model=BIRDNET_MODEL_PATH,
         sr=48000,
         clip_dur=CLIP_DURATION,
         TFLITE_THREADS=TFLITE_THREADS,
-        offset=0,
-        dur=0
     )
 
-    for chunk_file, chunk_idx, total_chunks in _audio_to_chunks(audio_data[0], audio_data[1]):
+    for offset, chunk_size, total_duration in _audio_to_chunks(file_path):
         if cancel_requested.is_set():
             raise ValueError("Cancel requested")
 
         progress_callback.emit({
-            "chunk": chunk_idx + 1,
-            "total_chunks": total_chunks,
+            "chunk": int(offset / chunk_size) + 1,
+            "total_chunks": ceil(total_duration / chunk_size),
         })
 
-        results = _add_results_for_chunk(chunk_file, classifier, results, **params)
+        results = _add_results_for_chunk(
+            file_path, classifier, classes, calibration_params, threshold, overlap, offset, chunk_size, results
+        )
 
     results = _rename_result_columns(results)
 
     return results
 
-def analyze_multiple_files(input_folder_path: str, output_folder_path: str, model_folder: str, progress_callback: Signal, cancel_requested: Event, **kwargs: dict[str, Any]):
+def analyze_multiple_files(input_folder_path: str, output_folder_path: str, model_folder: str, threshold: float, overlap: float, progress_callback: Signal, cancel_requested: Event):
     successes = 0
     errors = 0
 
-    model_file_paths = _get_model_file_paths(model_folder)
-    default_params = _load_default_params(model_file_paths)
-    params = {**default_params, **kwargs}
+    model_path, classes, calibration_params = _get_model_data(model_folder)
 
     classifier = Classifier(
-        path_to_mlk_model=str(model_file_paths["model"]),
+        path_to_mlk_model=model_path,
         path_to_birdnet_model=BIRDNET_MODEL_PATH,
         sr=48000,
         clip_dur=CLIP_DURATION,
-        TFLITE_THREADS=TFLITE_THREADS,
-        offset=0,
-        dur=0
+        TFLITE_THREADS=TFLITE_THREADS
     )
 
     file_paths = []
@@ -94,17 +86,17 @@ def analyze_multiple_files(input_folder_path: str, output_folder_path: str, mode
         progress_callback.emit(progress_data)
 
         try:
-            audio_data, sr = load_audio(file_path)
-
             results = pd.DataFrame()
 
-            for chunk_file, chunk_idx, total_chunks in _audio_to_chunks(audio_data, sr):
+            for offset, chunk_size, total_duration in _audio_to_chunks(file_path):
                 if cancel_requested.is_set():
                     raise ValueError("Cancel requested")
 
-                progress_callback.emit({**progress_data, "chunk": chunk_idx + 1, "total_chunks": total_chunks})
+                progress_callback.emit({**progress_data, "chunk": int(offset / chunk_size) + 1, "total_chunks": ceil(total_duration / chunk_size)})
 
-                results = _add_results_for_chunk(chunk_file, classifier, results, **params)
+                results = _add_results_for_chunk(
+                    file_path, classifier, classes, calibration_params, threshold, overlap, offset, chunk_size, results
+                )
 
             results = _rename_result_columns(results)
 
@@ -122,6 +114,21 @@ def analyze_multiple_files(input_folder_path: str, output_folder_path: str, mode
         "successes": successes,
         "errors": errors
     }
+
+def _get_model_data(model_folder: str) -> (str, pd.DataFrame, Optional[np.ndarray]):
+    model_folder_path = get_model_folder_path() / model_folder
+    metadata_path = model_folder_path / "metadata.json"
+
+    with open(metadata_path, "r") as json_data:
+        metadata = json.load(json_data)
+
+    model_path = str(model_folder_path / metadata["model_file"])
+    classes = pd.read_csv(model_folder_path / metadata["classes_file"])
+
+    if "calibration_file" in metadata:
+        calibration_params = np.load(model_folder_path / metadata["calibration_file"])
+
+    return (model_path, classes, calibration_params)
 
 def _get_model_file_paths(model_folder: str) -> dict[str, str]:
     model_path = get_model_folder_path() / model_folder
@@ -161,32 +168,74 @@ def _load_default_params(model_file_paths: dict[str, str]) -> dict[str, Any]:
         "overlap": 0.5
     }
 
-def _audio_to_chunks(audio_data: np.ndarray, sr: Union[int, float], chunk_size: int = 600) -> Generator[str, None, None]:
-    chunk_size = chunk_size * sr
-    total_chunks = math.ceil(len(audio_data) / chunk_size)
+def _audio_to_chunks(file_path: str, chunk_size: int = 600) -> Generator[tuple[int, int, float], None, None]:
+    duration = librosa.get_duration(path=file_path)
+    offset = 0
 
-    with tempfile.TemporaryDirectory() as temp_dir:
-        for i in range(0, len(audio_data), chunk_size):
-            chunk = audio_data[i:i + chunk_size]
+    while offset < duration:
+        yield offset, chunk_size, duration
+        offset += chunk_size
 
-            temp_file_path = os.path.join(temp_dir, f"chunk_{i}.wav")
-            sf.write(temp_file_path, chunk, sr)
-
-            yield temp_file_path, int(i / chunk_size), total_chunks
-
-def _add_results_for_chunk(file_path: str, classifier: Classifier, all_results: pd.DataFrame, **kwargs: dict[str, Any]) -> pd.DataFrame:
-    df = _analyze(file_path, classifier, **kwargs)
+def _add_results_for_chunk(
+        file_path: str,
+        classifier: Classifier,
+        classes: pd.DataFrame,
+        calibration_params: Optional[np.ndarray],
+        threshold: float,
+        overlap: float,
+        offset: int,
+        duration: int,
+        all_results: pd.DataFrame
+):
+    df = _analyze(file_path, classifier, classes, calibration_params, threshold, overlap, offset, duration)
 
     if not df.empty:
         all_results = pd.concat([all_results, df])
 
     return all_results
 
-def _analyze(file_path: str, classifier: Classifier, **kwargs: dict[str, Any]) -> pd.DataFrame:
-    return process_audio_segment(
+def _analyze(
+        file_path: str,
+        classifier: Classifier,
+        classes: pd.DataFrame,
+        calibration_params: Optional[np.ndarray],
+        threshold: float,
+        overlap: float,
+        offset: int,
+        duration: int
+):
+    species_predictions, detection_timestamps = classifier.classify(
         file_path,
-        classifier,
-        **kwargs
+        overlap=overlap,
+        max_pred=False,
+        offset=offset,
+        duration=duration
+    )
+
+    if len(species_predictions) == 0:
+        return pd.DataFrame()
+
+    detection_timestamps += offset
+
+    if calibration_params is not None:
+        for i in range(len(species_predictions)):
+            species_predictions[i, :] = functions.calibrate(
+                species_predictions[i, :],
+                calibration_params
+            )
+
+    species_predictions, species_class_indices, detection_timestamps = functions.threshold_filter(
+        species_predictions,
+        detection_timestamps,
+        threshold
+    )
+
+    return functions.predictions_to_dataframe(
+        species_predictions,
+        species_class_indices,
+        detection_timestamps,
+        classes,
+        classifier.clip_dur
     )
 
 def _rename_result_columns(df: pd.DataFrame) -> pd.DataFrame:

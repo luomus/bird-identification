@@ -1,6 +1,6 @@
 from PySide6.QtWidgets import QHBoxLayout, QGroupBox, QVBoxLayout, QComboBox
 
-from utils.utils import get_available_models
+from functions.utils import get_available_models
 from widgets.common.input_with_label import InputWithLabel
 from widgets.common.number_setting import NumberSetting
 

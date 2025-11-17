@@ -22,7 +22,7 @@ class AppInitializerWorker(QObject):
 
     # import all heavy libraries in another thread so the app doesn't freeze while it's starting up
     def start(self):
-        from utils import analyze
+        from functions import analyze
 
         self.finished.emit()
 

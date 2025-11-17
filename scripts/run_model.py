@@ -85,21 +85,14 @@ def process_audio_segment(
         )
     
     # Build DataFrame with results
-    results = []
-    for i in range(len(species_predictions)):
-        # Skip noise/human detections if configured
-        if species_class_indices[i] <= 1 and not include_noise:
-            continue
-            
-        results.append({
-            'start_time': detection_timestamps[i],
-            'end_time': detection_timestamps[i] + classifier.clip_dur,
-            'scientific_name': species_name_list['luomus_name'].iloc[species_class_indices[i]],
-            'common_name': species_name_list['common_name'].iloc[species_class_indices[i]],
-            'confidence': round(float(species_predictions[i]), 4)
-        })
-    
-    return pd.DataFrame(results)
+    return functions.predictions_to_dataframe(
+        species_predictions,
+        species_class_indices,
+        detection_timestamps,
+        species_name_list,
+        classifier.clip_dur,
+        include_noise
+    )
 
 
 def write_inference_metadata(output_path: str, metadata_dict: Dict[str, Any]) -> None:
@@ -123,8 +116,7 @@ def analyze_directory(input_path, parameters):
     lon = metadata["lon"]
     day_of_year = metadata["day_of_year"]
 
-    from classifier import Classifier
-    from tensorflow import keras
+    from scripts.classifier import Classifier
 
     print(f"\nAnalyzing audio files at {input_path}")
 
@@ -146,7 +138,7 @@ def analyze_directory(input_path, parameters):
     # Load classification model
     # TFLITE_THREADS can be as high as number of CPUs available, the rest of the parameters should not be changed
     CLIP_DURATION = 3.0
-    audio_classifier = Classifier(path_to_mlk_model=MODEL_PATH, path_to_birdnet_model=BIRDNET_MODEL_PATH, sr=48000, clip_dur=CLIP_DURATION, TFLITE_THREADS=TFLITE_THREADS, offset=0, dur=0)
+    audio_classifier = Classifier(path_to_mlk_model=MODEL_PATH, path_to_birdnet_model=BIRDNET_MODEL_PATH, sr=48000, clip_dur=CLIP_DURATION, TFLITE_THREADS=TFLITE_THREADS)
 
     # Load species name list and post-processing tables for prediction calibration
     species_name_list = pd.read_csv("models/classes.csv")

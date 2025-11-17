@@ -3,7 +3,7 @@ import shutil
 from PySide6.QtCore import Signal
 from PySide6.QtWidgets import QWidget, QVBoxLayout, QPushButton, QLabel
 
-from utils.utils import get_available_models, get_model_folder_path
+from functions.utils import get_available_models, get_model_folder_path
 from widgets.model_form import ModelForm
 from widgets.common.list_with_remove import ListWithRemove
 

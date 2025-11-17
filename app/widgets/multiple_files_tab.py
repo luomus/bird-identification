@@ -3,9 +3,9 @@ from typing import Any, Optional
 from PySide6.QtCore import QThreadPool
 from PySide6.QtWidgets import QWidget, QVBoxLayout, QFileDialog, QGroupBox
 
-from utils.analyze import analyze_multiple_files
-from utils.utils import show_alert
-from utils.worker import Worker
+from functions.analyze import analyze_multiple_files
+from functions.utils import show_alert
+from functions.worker import Worker
 from widgets.common.file_select import FileSelect
 from widgets.common.input_with_label import InputWithLabel
 from widgets.common.main_button import MainButton

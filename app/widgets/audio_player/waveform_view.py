@@ -8,7 +8,7 @@ from PySide6.QtGui import QColor, QPen, QPalette
 
 from numpy import interp
 
-from utils.worker import Worker
+from functions.worker import Worker
 from widgets.common.spinner import WaitingSpinner
 
 

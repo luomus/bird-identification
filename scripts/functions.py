@@ -1,4 +1,5 @@
 import numpy as np
+import pandas as pd
 from scipy.stats import norm
 
 
@@ -122,6 +123,24 @@ def threshold_filter(species_predictions, detection_timestamps, threshold = 0.5)
     filtered_timestamps = detection_timestamps[threshold_indices[0]]
 
     return filtered_predictions, class_indices, filtered_timestamps
+
+
+def predictions_to_dataframe(species_predictions, species_class_indices, detection_timestamps, species_name_list, clip_dur, include_noise = False):
+    results = []
+    for i in range(len(species_predictions)):
+        # Skip noise/human detections if configured
+        if species_class_indices[i] <= 1 and not include_noise:
+            continue
+
+        results.append({
+            'start_time': detection_timestamps[i],
+            'end_time': detection_timestamps[i] + clip_dur,
+            'scientific_name': species_name_list['luomus_name'].iloc[species_class_indices[i]],
+            'common_name': species_name_list['common_name'].iloc[species_class_indices[i]],
+            'confidence': round(float(species_predictions[i]), 4)
+        })
+
+    return pd.DataFrame(results)
 
 
 # pad too short signal with zeros

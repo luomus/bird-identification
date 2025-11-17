@@ -8,11 +8,9 @@ from tensorflow import lite as tflite, keras
 # Classifier
 
 class Classifier():
-    def __init__(self, path_to_mlk_model='', path_to_birdnet_model='', sr=48000, clip_dur=3.0, TFLITE_THREADS = 1, offset=0, dur=0):
+    def __init__(self, path_to_mlk_model='', path_to_birdnet_model='', sr=48000, clip_dur=3.0, TFLITE_THREADS = 1):
         self.sr = sr
-        self.clip_dur = 3.0
-        self.dur=dur
-        self.offset=offset
+        self.clip_dur = clip_dur
         self.MLK_MODEL_PATH = path_to_mlk_model
         self.BIRDNED_MODEL_PATH = path_to_birdnet_model
         self.TFLITE_THREADS = TFLITE_THREADS # can be as high as number of CPUs
@@ -45,26 +43,20 @@ class Classifier():
         self.INTERPRETER.invoke()
         return self.INTERPRETER.get_tensor(self.OUTPUT_LAYER_INDEX)
 
-    def classify(self, data_path, overlap=1.0, max_pred=True):
+    def classify(self, data_path, overlap=1.0, max_pred=True, offset=None, duration=None):
         # Start timing
         start = time.time()
 
         print(f"Using overlap: {overlap}")
 
         print(f"Loading file {data_path}")
-        if self.dur>0:
-                sig, sr = librosa.load(data_path, sr=self.sr, mono=True, res_type='kaiser_fast', offset=self.offset, duration=self.dur)
-        else:
-            sig, sr = librosa.load(data_path, sr=self.sr, mono=True, res_type='kaiser_fast')
-        chunks = split_signal(sig, self.sr, self.clip_dur, overlap)
-        samples = []
-        for c in range(len(chunks)):
-            samples.append(chunks[c])
+        sig, sr = librosa.load(data_path, sr=self.sr, mono=True, res_type='kaiser_fast', offset=offset, duration=duration)
+        samples = split_signal(sig, self.sr, self.clip_dur, overlap)
         X = np.array(samples, dtype='float32')
+
         print(f"Classifying segment")
-
-
-        X = self.model(self.interpret(X))
+        X = self.interpret(X)
+        X = self.model(X)
         X = X.numpy()
         print("Segment classification done")
 

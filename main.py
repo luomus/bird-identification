@@ -5,7 +5,7 @@
 import argparse
 import sys
 import os
-import run_model
+from scripts import run_model
 from scripts.pydantic_parameters import AnalysisParameters, Metadata
 from scripts.utils import read_metadata
 
@@ -66,7 +66,7 @@ def main():
 
 
     # Check that directory exists
-    data_directory = "../input/" + args.dir
+    data_directory = "./input/" + args.dir
     if not os.path.exists(data_directory):
         print(f"Error: Directory {data_directory} does not exist", file=sys.stderr)
         return
