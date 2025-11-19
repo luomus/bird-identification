@@ -1,5 +1,6 @@
 from PySide6.QtCore import QSize
 from PySide6.QtWidgets import QMainWindow, QVBoxLayout, QWidget, QTabBar
+from PySide6.QtGui import QCloseEvent
 
 from widgets.model_config_tab import ModelConfigTab
 from widgets.multiple_files_tab import MultipleFilesTab
@@ -57,3 +58,8 @@ class MainWindow(QMainWindow):
 
     def sizeHint(self) -> QSize:
         return QSize(800, 300)
+
+    def closeEvent(self, event: QCloseEvent):
+        self.single_file_tab.stop_process()
+        self.multiple_files_tab.stop_process()
+        event.accept()

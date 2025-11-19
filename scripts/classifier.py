@@ -30,7 +30,15 @@ class Classifier():
         ################################
         # Initialize classification head
         ################################
-        self.model = keras.models.load_model(self.MLK_MODEL_PATH)
+        if self.MLK_MODEL_PATH:
+            self.model = keras.models.load_model(self.MLK_MODEL_PATH)
+        else:
+            self.model = None
+
+    def set_model_path(self, path_to_mlk_model):
+        if path_to_mlk_model != self.MLK_MODEL_PATH:
+            self.MLK_MODEL_PATH = path_to_mlk_model
+            self.model = keras.models.load_model(path_to_mlk_model)
 
     def interpret(self, sample):
         current_shape = self.INTERPRETER.get_input_details()[self.INPUT_LAYER_INDEX]["shape"]
@@ -44,6 +52,9 @@ class Classifier():
         return self.INTERPRETER.get_tensor(self.OUTPUT_LAYER_INDEX)
 
     def classify(self, data_path, overlap=1.0, max_pred=True, offset=None, duration=None):
+        if self.model is None:
+            raise ValueError("Model path is not set")
+
         # Start timing
         start = time.time()
 

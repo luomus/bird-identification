@@ -1,17 +1,17 @@
-import json
+import base64
 import os
+import pickle
+import sys, json
 from math import ceil
-from threading import Event
 from pathlib import Path
-from typing import Any, Tuple, Union, Generator, Optional
+from typing import Optional, Generator, Any
 
 import numpy as np
 import pandas as pd
 import librosa
-from PySide6.QtCore import Signal
 
+from functions.utils import get_model_folder_path, get_data_folder_path, is_audio_file
 from scripts import functions
-from functions.utils import is_audio_file, get_data_folder_path, get_model_folder_path
 from scripts.classifier import Classifier
 
 BIRDNET_MODEL_PATH = str(get_data_folder_path() / "BirdNET_GLOBAL_6K_V2.4_Model_FP32.tflite")
@@ -19,55 +19,79 @@ TFLITE_THREADS = 1
 CLIP_DURATION = 3.0
 
 
-def load_audio(file_path: str, sample_rate: Optional[str] = 24000) -> Tuple[np.ndarray, Union[int, float]]:
-    y, sr = librosa.load(file_path, sr=sample_rate)
-    if len(y) == 0:
-        raise ValueError("Invalid audio file")
-    return y, sr
-
-def analyze_single_file(file_path: str, model_folder: str, threshold: float, overlap: float, progress_callback: Signal, cancel_requested: Event) -> pd.DataFrame:
-    results = pd.DataFrame()
-
-    model_path, classes, calibration_params = _get_model_data(model_folder)
-
+def main():
     classifier = Classifier(
-        path_to_mlk_model=model_path,
         path_to_birdnet_model=BIRDNET_MODEL_PATH,
         sr=48000,
         clip_dur=CLIP_DURATION,
         TFLITE_THREADS=TFLITE_THREADS,
     )
 
-    for offset, chunk_size, total_duration in _audio_to_chunks(file_path):
-        if cancel_requested.is_set():
-            raise ValueError("Cancel requested")
+    for line in sys.stdin:
+        try:
+            cmd = json.loads(line)
+        except:
+            send({"error": "Invalid JSON"})
+            continue
 
-        progress_callback.emit({
-            "chunk": int(offset / chunk_size) + 1,
-            "total_chunks": ceil(total_duration / chunk_size),
-        })
+        if cmd.get("cmd") == "analyze_single":
+            file_path = cmd.get("file_path")
+            model_folder = cmd.get("model_folder")
+            threshold = cmd.get("threshold", 0.6)
+            overlap = cmd.get("overlap", 0.5)
 
-        results = _add_results_for_chunk(
+            try:
+                results = analyze_single_file(file_path, classifier, model_folder, threshold, overlap)
+
+                data = pickle.dumps(results)
+                encoded = base64.b64encode(data).decode()
+
+                send({"result": encoded})
+            except Exception as e:
+                send({"error": str(e)})
+        elif cmd.get("cmd") == "analyze_multiple":
+            input_folder_path = cmd.get("input_folder_path")
+            output_folder_path = cmd.get("output_folder_path")
+            model_folder = cmd.get("model_folder")
+            threshold = cmd.get("threshold", 0.6)
+            overlap = cmd.get("overlap", 0.5)
+
+            try:
+                result = analyze_multiple_files(input_folder_path, output_folder_path, classifier, model_folder, threshold, overlap)
+                send({"result": result})
+            except Exception as e:
+                send({"error": str(e)})
+        else:
+            send({"error": "Unknown command"})
+
+def send(msg):
+    print(json.dumps(msg), flush=True)
+
+def analyze_single_file(file_path: str, classifier: Classifier, model_folder: str, threshold: float, overlap: float) -> pd.DataFrame:
+    send({"status": "Initializing..."})
+
+    results = pd.DataFrame()
+
+    model_path, classes, calibration_params = get_model_data(model_folder)
+    classifier.set_model_path(model_path)
+
+    for offset, chunk_size, total_duration in audio_to_chunks(file_path):
+        send({"status": "Processing chunk {}/{}".format(int(offset / chunk_size) + 1, ceil(total_duration / chunk_size))})
+
+        results = add_results_for_chunk(
             file_path, classifier, classes, calibration_params, threshold, overlap, offset, chunk_size, results
         )
 
-    results = _rename_result_columns(results)
+    results = rename_result_columns(results)
 
     return results
 
-def analyze_multiple_files(input_folder_path: str, output_folder_path: str, model_folder: str, threshold: float, overlap: float, progress_callback: Signal, cancel_requested: Event):
+def analyze_multiple_files(input_folder_path: str, output_folder_path: str, classifier: Classifier, model_folder: str, threshold: float, overlap: float):
     successes = 0
     errors = 0
 
-    model_path, classes, calibration_params = _get_model_data(model_folder)
-
-    classifier = Classifier(
-        path_to_mlk_model=model_path,
-        path_to_birdnet_model=BIRDNET_MODEL_PATH,
-        sr=48000,
-        clip_dur=CLIP_DURATION,
-        TFLITE_THREADS=TFLITE_THREADS
-    )
+    model_path, classes, calibration_params = get_model_data(model_folder)
+    classifier.set_model_path(model_path)
 
     file_paths = []
 
@@ -79,28 +103,22 @@ def analyze_multiple_files(input_folder_path: str, output_folder_path: str, mode
     total_files = len(file_paths)
 
     for file_idx, file_path in enumerate(file_paths):
-        if cancel_requested.is_set():
-            raise ValueError("Cancel requested")
 
-        progress_data = {"file": file_idx + 1, "total_files": total_files}
-        progress_callback.emit(progress_data)
+        send({"status": "Processing file {}/{}".format(file_idx + 1, total_files)})
 
         try:
             results = pd.DataFrame()
 
-            for offset, chunk_size, total_duration in _audio_to_chunks(file_path):
-                if cancel_requested.is_set():
-                    raise ValueError("Cancel requested")
+            for offset, chunk_size, total_duration in audio_to_chunks(file_path):
+                send({"status": "Processing file {}/{}, chunk {}/{}".format(file_idx + 1, total_files, int(offset / chunk_size) + 1, ceil(total_duration / chunk_size))})
 
-                progress_callback.emit({**progress_data, "chunk": int(offset / chunk_size) + 1, "total_chunks": ceil(total_duration / chunk_size)})
-
-                results = _add_results_for_chunk(
+                results = add_results_for_chunk(
                     file_path, classifier, classes, calibration_params, threshold, overlap, offset, chunk_size, results
                 )
 
-            results = _rename_result_columns(results)
+            results = rename_result_columns(results)
 
-            result_file_path = _get_result_file_path(file_path, input_folder_path, output_folder_path)
+            result_file_path = get_result_file_path(file_path, input_folder_path, output_folder_path)
 
             os.makedirs(os.path.dirname(result_file_path), exist_ok=True)
             results.to_csv(result_file_path, index=False)
@@ -115,7 +133,7 @@ def analyze_multiple_files(input_folder_path: str, output_folder_path: str, mode
         "errors": errors
     }
 
-def _get_model_data(model_folder: str) -> (str, pd.DataFrame, Optional[np.ndarray]):
+def get_model_data(model_folder: str) -> (str, pd.DataFrame, Optional[np.ndarray]):
     model_folder_path = get_model_folder_path() / model_folder
     metadata_path = model_folder_path / "metadata.json"
 
@@ -130,7 +148,7 @@ def _get_model_data(model_folder: str) -> (str, pd.DataFrame, Optional[np.ndarra
 
     return (model_path, classes, calibration_params)
 
-def _get_model_file_paths(model_folder: str) -> dict[str, str]:
+def get_model_file_paths(model_folder: str) -> dict[str, str]:
     model_path = get_model_folder_path() / model_folder
     metadata_path = model_path / "metadata.json"
 
@@ -147,7 +165,7 @@ def _get_model_file_paths(model_folder: str) -> dict[str, str]:
 
     return result
 
-def _load_default_params(model_file_paths: dict[str, str]) -> dict[str, Any]:
+def load_default_params(model_file_paths: dict[str, str]) -> dict[str, Any]:
     calibration_params = None
 
     calibration_params_path = model_file_paths["calibration"] if "calibration" in model_file_paths else None
@@ -168,7 +186,7 @@ def _load_default_params(model_file_paths: dict[str, str]) -> dict[str, Any]:
         "overlap": 0.5
     }
 
-def _audio_to_chunks(file_path: str, chunk_size: int = 600) -> Generator[tuple[int, int, float], None, None]:
+def audio_to_chunks(file_path: str, chunk_size: int = 600) -> Generator[tuple[int, int, float], None, None]:
     duration = librosa.get_duration(path=file_path)
     offset = 0
 
@@ -176,7 +194,7 @@ def _audio_to_chunks(file_path: str, chunk_size: int = 600) -> Generator[tuple[i
         yield offset, chunk_size, duration
         offset += chunk_size
 
-def _add_results_for_chunk(
+def add_results_for_chunk(
         file_path: str,
         classifier: Classifier,
         classes: pd.DataFrame,
@@ -187,14 +205,14 @@ def _add_results_for_chunk(
         duration: int,
         all_results: pd.DataFrame
 ):
-    df = _analyze(file_path, classifier, classes, calibration_params, threshold, overlap, offset, duration)
+    df = analyze(file_path, classifier, classes, calibration_params, threshold, overlap, offset, duration)
 
     if not df.empty:
         all_results = pd.concat([all_results, df])
 
     return all_results
 
-def _analyze(
+def analyze(
         file_path: str,
         classifier: Classifier,
         classes: pd.DataFrame,
@@ -238,7 +256,7 @@ def _analyze(
         classifier.clip_dur
     )
 
-def _rename_result_columns(df: pd.DataFrame) -> pd.DataFrame:
+def rename_result_columns(df: pd.DataFrame) -> pd.DataFrame:
     columns = ["Start (s)", "End (s)", "Scientific name", "Common name", "Confidence"]
 
     if not df.empty:
@@ -247,7 +265,10 @@ def _rename_result_columns(df: pd.DataFrame) -> pd.DataFrame:
 
     return pd.DataFrame(columns=columns)
 
-def _get_result_file_path(file_path: str, input_folder_path: str, output_folder_path: str) -> str:
+def get_result_file_path(file_path: str, input_folder_path: str, output_folder_path: str) -> str:
     dir_rel_path = os.path.relpath(os.path.dirname(file_path), input_folder_path)
     result_file_name = Path(file_path).stem + ".Muuttolinnut.results.csv"
     return os.path.join(output_folder_path, dir_rel_path, result_file_name)
+
+if __name__ == "__main__":
+    main()

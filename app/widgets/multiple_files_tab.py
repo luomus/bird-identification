@@ -1,23 +1,19 @@
-from typing import Any, Optional
+from typing import Any
 
-from PySide6.QtCore import QThreadPool
-from PySide6.QtWidgets import QWidget, QVBoxLayout, QFileDialog, QGroupBox
+from PySide6.QtWidgets import QVBoxLayout, QFileDialog, QGroupBox
 
-from functions.analyze import analyze_multiple_files
 from functions.utils import show_alert
-from functions.worker import Worker
 from widgets.common.file_select import FileSelect
 from widgets.common.input_with_label import InputWithLabel
 from widgets.common.main_button import MainButton
 from widgets.common.progress_label import ProgressLabel
+from widgets.common.process_worker import ProcessWorker
 from widgets.detector_settings import DetectorSettings
 
 
-class MultipleFilesTab(QWidget):
-    active_worker: Optional[Worker] = None
-
+class MultipleFilesTab(ProcessWorker):
     def __init__(self):
-        super().__init__()
+        super().__init__("analyze_function.py")
 
         self.layout = QVBoxLayout()
         self.setLayout(self.layout)
@@ -46,8 +42,6 @@ class MultipleFilesTab(QWidget):
 
         self.layout.addStretch()
 
-        self.threadpool = QThreadPool()
-
     def update_models(self):
         self.detector_settings.update_models()
 
@@ -69,50 +63,35 @@ class MultipleFilesTab(QWidget):
             show_alert(self, "Please configure a model first")
             return
 
-        self._start_analyze(input_folder_path, output_folder_path, model_folder, threshold, overlap)
+        cmd = {
+            "cmd": "analyze_multiple",
+            "input_folder_path": input_folder_path,
+            "output_folder_path": output_folder_path,
+            "model_folder": model_folder,
+            "threshold": threshold,
+            "overlap": overlap
+        }
+        self.start_work(cmd)
 
         self.analyze_button.setDisabled(True)
         self.progress_label.start_processing()
 
-    def on_analyze_result(self, data: dict[str, Any]):
+    def on_work_result(self, data: dict[str, Any]):
         self.progress_label.set_text(
             "Processed successfully {} file(s). There were {} error(s).".format(data["successes"], data["errors"])
         )
 
-    def on_analyze_finished(self):
+    def on_work_finished(self):
         self.analyze_button.setDisabled(False)
         self.progress_label.stop_processing()
 
-    def on_analyze_progressed(self, data: dict[str, Any]):
-        progress_text = "Processing file {}/{}".format(data["file"], data["total_files"])
-        if "chunk" in data:
-            progress_text += ", chunk {}/{}".format(data["chunk"], data["total_chunks"])
+    def on_work_status(self, msg: str):
+        self.progress_label.set_text(msg)
 
-        self.progress_label.set_text(progress_text)
-
-    def on_analyze_error(self):
+    def on_work_error(self, error: str):
         show_alert(self, "An error occurred while analyzing the audio!")
         self.progress_label.set_text("")
 
     def on_cancel_analyze_click(self):
-        if self.active_worker is not None:
-            self.active_worker.cancel()
-            self.progress_label.set_text("Canceling")
-
-    def _start_analyze(self, input_folder_path: str, output_folder_path: str, model_folder: str, threshold: float, overlap: float):
-        worker = Worker(
-            analyze_multiple_files,
-            input_folder_path,
-            output_folder_path,
-            model_folder,
-            threshold=threshold,
-            overlap=overlap,
-        )
-
-        worker.signals.result.connect(self.on_analyze_result)
-        worker.signals.finished.connect(self.on_analyze_finished)
-        worker.signals.progress.connect(self.on_analyze_progressed)
-        worker.signals.error.connect(self.on_analyze_error)
-        self.threadpool.start(worker)
-
-        self.active_worker = worker
+        self.progress_label.set_text("Canceling")
+        self.cancel_work()

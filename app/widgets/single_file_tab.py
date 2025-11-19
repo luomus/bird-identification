@@ -1,35 +1,33 @@
+import base64
+import pickle
+
 import pandas as pd
 from PySide6.QtCore import QThreadPool
-from PySide6.QtWidgets import QWidget, QVBoxLayout, QGroupBox
+from PySide6.QtWidgets import QVBoxLayout, QGroupBox
 from typing import Tuple, Union, Optional, Any
 import numpy as np
 from pathlib import Path
 
 from functions.worker import Worker
-from functions.analyze import load_audio, analyze_single_file
+from functions.utils import load_audio
 from functions.utils import show_alert
 from widgets.common.main_button import MainButton
 from widgets.common.audio_drag_and_drop import AudioDragAndDrop
 from widgets.audio_player.audio_player import AudioPlayer
 from widgets.common.datatable import Datatable
 from widgets.common.progress_label import ProgressLabel
+from widgets.common.process_worker import ProcessWorker
 from widgets.detector_settings import DetectorSettings
 
 
-class SingleFileTab(QWidget):
+class SingleFileTab(ProcessWorker):
     file_path = None
     audio_data: Optional[Tuple[np.ndarray, Union[int, float]]] = None
 
     results: Optional[pd.DataFrame] = None
 
-    model_folder: str = ""
-    threshold: float = 0
-    overlap: float = 0
-
-    active_worker: Optional[Worker] = None
-
     def __init__(self):
-        super().__init__()
+        super().__init__("analyze_function.py")
 
         self.layout = QVBoxLayout()
         self.setLayout(self.layout)
@@ -56,7 +54,7 @@ class SingleFileTab(QWidget):
         self.layout.addWidget(self.analyze_button)
 
         self.progress_label = ProgressLabel()
-        self.progress_label.cancelClicked.connect(self.on_cancel_analyze_click)
+        self.progress_label.cancelClicked.connect(self.cancel_work)
         self.layout.addWidget(self.progress_label)
 
         self.result_table = Datatable()
@@ -116,57 +114,41 @@ class SingleFileTab(QWidget):
             show_alert(self, "Please select a file first")
             return
 
-        self.model_folder = self.detector_settings.active_model()
-        self.threshold = self.detector_settings.threshold()
-        self.overlap = self.detector_settings.overlap()
+        model_folder = self.detector_settings.active_model()
+        threshold = self.detector_settings.threshold()
+        overlap = self.detector_settings.overlap()
 
-        if not self.model_folder:
+        if not model_folder:
             show_alert(self, "Please configure a model first")
             return
 
-        self._start_analyze(self.file_path, self.model_folder, self.threshold, self.overlap)
+        cmd = {"cmd": "analyze_single", "file_path": self.file_path, "model_folder": model_folder, "threshold": threshold, "overlap": overlap}
+        self.start_work(cmd)
 
         self.analyze_button.setDisabled(True)
         self.progress_label.start_processing()
 
-    def on_analyze_result(self, result: pd.DataFrame):
-        self.results = result
-        self.result_table.set_data(result)
+    def on_work_result(self, result: Any):
+        raw = base64.b64decode(result)
+        df = pickle.loads(raw)
+        self.results = df
+        self.result_table.set_data(df)
         self.result_table.show()
 
-    def on_analyze_finished(self):
+    def on_work_finished(self):
         self.analyze_button.setDisabled(False)
         self.progress_label.stop_processing()
         self.progress_label.set_text("")
 
-    def on_analyze_progressed(self, data: dict[str, Any]):
-        progress_text = "Processing chunk {}/{}".format(data["chunk"], data["total_chunks"])
-        self.progress_label.set_text(progress_text)
+    def on_work_status(self, msg: str):
+        self.progress_label.set_text(msg)
 
-    def on_analyze_error(self):
+    def on_work_error(self, error: str):
         show_alert(self, "An error occurred while analyzing the audio!")
 
     def on_cancel_analyze_click(self):
-        if self.active_worker is not None:
-            self.active_worker.cancel()
-            self.progress_label.set_text("Canceling")
-
-    def _start_analyze(self, file_path: str, model_folder: str, threshold: float, overlap: float):
-        worker = Worker(
-            analyze_single_file,
-            file_path,
-            model_folder,
-            threshold=threshold,
-            overlap=overlap,
-        )
-
-        worker.signals.result.connect(self.on_analyze_result)
-        worker.signals.finished.connect(self.on_analyze_finished)
-        worker.signals.progress.connect(self.on_analyze_progressed)
-        worker.signals.error.connect(self.on_analyze_error)
-        self.threadpool.start(worker)
-
-        self.active_worker = worker
+        self.progress_label.set_text("Canceling...")
+        self.cancel_work()
 
     def _clear_results(self):
         self.results = None

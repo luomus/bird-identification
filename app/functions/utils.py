@@ -1,7 +1,15 @@
 from pathlib import Path
-from typing import List
+from typing import List, Optional, Tuple, Union
 
+import librosa
+import numpy as np
 from PySide6.QtWidgets import QMessageBox, QWidget
+
+def load_audio(file_path: str, sample_rate: Optional[str] = 24000) -> Tuple[np.ndarray, Union[int, float]]:
+    y, sr = librosa.load(file_path, sr=sample_rate)
+    if len(y) == 0:
+        raise ValueError("Invalid audio file")
+    return y, sr
 
 def is_audio_file(file_name: str) -> bool:
     return file_name.lower().endswith((".wav", ".mp3", ".flac"))

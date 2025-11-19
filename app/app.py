@@ -22,7 +22,9 @@ class AppInitializerWorker(QObject):
 
     # import all heavy libraries in another thread so the app doesn't freeze while it's starting up
     def start(self):
-        from functions import analyze
+        import librosa
+        import pandas
+        import numpy
 
         self.finished.emit()
 
