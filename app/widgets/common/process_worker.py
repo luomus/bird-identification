@@ -3,7 +3,7 @@ import json
 from PySide6.QtGui import QCloseEvent
 from PySide6.QtCore import QProcess
 from PySide6.QtWidgets import QWidget
-from typing import Optional, Any, Dict
+from typing import Optional, Any, Dict, Tuple, List
 
 
 class ProcessWorker(QWidget):
@@ -11,10 +11,11 @@ class ProcessWorker(QWidget):
     cancelled = False
     stopped = False
 
-    def __init__(self, function_file: str):
+    def __init__(self, process: Tuple[str, List[str]]):
         super().__init__()
 
-        self.function_file = function_file
+        self.process_file_path = process[0]
+        self.process_arguments = process[1]
 
         self.process: Optional[QProcess] = None
         self.start_process()
@@ -30,10 +31,7 @@ class ProcessWorker(QWidget):
             self.process.errorOccurred.connect(self.on_process_error)
             self.process.finished.connect(self.on_process_finished)
 
-            self.process.start(
-                "python",
-                [self.function_file]
-            )
+            self.process.start(self.process_file_path, self.process_arguments)
 
     def cancel_work(self):
         if self.process:

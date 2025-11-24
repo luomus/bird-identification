@@ -9,7 +9,7 @@ import numpy as np
 from pathlib import Path
 
 from functions.worker import Worker
-from functions.utils import load_audio
+from functions.utils import load_audio, get_analyze_process
 from functions.utils import show_alert
 from widgets.common.main_button import MainButton
 from widgets.common.audio_drag_and_drop import AudioDragAndDrop
@@ -27,7 +27,7 @@ class SingleFileTab(ProcessWorker):
     results: Optional[pd.DataFrame] = None
 
     def __init__(self):
-        super().__init__("analyze_function.py")
+        super().__init__(get_analyze_process())
 
         self.layout = QVBoxLayout()
         self.setLayout(self.layout)

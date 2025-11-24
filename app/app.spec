@@ -1,9 +1,7 @@
 # -*- mode: python ; coding: utf-8 -*-
 
-# include resampy since it's not detected automatically
-additional_packages = ['resampy']
 
-a = Analysis(
+main_a = Analysis(
     ['app.py'],
     pathex=[],
     binaries=[],
@@ -14,7 +12,7 @@ a = Analysis(
         ('../models/model_v3_5.h5', 'models/Finnish_model_v3_5'),
         ('./build_resources/metadata.json', 'models/Finnish_model_v3_5')
     ],
-    hiddenimports=additional_packages,
+    hiddenimports=[],
     hookspath=[],
     hooksconfig={},
     runtime_hooks=[],
@@ -22,11 +20,10 @@ a = Analysis(
     noarchive=False,
     optimize=0,
 )
-pyz = PYZ(a.pure)
-
-exe = EXE(
-    pyz,
-    a.scripts,
+main_pyz = PYZ(main_a.pure)
+main_exe = EXE(
+    main_pyz,
+    main_a.scripts,
     [],
     exclude_binaries=True,
     name='birdIdentifier',
@@ -41,10 +38,46 @@ exe = EXE(
     codesign_identity=None,
     entitlements_file=None,
 )
+
+analyze_a = Analysis(
+    ['analyze_process.py'],
+    pathex=[],
+    binaries=[],
+    datas=[],
+    hiddenimports=['resampy'],
+    hookspath=[],
+    hooksconfig={},
+    runtime_hooks=[],
+    excludes=[],
+    noarchive=False,
+    optimize=0,
+)
+analyze_pyz = PYZ(analyze_a.pure)
+analyze_exe = EXE(
+    analyze_pyz,
+    analyze_a.scripts,
+    [],
+    exclude_binaries=True,
+    name='birdIdentifierAnalyze',
+    debug=False,
+    bootloader_ignore_signals=False,
+    strip=False,
+    upx=True,
+    console=False,
+    disable_windowed_traceback=False,
+    argv_emulation=False,
+    target_arch=None,
+    codesign_identity=None,
+    entitlements_file=None,
+)
+
 coll = COLLECT(
-    exe,
-    a.binaries,
-    a.datas,
+    main_exe,
+    main_a.binaries,
+    main_a.datas,
+    analyze_exe,
+    analyze_a.binaries,
+    analyze_a.datas,
     strip=False,
     upx=True,
     upx_exclude=[],

@@ -2,7 +2,7 @@ from typing import Any
 
 from PySide6.QtWidgets import QVBoxLayout, QFileDialog, QGroupBox
 
-from functions.utils import show_alert
+from functions.utils import show_alert, get_analyze_process
 from widgets.common.file_select import FileSelect
 from widgets.common.input_with_label import InputWithLabel
 from widgets.common.main_button import MainButton
@@ -13,7 +13,7 @@ from widgets.detector_settings import DetectorSettings
 
 class MultipleFilesTab(ProcessWorker):
     def __init__(self):
-        super().__init__("analyze_function.py")
+        super().__init__(get_analyze_process())
 
         self.layout = QVBoxLayout()
         self.setLayout(self.layout)
