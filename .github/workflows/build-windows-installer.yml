@@ -52,7 +52,7 @@ jobs:
 
     - name: Build installer with InstallForge
       run: |
-        "C:\Program Files (x86)\InstallForge\IFCmd.exe" build app.ifp
+        & "C:\Program Files (x86)\solicus\InstallForge\bin\ifbuildx86.exe" -i app.ifp
       working-directory: ./app
 
     - name: Upload installer
