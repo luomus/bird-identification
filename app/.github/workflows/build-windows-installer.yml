@@ -1,0 +1,53 @@
+name: Build Windows Installer
+
+on:
+  push:
+    branches: [ desktop-app ]
+    tags:
+      - 'v*'
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: windows-latest
+
+    steps:
+    - uses: actions/checkout@v6
+
+    - name: Set up Python
+      uses: actions/setup-python@v6
+      with:
+        python-version: '3.9'
+
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install ..
+        pip install -r requirements.txt
+        pip install pyinstaller
+      working-directory: ./app
+
+    - name: Build executable with PyInstaller
+      run: |
+        pyinstaller app.spec --noconfirm
+      working-directory: ./app
+
+    - name: Download InstallForge
+      run: |
+        curl -L -o installforge.exe "https://github.com/soner-boztas/installforge/releases/download/v1.5.0/IFInst.exe"
+
+    - name: Install InstallForge silently
+      run: |
+        .\installforge.exe /S
+
+    - name: Build installer with InstallForge
+      run: |
+        "C:\Program Files (x86)\InstallForge\IFCmd.exe" build app.ifp
+      working-directory: ./app
+
+    - name: Upload installer
+      uses: actions/upload-artifact@v4
+      with:
+        name: Windows-Installer
+        path: .\dist\birdIdentifier.exe
+      working-directory: ./app
