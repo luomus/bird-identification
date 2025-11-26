@@ -2,7 +2,6 @@ name: Build Windows Installer
 
 on:
   push:
-    branches: [ desktop-app ]
     tags:
       - 'v*'
   workflow_dispatch:
@@ -12,7 +11,18 @@ jobs:
     runs-on: windows-latest
 
     steps:
-    - uses: actions/checkout@v6
+    - name: Checkout repo
+      uses: actions/checkout@v6
+
+    - name: Remove placeholder models folder
+      run: rmdir /S /Q models
+
+    - name: Get models from private repo
+      uses: actions/checkout@v6
+      with:
+        repository: luomus/bird-identification-models
+        token: ${{ secrets.PERSONAL_ACCESS_TOKEN }}
+        path: models
 
     - name: Set up Python
       uses: actions/setup-python@v6
