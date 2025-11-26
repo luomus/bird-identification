@@ -42,9 +42,14 @@ jobs:
         pyinstaller app.spec --noconfirm
       working-directory: ./app
 
+    - name: Unzip InstallForge
+      run: |
+        Expand-Archive -Path ..\models\InstallForge.zip -DestinationPath ..\models
+      working-directory: ./app
+
     - name: Build installer with InstallForge
       run: |
-        ..\models\ifbuildx86.exe -i app.ifp
+        ..\models\InstallForge\bin\ifbuildx86.exe -i app.ifp
       working-directory: ./app
 
     - name: Upload installer
