@@ -42,53 +42,9 @@ jobs:
         pyinstaller app.spec --noconfirm
       working-directory: ./app
 
-    - name: Download InstallForge
-      run: |
-        curl -L -o installforge.exe "https://github.com/soner-boztas/installforge/releases/download/v1.5.0/IFInst.exe"
-
-    - name: Install InstallForge silently
-      run: |
-        .\installforge.exe /S
-
-    - name: Verify InstallForge installation
-      run: |
-        if (Test-Path "C:\Program Files (x86)") {
-            Write-Host "Program Files (x86) exists"
-        } else {
-            Write-Error "Program Files (x86) doesn't exist"
-        }
-    - name: Verify InstallForge installation
-      run: |
-        if (Test-Path "C:\Program Files (x86)\solicus") {
-            Write-Host "solicus exists"
-        } else {
-            Write-Error "solicus doesn't exist"
-        }
-    - name: Verify InstallForge installation
-      run: |
-        if (Test-Path "C:\Program Files (x86)\solicus\InstallForge") {
-            Write-Host "InstallForge exists"
-        } else {
-            Write-Error "InstallForge doesn't exists"
-        }
-    - name: Verify InstallForge installation
-      run: |
-        if (Test-Path "C:\Program Files (x86)\solicus\InstallForge\bin") {
-            Write-Host "bin exists"
-        } else {
-            Write-Error "bin doesn't exists"
-        }
-    - name: Verify InstallForge installation
-      run: |
-        if (Test-Path "C:\Program Files (x86)\solicus\InstallForge\bin\ifbuildx86.exe") {
-            Write-Host "ifbuildx86.exe exists"
-        } else {
-            Write-Error "ifbuildx86.exe doesn't exists"
-        }
-
     - name: Build installer with InstallForge
       run: |
-        & "C:\Program Files (x86)\solicus\InstallForge\bin\ifbuildx86.exe" -i app.ifp
+        ..\models\ifbuildx86.exe -i app.ifp
       working-directory: ./app
 
     - name: Upload installer
