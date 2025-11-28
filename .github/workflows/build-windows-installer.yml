@@ -14,9 +14,6 @@ jobs:
     - name: Checkout repo
       uses: actions/checkout@v6
 
-    - name: Remove placeholder models folder
-      run: Remove-Item -Recurse -Force models
-
     - name: Get data from private repo
       uses: actions/checkout@v6
       with:
@@ -50,7 +47,7 @@ jobs:
 
     - name: Build installer with InstallForge
       run: |
-        ifbuildx86.exe -i ../../app.ifp
+        .\ifbuildx86.exe -i ..\..\app.ifp
       working-directory: ./app/InstallForge/bin
 
     - name: Upload installer
