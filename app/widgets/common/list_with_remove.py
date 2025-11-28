@@ -7,7 +7,7 @@ from typing import Optional, List
 class ListWithRemoveItem(QWidget):
     removeClicked = Signal()
 
-    def __init__(self, name: str):
+    def __init__(self, name: str, show_remove_btn: bool):
         super().__init__()
 
         layout = QHBoxLayout()
@@ -17,9 +17,10 @@ class ListWithRemoveItem(QWidget):
 
         layout.addStretch()
 
-        remove_btn = QPushButton("Remove")
-        remove_btn.clicked.connect(self.removeClicked)
-        layout.addWidget(remove_btn)
+        if show_remove_btn:
+            remove_btn = QPushButton("Remove")
+            remove_btn.clicked.connect(self.removeClicked)
+            layout.addWidget(remove_btn)
 
 
 class ListWithRemove(QWidget):
@@ -39,20 +40,17 @@ class ListWithRemove(QWidget):
             for name in list_items:
                 self._add_item(name)
 
-    def set_items(self, list_items: List[str]):
+    def clear(self):
         self.model_list.clear()
 
-        for name in list_items:
-            self._add_item(name)
-
-    def on_remove_click(self, name: str):
-        self.onRemove.emit(name)
-
-    def _add_item(self, name: str):
+    def add_item(self, name: str, show_remove_btn: bool):
         item = QListWidgetItem()
-        widget = ListWithRemoveItem(name)
+        widget = ListWithRemoveItem(name, show_remove_btn)
         widget.removeClicked.connect(lambda: self.on_remove_click(name))
         item.setSizeHint(widget.sizeHint())
 
         self.model_list.addItem(item)
         self.model_list.setItemWidget(item, widget)
+
+    def on_remove_click(self, name: str):
+        self.onRemove.emit(name)

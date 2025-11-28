@@ -1,11 +1,11 @@
 import shutil
+from pathlib import Path
 
 from PySide6.QtCore import Signal
 from PySide6.QtWidgets import QWidget, QVBoxLayout, QPushButton, QLabel
 
-from functions.utils import get_available_models, get_model_folder_path
+from widgets.model_list import ModelList
 from widgets.model_form import ModelForm
-from widgets.common.list_with_remove import ListWithRemove
 
 
 class ModelConfigTab(QWidget):
@@ -19,7 +19,7 @@ class ModelConfigTab(QWidget):
 
         self.layout.addWidget(QLabel("Models:"))
 
-        self.model_list = ListWithRemove(get_available_models())
+        self.model_list = ModelList()
         self.model_list.onRemove.connect(self.on_remove_model)
         self.layout.addWidget(self.model_list)
 
@@ -41,13 +41,12 @@ class ModelConfigTab(QWidget):
         self.form_widget.hide()
         self.add_button.show()
 
-    def on_remove_model(self, name: str):
-        target_dir = get_model_folder_path() / name
-        shutil.rmtree(target_dir)
-        self.model_list.set_items(get_available_models())
+    def on_remove_model(self, path: Path):
+        shutil.rmtree(path)
+        self.model_list.update_models()
         self.modelsChanged.emit()
 
     def on_form_submitted(self):
-        self.model_list.set_items(get_available_models())
+        self.model_list.update_models()
         self.hide_form()
         self.modelsChanged.emit()

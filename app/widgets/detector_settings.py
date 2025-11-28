@@ -1,3 +1,6 @@
+from pathlib import Path
+from typing import List
+
 from PySide6.QtWidgets import QHBoxLayout, QGroupBox, QVBoxLayout, QComboBox
 
 from functions.utils import get_available_models
@@ -6,6 +9,9 @@ from widgets.common.number_setting import NumberSetting
 
 
 class DetectorSettings(QGroupBox):
+    model_paths: List[Path] = []
+    model_names: List[str] = []
+
     def __init__(self):
         super().__init__()
 
@@ -15,7 +21,7 @@ class DetectorSettings(QGroupBox):
         self.setLayout(layout)
 
         self.model_select = QComboBox()
-        self.model_select.addItems(get_available_models())
+        self.update_models()
         layout.addWidget(InputWithLabel("Select model", self.model_select))
 
         h_box_layout = QHBoxLayout()
@@ -28,7 +34,8 @@ class DetectorSettings(QGroupBox):
         h_box_layout.addWidget(self.overlap_setting)
 
     def active_model(self) -> str:
-        return self.model_select.currentText()
+        index = self.model_names.index(self.model_select.currentText())
+        return str(self.model_paths[index])
 
     def threshold(self) -> float:
         return self.threshold_setting.value()
@@ -37,5 +44,8 @@ class DetectorSettings(QGroupBox):
         return self.overlap_setting.value()
 
     def update_models(self):
+        self.model_paths = get_available_models()
+        self.model_names = [p.name for p in self.model_paths]
+
         self.model_select.clear()
-        self.model_select.addItems(get_available_models())
+        self.model_select.addItems(self.model_names)

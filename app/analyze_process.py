@@ -10,11 +10,11 @@ import numpy as np
 import pandas as pd
 import librosa
 
-from functions.utils import get_model_folder_path, get_data_folder_path, is_audio_file
+from functions.utils import is_audio_file, get_default_model_path
 from scripts import functions
 from scripts.classifier import Classifier
 
-BIRDNET_MODEL_PATH = str(get_data_folder_path() / "BirdNET_GLOBAL_6K_V2.4_Model_FP32.tflite")
+BIRDNET_MODEL_PATH = str(get_default_model_path("BirdNET_GLOBAL_6K_V2.4_Model_FP32.tflite"))
 TFLITE_THREADS = 1
 CLIP_DURATION = 3.0
 
@@ -36,12 +36,12 @@ def main():
 
         if cmd.get("cmd") == "analyze_single":
             file_path = cmd.get("file_path")
-            model_folder = cmd.get("model_folder")
+            model_path = cmd.get("model_path")
             threshold = cmd.get("threshold", 0.6)
             overlap = cmd.get("overlap", 0.5)
 
             try:
-                results = analyze_single_file(file_path, classifier, model_folder, threshold, overlap)
+                results = analyze_single_file(file_path, classifier, model_path, threshold, overlap)
 
                 data = pickle.dumps(results)
                 encoded = base64.b64encode(data).decode()
@@ -52,12 +52,12 @@ def main():
         elif cmd.get("cmd") == "analyze_multiple":
             input_folder_path = cmd.get("input_folder_path")
             output_folder_path = cmd.get("output_folder_path")
-            model_folder = cmd.get("model_folder")
+            model_path = cmd.get("model_path")
             threshold = cmd.get("threshold", 0.6)
             overlap = cmd.get("overlap", 0.5)
 
             try:
-                result = analyze_multiple_files(input_folder_path, output_folder_path, classifier, model_folder, threshold, overlap)
+                result = analyze_multiple_files(input_folder_path, output_folder_path, classifier, model_path, threshold, overlap)
                 send({"result": result})
             except Exception as e:
                 send({"error": str(e)})
@@ -67,12 +67,12 @@ def main():
 def send(msg):
     print(json.dumps(msg), flush=True)
 
-def analyze_single_file(file_path: str, classifier: Classifier, model_folder: str, threshold: float, overlap: float) -> pd.DataFrame:
+def analyze_single_file(file_path: str, classifier: Classifier, model_folder_path: str, threshold: float, overlap: float) -> pd.DataFrame:
     send({"status": "Initializing..."})
 
     results = pd.DataFrame()
 
-    model_path, classes, calibration_params = get_model_data(model_folder)
+    model_path, classes, calibration_params = get_model_data(model_folder_path)
     classifier.set_model_path(model_path)
 
     for offset, chunk_size, total_duration in audio_to_chunks(file_path):
@@ -86,11 +86,11 @@ def analyze_single_file(file_path: str, classifier: Classifier, model_folder: st
 
     return results
 
-def analyze_multiple_files(input_folder_path: str, output_folder_path: str, classifier: Classifier, model_folder: str, threshold: float, overlap: float):
+def analyze_multiple_files(input_folder_path: str, output_folder_path: str, classifier: Classifier, model_folder_path: str, threshold: float, overlap: float):
     successes = 0
     errors = 0
 
-    model_path, classes, calibration_params = get_model_data(model_folder)
+    model_path, classes, calibration_params = get_model_data(model_folder_path)
     classifier.set_model_path(model_path)
 
     file_paths = []
@@ -133,8 +133,8 @@ def analyze_multiple_files(input_folder_path: str, output_folder_path: str, clas
         "errors": errors
     }
 
-def get_model_data(model_folder: str) -> (str, pd.DataFrame, Optional[np.ndarray]):
-    model_folder_path = get_model_folder_path() / model_folder
+def get_model_data(model_folder_path: str) -> (str, pd.DataFrame, Optional[np.ndarray]):
+    model_folder_path = Path(model_folder_path)
     metadata_path = model_folder_path / "metadata.json"
 
     with open(metadata_path, "r") as json_data:
@@ -142,28 +142,12 @@ def get_model_data(model_folder: str) -> (str, pd.DataFrame, Optional[np.ndarray
 
     model_path = str(model_folder_path / metadata["model_file"])
     classes = pd.read_csv(model_folder_path / metadata["classes_file"])
+    calibration_params = None
 
     if "calibration_file" in metadata:
         calibration_params = np.load(model_folder_path / metadata["calibration_file"])
 
-    return (model_path, classes, calibration_params)
-
-def get_model_file_paths(model_folder: str) -> dict[str, str]:
-    model_path = get_model_folder_path() / model_folder
-    metadata_path = model_path / "metadata.json"
-
-    with open(metadata_path, "r") as json_data:
-        metadata = json.load(json_data)
-
-    result = {
-        "model": model_path / metadata["model_file"],
-        "classes": model_path / metadata["classes_file"],
-    }
-
-    if "calibration_file" in metadata:
-        result["calibration"] = model_path / metadata["calibration_file"]
-
-    return result
+    return model_path, classes, calibration_params
 
 def load_default_params(model_file_paths: dict[str, str]) -> dict[str, Any]:
     calibration_params = None

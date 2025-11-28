@@ -2,7 +2,8 @@ from typing import Any
 
 from PySide6.QtWidgets import QVBoxLayout, QFileDialog, QGroupBox
 
-from functions.utils import show_alert, get_analyze_process
+from functions.gui_utils import show_alert
+from functions.utils import get_analyze_process
 from widgets.common.file_select import FileSelect
 from widgets.common.input_with_label import InputWithLabel
 from widgets.common.main_button import MainButton
@@ -55,11 +56,11 @@ class MultipleFilesTab(ProcessWorker):
             show_alert(self, "Please select input and output folders first")
             return
 
-        model_folder = self.detector_settings.active_model()
+        model_path = self.detector_settings.active_model()
         threshold = self.detector_settings.threshold()
         overlap = self.detector_settings.overlap()
 
-        if not model_folder:
+        if not model_path:
             show_alert(self, "Please configure a model first")
             return
 
@@ -67,7 +68,7 @@ class MultipleFilesTab(ProcessWorker):
             "cmd": "analyze_multiple",
             "input_folder_path": input_folder_path,
             "output_folder_path": output_folder_path,
-            "model_folder": model_folder,
+            "model_path": model_path,
             "threshold": threshold,
             "overlap": overlap
         }

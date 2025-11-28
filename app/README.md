@@ -18,8 +18,10 @@
     ```
     pip install -r requirements.txt
     ```
+   
+4. Add BirdNET model to models/default folder
 
-4. Start the app
+5. Start the app
     ```
     ./start-dev.sh # restarts the app automatically when *.py files change
     ```

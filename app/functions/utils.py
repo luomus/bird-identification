@@ -4,7 +4,6 @@ import sys
 import os
 import librosa
 import numpy as np
-from PySide6.QtWidgets import QMessageBox, QWidget
 
 def load_audio(file_path: str, sample_rate: Optional[str] = 24000) -> Tuple[np.ndarray, Union[int, float]]:
     y, sr = librosa.load(file_path, sr=sample_rate)
@@ -15,27 +14,31 @@ def load_audio(file_path: str, sample_rate: Optional[str] = 24000) -> Tuple[np.n
 def is_audio_file(file_name: str) -> bool:
     return file_name.lower().endswith((".wav", ".mp3", ".flac"))
 
-def show_alert(parent: QWidget, msg: str):
-    dlg = QMessageBox(parent)
-    dlg.setIcon(QMessageBox.Icon.Warning)
-    dlg.setWindowTitle("Alert")
-    dlg.setText(msg)
-    dlg.show()
+def get_default_model_path(model_name: str) -> Path:
+    return get_models_folder_path("default") / model_name
 
-def get_data_folder_path() -> Path:
+def get_custom_model_path(model_name: str) -> Path:
+    return get_models_folder_path("custom") / model_name
+
+def get_available_models(model_type: Optional[str] = None) -> List[Path]:
+    default_models = get_models_folder_path("default")
+    custom_models = get_models_folder_path("custom")
+
+    result = []
+
+    if not model_type or model_type == "default":
+        result += [d for d in default_models.iterdir() if d.is_dir()]
+    if (not model_type or model_type == "custom") and custom_models.exists():
+        result += [d for d in custom_models.iterdir() if d.is_dir()]
+
+    return result
+
+def get_models_folder_path(model_type: str) -> Path:
     bundle_dir = Path(__file__).parent.parent
 
-    return Path.cwd() / bundle_dir / "data"
+    base_path = Path.cwd() / bundle_dir / "models"
 
-def get_model_folder_path() -> Path:
-    bundle_dir = Path(__file__).parent.parent
-
-    return Path.cwd() / bundle_dir / "models"
-
-def get_available_models() -> List[str]:
-    models_path = get_model_folder_path()
-
-    return [p.name for p in models_path.iterdir() if p.is_dir()]
+    return base_path / model_type
 
 def get_analyze_process() -> Tuple[str, List[str]]:
     if not getattr(sys, "frozen", False):

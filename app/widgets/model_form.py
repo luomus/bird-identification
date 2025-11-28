@@ -4,17 +4,16 @@ import json
 
 from PySide6.QtCore import QRegularExpression, Signal
 from PySide6.QtGui import QRegularExpressionValidator
-from PySide6.QtWidgets import QGroupBox, QFormLayout, QLineEdit, QHBoxLayout, QPushButton
+from PySide6.QtWidgets import QGroupBox, QFormLayout, QLineEdit, QHBoxLayout, QPushButton, QFileDialog
 
-from functions.utils import show_alert, get_model_folder_path
+from functions.gui_utils import show_alert
+from functions.utils import get_default_model_path, get_custom_model_path
 from widgets.common.file_select import FileSelect
 
 
 class ModelForm(QGroupBox):
     cancelled = Signal()
     submitted = Signal()
-
-    name_regex = QRegularExpression(r"^[\w\s_-]+$")
 
     def __init__(self):
         super().__init__()
@@ -24,19 +23,8 @@ class ModelForm(QGroupBox):
         form_layout = QFormLayout()
         self.setLayout(form_layout)
 
-        self.name_edit = QLineEdit()
-        validator = QRegularExpressionValidator(self.name_regex)
-        self.name_edit.setValidator(validator)
-        form_layout.addRow("Name:", self.name_edit)
-
-        self.model_file_select = FileSelect()
-        form_layout.addRow("Model file:", self.model_file_select)
-
-        self.classes_file_select = FileSelect()
-        form_layout.addRow("Classes file:", self.classes_file_select)
-
-        self.calibration_file_select = FileSelect()
-        form_layout.addRow("Calibration file:", self.calibration_file_select)
+        self.model_folder_select = FileSelect(QFileDialog.FileMode.Directory)
+        form_layout.addRow("Model folder:", self.model_folder_select)
 
         btn_layout = QHBoxLayout()
 
@@ -55,74 +43,35 @@ class ModelForm(QGroupBox):
         self.cancelled.emit()
 
     def on_save_model_click(self):
-        name = self.name_edit.text().strip()
+        model_folder_select_text = self.model_folder_select.selected_file_path()
 
-        if name == "":
-            show_alert(self, "Please enter a name for the model")
-            return
-        elif not self.name_regex.match(name).hasMatch():
-            show_alert(self, "The name contains invalid characters")
+        if not model_folder_select_text:
+            show_alert(self, "Please select a model folder")
             return
 
-        target_dir = get_model_folder_path() / name
+        model_folder_path = Path(model_folder_select_text)
 
-        if target_dir.exists():
-            show_alert(self, "Please input an unique name for the model")
+        if not model_folder_path.exists():
+            show_alert(self, "Folder \"{}\" does not exist".format(model_folder_select_text))
             return
 
-        if not self.model_file_select.selected_file_path() or not self.classes_file_select.selected_file_path():
-            show_alert(self, "Please select a model file and classes file")
-            return
+        name = model_folder_path.name
 
-        model_path = Path(self.model_file_select.selected_file_path())
-        classes_path = Path(self.classes_file_select.selected_file_path())
+        default_target_dir = get_default_model_path(name)
+        custom_target_dir = get_custom_model_path(name)
 
-        file_paths = [model_path, classes_path]
-
-        metadata = {
-            "model_file": model_path.name,
-            "classes_file": classes_path.name
-        }
-
-        if self.calibration_file_select.selected_file_path():
-            calibration_path = Path(self.calibration_file_select.selected_file_path())
-
-            file_paths.append(calibration_path)
-
-            metadata["calibration_file"] = calibration_path.name
-
-        for file_path in file_paths:
-            if not file_path.exists():
-                show_alert(self, "File \"{}\" does not exist".format(file_path))
-                return
-
-        try:
-            target_dir.mkdir()
-        except Exception:
-            show_alert(self, "Could not create directory")
+        if default_target_dir.exists() or custom_target_dir.exists():
+            show_alert(self, "There exists already a model folder with that name")
             return
 
         try:
-            with open(target_dir / "metadata.json", "w") as f:
-                json.dump(metadata, f)
+            shutil.copytree(model_folder_path, custom_target_dir)
         except Exception:
-            show_alert(self, "Could not create metadata file")
+            show_alert(self, "Could not copy the model folder")
             return
-
-
-        for file_path in file_paths:
-            try:
-                shutil.copy(file_path, target_dir)
-            except Exception:
-                show_alert(self, "Could not copy file \"{}\"".format(file_path))
-                shutil.rmtree(target_dir)
-                return
 
         self._clear_inputs()
         self.submitted.emit()
 
     def _clear_inputs(self):
-        self.name_edit.clear()
-        self.model_file_select.clear()
-        self.classes_file_select.clear()
-        self.calibration_file_select.clear()
+        self.model_folder_select.clear()

@@ -10,7 +10,7 @@ from pathlib import Path
 
 from functions.worker import Worker
 from functions.utils import load_audio, get_analyze_process
-from functions.utils import show_alert
+from functions.gui_utils import show_alert
 from widgets.common.main_button import MainButton
 from widgets.common.audio_drag_and_drop import AudioDragAndDrop
 from widgets.audio_player.audio_player import AudioPlayer
@@ -114,15 +114,15 @@ class SingleFileTab(ProcessWorker):
             show_alert(self, "Please select a file first")
             return
 
-        model_folder = self.detector_settings.active_model()
+        model_path = self.detector_settings.active_model()
         threshold = self.detector_settings.threshold()
         overlap = self.detector_settings.overlap()
 
-        if not model_folder:
+        if not model_path:
             show_alert(self, "Please configure a model first")
             return
 
-        cmd = {"cmd": "analyze_single", "file_path": self.file_path, "model_folder": model_folder, "threshold": threshold, "overlap": overlap}
+        cmd = {"cmd": "analyze_single", "file_path": self.file_path, "model_path": model_path, "threshold": threshold, "overlap": overlap}
         self.start_work(cmd)
 
         self.analyze_button.setDisabled(True)

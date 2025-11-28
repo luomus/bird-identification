@@ -25,7 +25,7 @@ class FileSelect(QWidget):
         self.dialog.setViewMode(QFileDialog.ViewMode.Detail)
         self.dialog.accepted.connect(self.on_dialog_accepted)
 
-    def selected_file_path(self):
+    def selected_file_path(self) -> str:
         return self.filepath_edit.text()
 
     def on_file_browse_click(self):
