@@ -12,6 +12,8 @@ app/models/*
 app/models/default/*
 !app/models/default/.gitkeep
 
+app/InstallForge/
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]

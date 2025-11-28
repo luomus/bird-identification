@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="UTF-8"?>
+﻿<?xml version="1.0" encoding="UTF-8"?>
 
 <InstallForgeProject>
   <Metadata productVersion="1.5.0" projectFileVersion="2.0"/>
@@ -30,13 +30,15 @@
       <Label isEnabled="true"/>
       <VisualStyle isEnabled="true"/>
     </UserInterface>
-    <InstallationFiles defaultInstallationPath="&lt;ProgramFiles&gt;\&lt;Company&gt;\&lt;AppName&gt;\" isDefaultInstallationPathAlterable ="true">
-      <InstallationFile size="26 MB" type="exe">.\dist\birdIdentifier\birdIdentifier.exe</InstallationFile>
-      <InstallationFile size="N/A" type="[Folder]">.\dist\birdIdentifier\_internal\</InstallationFile>
-      <InstallationFile size="23.3 MB" type="exe">.\dist\birdIdentifier\birdIdentifierAnalyze.exe</InstallationFile>
+    <InstallationFiles defaultInstallationPath="[UserLocalAppData]\Programs\&lt;AppName&gt;\" isDefaultInstallationPathAlterable ="true">
+      <InstallationFile size="26 MB" type="exe">..\..\dist\birdIdentifier\birdIdentifier.exe</InstallationFile>
+      <InstallationFile size="N/A" type="[Folder]">..\..\dist\birdIdentifier\_internal\</InstallationFile>
+      <InstallationFile size="23.3 MB" type="exe">..\..\dist\birdIdentifier\birdIdentifierAnalyze.exe</InstallationFile>
     </InstallationFiles>
     <Languages/>
-    <Variables/>
+    <Variables>
+      <Variable name="UserLocalAppData" rootKey="HKEY_CURRENT_USER" subKey="Volatile Environment" valueName="LOCALAPPDATA" defaultValue="&lt;AppData&gt;\..\Local"/>
+    </Variables>
     <Commands/>
     <Registry/>
     <Shortcuts defaultPath="&lt;Company&gt;\&lt;AppName&gt;\" isDefaultPathAlterable="false" isCreateStartmenuShortcutsForAllUsers="false" isCreateDesktopShortcutsForAllUsers="false">
@@ -52,7 +54,7 @@
       <Data>e1xydGYxXGFuc2lcYW5zaWNwZzEyNTJcZGVmZjBcbm91aWNvbXBhdFxkZWZsYW5nMjA1N3tcZm9udHRibHtcZjBcZm5pbCBBcmlhbDt9fQ0Ke1wqXGdlbmVyYXRvciBSaWNoZWQyMCAxMC4wLjI2MTAwfVx2aWV3a2luZDRcdWMxIA0KXHBhcmRcZjBcZnMyMFxwYXINCn0NCgA=</Data>
     </License>
     <Finish isRebootMachineEnabled="false">
-      <Program executableFilePath="&lt;InstallPath&gt;\birdIdentifier.exe" isLaunchEnabled="false" arguments=""/>
+      <Program executableFilePath="" isLaunchEnabled="false" arguments=""/>
     </Finish>
   </InstallerConfiguration>
   <UninstallerConfiguration isPackaged="true">
@@ -74,9 +76,9 @@
     <Program executableFilePath="" isLaunchEnabled="false" isTerminationEnabled="false"/>
   </VisualUpdateConfiguration>
   <BuildConfiguration>
-    <SetupFilePath>.\dist\birdIdentifier.exe</SetupFilePath>
-    <SetupIconPath>.\icons\setup.ico</SetupIconPath>
-    <UninstallerIconPath>.\icons\setup.ico</UninstallerIconPath>
+    <SetupFilePath>..\..\dist\birdIdentifier.exe</SetupFilePath>
+    <SetupIconPath>..\icons\ancient.ico</SetupIconPath>
+    <UninstallerIconPath>..\icons\ancient.ico</UninstallerIconPath>
     <Compression method="0" level="2"/>
     <CodeSigning isEnabled="false" signToolCommandLine="/n &quot;Subject&quot; /tr http://timestamp.digicert.com /td sha256 /fd sha256 &quot;&lt;ExecutableFilePath&gt;&quot;"/>
   </BuildConfiguration>

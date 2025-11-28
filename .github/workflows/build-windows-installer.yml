@@ -17,12 +17,18 @@ jobs:
     - name: Remove placeholder models folder
       run: Remove-Item -Recurse -Force models
 
-    - name: Get models from private repo
+    - name: Get data from private repo
       uses: actions/checkout@v6
       with:
         repository: luomus/bird-identification-models
         token: ${{ secrets.PERSONAL_ACCESS_TOKEN }}
-        path: models
+        path: private-data
+
+    - name: Move data to correct places
+      run: |
+        Remove-Item -Recurse -Force app\models\default
+        Move-Item private-data\default-models app\models\default 
+        Expand-Archive -Path private-data\InstallForge.zip -DestinationPath app
 
     - name: Set up Python
       uses: actions/setup-python@v6
@@ -42,15 +48,10 @@ jobs:
         pyinstaller app.spec --noconfirm
       working-directory: ./app
 
-    - name: Unzip InstallForge
-      run: |
-        Expand-Archive -Path ..\models\InstallForge.zip -DestinationPath ..\models
-      working-directory: ./app
-
     - name: Build installer with InstallForge
       run: |
-        ..\models\InstallForge\bin\ifbuildx86.exe -i app.ifp
-      working-directory: ./app
+        ifbuildx86.exe -i ../../app.ifp
+      working-directory: ./app/InstallForge/bin
 
     - name: Upload installer
       uses: actions/upload-artifact@v4
