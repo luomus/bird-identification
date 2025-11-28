@@ -20,7 +20,7 @@ jobs:
     - name: Get data from private repo
       uses: actions/checkout@v6
       with:
-        repository: luomus/bird-identification-models
+        repository: luomus/bird-identification-app-data
         token: ${{ secrets.PERSONAL_ACCESS_TOKEN }}
         path: private-data
 
