@@ -3,11 +3,12 @@ import pickle
 
 import pandas as pd
 from PySide6.QtCore import QThreadPool
-from PySide6.QtWidgets import QVBoxLayout, QGroupBox
+from PySide6.QtWidgets import QVBoxLayout, QGroupBox, QWidget
 from typing import Tuple, Union, Optional, Any
 import numpy as np
 from pathlib import Path
 
+from functions.process_worker import ProcessWorker
 from functions.worker import Worker
 from functions.utils import load_audio, get_analyze_process
 from functions.gui_utils import show_alert
@@ -16,18 +17,17 @@ from widgets.common.audio_drag_and_drop import AudioDragAndDrop
 from widgets.audio_player.audio_player import AudioPlayer
 from widgets.common.datatable import Datatable
 from widgets.common.progress_label import ProgressLabel
-from widgets.common.process_worker import ProcessWorker
 from widgets.detector_settings import DetectorSettings
 
 
-class SingleFileTab(ProcessWorker):
+class SingleFileTab(QWidget):
     file_path = None
     audio_data: Optional[Tuple[np.ndarray, Union[int, float]]] = None
 
     results: Optional[pd.DataFrame] = None
 
     def __init__(self):
-        super().__init__(get_analyze_process())
+        super().__init__()
 
         self.layout = QVBoxLayout()
         self.setLayout(self.layout)
@@ -54,7 +54,7 @@ class SingleFileTab(ProcessWorker):
         self.layout.addWidget(self.analyze_button)
 
         self.progress_label = ProgressLabel()
-        self.progress_label.cancelClicked.connect(self.cancel_work)
+        self.progress_label.cancelClicked.connect(self.on_cancel_analyze_click)
         self.layout.addWidget(self.progress_label)
 
         self.result_table = Datatable()
@@ -64,10 +64,19 @@ class SingleFileTab(ProcessWorker):
 
         self.layout.addStretch()
 
+        self.analyze_worker = ProcessWorker(get_analyze_process())
+        self.analyze_worker.workStatus.connect(self.on_work_status)
+        self.analyze_worker.workResult.connect(self.on_work_result)
+        self.analyze_worker.workError.connect(self.on_work_error)
+        self.analyze_worker.workFinished.connect(self.on_work_finished)
+
         self.threadpool = QThreadPool()
 
     def update_models(self):
         self.detector_settings.update_models()
+
+    def stop_processing(self):
+        self.analyze_worker.stop_process()
 
     def on_file_selected(self, file_path):
         self.file_path = file_path
@@ -123,10 +132,11 @@ class SingleFileTab(ProcessWorker):
             return
 
         cmd = {"cmd": "analyze_single", "file_path": self.file_path, "model_path": model_path, "threshold": threshold, "overlap": overlap}
-        self.start_work(cmd)
+        self.analyze_worker.start_work(cmd)
 
         self.analyze_button.setDisabled(True)
         self.progress_label.start_processing()
+        self.progress_label.set_text("Starting worker...")
 
     def on_work_result(self, result: Any):
         raw = base64.b64decode(result)
@@ -148,7 +158,7 @@ class SingleFileTab(ProcessWorker):
 
     def on_cancel_analyze_click(self):
         self.progress_label.set_text("Canceling...")
-        self.cancel_work()
+        self.analyze_worker.cancel_work()
 
     def _clear_results(self):
         self.results = None

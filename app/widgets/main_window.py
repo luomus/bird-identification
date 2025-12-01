@@ -60,6 +60,6 @@ class MainWindow(QMainWindow):
         return QSize(800, 300)
 
     def closeEvent(self, event: QCloseEvent):
-        self.single_file_tab.stop_process()
-        self.multiple_files_tab.stop_process()
+        self.single_file_tab.stop_processing()
+        self.multiple_files_tab.stop_processing()
         event.accept()

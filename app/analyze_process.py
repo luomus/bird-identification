@@ -68,7 +68,7 @@ def send(msg):
     print(json.dumps(msg), flush=True)
 
 def analyze_single_file(file_path: str, classifier: Classifier, model_folder_path: str, threshold: float, overlap: float) -> pd.DataFrame:
-    send({"status": "Initializing..."})
+    send({"status": "Initializing model..."})
 
     results = pd.DataFrame()
 
@@ -87,11 +87,15 @@ def analyze_single_file(file_path: str, classifier: Classifier, model_folder_pat
     return results
 
 def analyze_multiple_files(input_folder_path: str, output_folder_path: str, classifier: Classifier, model_folder_path: str, threshold: float, overlap: float):
+    send({"status": "Initializing model..."})
+
     successes = 0
     errors = 0
 
     model_path, classes, calibration_params = get_model_data(model_folder_path)
     classifier.set_model_path(model_path)
+
+    send({"status": "Collecting audio files..."})
 
     file_paths = []
 

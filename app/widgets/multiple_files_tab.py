@@ -1,20 +1,22 @@
 from typing import Any
 
-from PySide6.QtWidgets import QVBoxLayout, QFileDialog, QGroupBox
+from PySide6.QtWidgets import QVBoxLayout, QFileDialog, QGroupBox, QWidget
 
+from functions.process_worker import ProcessWorker
 from functions.gui_utils import show_alert
 from functions.utils import get_analyze_process
 from widgets.common.file_select import FileSelect
 from widgets.common.input_with_label import InputWithLabel
 from widgets.common.main_button import MainButton
 from widgets.common.progress_label import ProgressLabel
-from widgets.common.process_worker import ProcessWorker
 from widgets.detector_settings import DetectorSettings
 
 
-class MultipleFilesTab(ProcessWorker):
+class MultipleFilesTab(QWidget):
+    cancel_text = "Canceling..."
+
     def __init__(self):
-        super().__init__(get_analyze_process())
+        super().__init__()
 
         self.layout = QVBoxLayout()
         self.setLayout(self.layout)
@@ -43,8 +45,17 @@ class MultipleFilesTab(ProcessWorker):
 
         self.layout.addStretch()
 
+        self.analyze_worker = ProcessWorker(get_analyze_process())
+        self.analyze_worker.workStatus.connect(self.on_work_status)
+        self.analyze_worker.workResult.connect(self.on_work_result)
+        self.analyze_worker.workError.connect(self.on_work_error)
+        self.analyze_worker.workFinished.connect(self.on_work_finished)
+
     def update_models(self):
         self.detector_settings.update_models()
+
+    def stop_processing(self):
+        self.analyze_worker.stop_process()
 
     def on_analyze_click(self):
         self.progress_label.set_text("")
@@ -72,10 +83,11 @@ class MultipleFilesTab(ProcessWorker):
             "threshold": threshold,
             "overlap": overlap
         }
-        self.start_work(cmd)
+        self.analyze_worker.start_work(cmd)
 
         self.analyze_button.setDisabled(True)
         self.progress_label.start_processing()
+        self.progress_label.set_text("Starting worker...")
 
     def on_work_result(self, data: dict[str, Any]):
         self.progress_label.set_text(
@@ -85,6 +97,8 @@ class MultipleFilesTab(ProcessWorker):
     def on_work_finished(self):
         self.analyze_button.setDisabled(False)
         self.progress_label.stop_processing()
+        if self.progress_label.get_text() == self.cancel_text:
+            self.progress_label.set_text("")
 
     def on_work_status(self, msg: str):
         self.progress_label.set_text(msg)
@@ -94,5 +108,5 @@ class MultipleFilesTab(ProcessWorker):
         self.progress_label.set_text("")
 
     def on_cancel_analyze_click(self):
-        self.progress_label.set_text("Canceling")
-        self.cancel_work()
+        self.progress_label.set_text(self.cancel_text)
+        self.analyze_worker.cancel_work()

@@ -37,6 +37,9 @@ class ProgressLabel(QWidget):
     def set_text(self, text: str):
         self.label.setText(text)
 
+    def get_text(self):
+        return self.label.text()
+
     def on_cancel_click(self):
         self.cancel_button.hide()
         self.cancelClicked.emit()

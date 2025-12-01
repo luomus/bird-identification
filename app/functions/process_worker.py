@@ -1,12 +1,17 @@
 import json
 
-from PySide6.QtGui import QCloseEvent
-from PySide6.QtCore import QProcess
-from PySide6.QtWidgets import QWidget
+from PySide6.QtCore import QProcess, Signal, QObject
 from typing import Optional, Any, Dict, Tuple, List
 
 
-class ProcessWorker(QWidget):
+class ProcessWorker(QObject):
+    workStatus = Signal(str)
+    workResult = Signal(object)
+    workError = Signal(str)
+    workFinished = Signal()
+
+    process: Optional[QProcess] = None
+
     work_started = False
     cancelled = False
     stopped = False
@@ -16,9 +21,6 @@ class ProcessWorker(QWidget):
 
         self.process_file_path = process[0]
         self.process_arguments = process[1]
-
-        self.process: Optional[QProcess] = None
-        self.start_process()
 
     def start_process(self):
         if not self.process or self.process.state() == QProcess.ProcessState.NotRunning:
@@ -60,16 +62,16 @@ class ProcessWorker(QWidget):
                 continue
 
             if "status" in msg:
-                self.on_work_status(msg["status"])
+                self.workStatus.emit(msg["status"])
 
             if "result" in msg:
-                self.on_work_result(msg["result"])
-                self.on_work_finished()
+                self.workResult.emit(msg["result"])
+                self.workFinished.emit()
                 self.work_started = False
 
             if "error" in msg:
-                self.on_work_error(msg["error"])
-                self.on_work_finished()
+                self.workError.emit(msg["error"])
+                self.workFinished.emit()
                 self.work_started = False
 
     def on_stderr(self):
@@ -78,29 +80,17 @@ class ProcessWorker(QWidget):
 
     def on_process_error(self, error: QProcess.ProcessError):
         if self.work_started and not self.stopped and not self.cancelled:
-            self.on_work_error(str(error))
+            self.workError.emit(str(error))
 
     def on_process_finished(self):
         if not self.stopped:
             if self.work_started:
-                self.on_work_finished()
+                self.workFinished.emit()
                 self.work_started = False
 
             if self.cancelled:
                 self.start_process()
                 self.cancelled = False
-
-    def on_work_status(self, msg: str):
-        pass
-
-    def on_work_result(self, result: Any):
-        pass
-
-    def on_work_error(self, error: Any):
-        pass
-
-    def on_work_finished(self):
-        pass
 
     def stop_process(self):
         self.stopped = True
