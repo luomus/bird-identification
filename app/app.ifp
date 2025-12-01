@@ -32,8 +32,8 @@
     </UserInterface>
     <InstallationFiles defaultInstallationPath="[UserLocalAppData]\Programs\&lt;AppName&gt;\" isDefaultInstallationPathAlterable ="true">
       <InstallationFile size="26 MB" type="exe">..\..\dist\birdIdentifier\birdIdentifier.exe</InstallationFile>
-      <InstallationFile size="N/A" type="[Folder]">..\..\dist\birdIdentifier\_internal\</InstallationFile>
       <InstallationFile size="23.3 MB" type="exe">..\..\dist\birdIdentifier\birdIdentifierAnalyze.exe</InstallationFile>
+      <InstallationFile size="N/A" type="[Folder]">..\..\dist\birdIdentifier\_internal\</InstallationFile>
     </InstallationFiles>
     <Languages/>
     <Variables>
