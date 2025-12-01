@@ -1,5 +1,5 @@
 from PySide6.QtWidgets import QApplication, QSplashScreen
-from PySide6.QtCore import QObject, QThread, Qt, Signal, QSize
+from PySide6.QtCore import Qt, Signal, QSize, QTimer
 from PySide6.QtGui import QPixmap, QIcon
 
 import sys
@@ -14,40 +14,17 @@ except ImportError:
     pass
 
 
-class AppInitializerWorker(QObject):
-    finished = Signal()
+class SplashScreen(QSplashScreen):
+    isReady = Signal()
 
-    def __init__(self):
-        super().__init__()
+    is_ready = False
 
-    # import all heavy libraries in another thread so the app doesn't freeze while it's starting up
-    def start(self):
-        import librosa
-        import pandas
-        import numpy
+    def paintEvent(self, event):
+        super().paintEvent(event)
 
-        self.finished.emit()
-
-
-class AppInitializer(QObject):
-    ready = Signal()
-
-    def __init__(self):
-        super().__init__()
-
-        self.thread = QThread(self)
-
-        self.worker = AppInitializerWorker()
-        self.worker.moveToThread(self.thread)
-        self.worker.finished.connect(self.ready)
-        self.worker.finished.connect(self.thread.quit)
-
-        self.thread.started.connect(self.worker.start)
-        self.thread.finished.connect(self.worker.deleteLater)
-
-    def start(self):
-        self.thread.start()
-
+        if not self.is_ready:
+            QTimer.singleShot(0, self.isReady)
+            self.is_ready = True
 
 app = QApplication([])
 app_icon = QIcon()
@@ -58,12 +35,8 @@ app_icon.addFile(":/icons/bird48x48.png", QSize(48, 48))
 app_icon.addFile(":/icons/bird256x256.png", QSize(256, 256))
 app.setWindowIcon(app_icon)
 
-splash = QSplashScreen(QPixmap(":/icons/splash.png"), Qt.WindowType.WindowStaysOnTopHint)
+splash = SplashScreen(QPixmap(":/icons/splash.png"), Qt.WindowType.WindowStaysOnTopHint)
 splash.setEnabled(False)  # clicking doesn't close it
-splash.show()
-app.processEvents()
-
-initializer = AppInitializer()
 
 window = None
 
@@ -76,9 +49,7 @@ def show_main_window():
     splash.finish(window)
     window.show()
 
-    initializer.deleteLater()
-
-initializer.ready.connect(show_main_window)
-initializer.start()
+splash.isReady.connect(show_main_window) # ensure that the splash screen is shown first
+splash.show()
 
 sys.exit(app.exec())
