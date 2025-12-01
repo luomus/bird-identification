@@ -2,7 +2,6 @@ name: Build Windows Installer
 
 on:
   push:
-    branches: [ desktop-app ]
     tags:
       - 'v*'
 
