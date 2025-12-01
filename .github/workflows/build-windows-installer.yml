@@ -2,6 +2,7 @@ name: Build Windows Installer
 
 on:
   push:
+    branches: [ desktop-app ]
     tags:
       - 'v*'
 
@@ -37,6 +38,11 @@ jobs:
         pip install ..
         pip install -r requirements.txt
         pip install pyinstaller
+      working-directory: ./app
+
+    - name: Set correct version numbers
+      run: |
+        python replace_version.py
       working-directory: ./app
 
     - name: Build executable with PyInstaller

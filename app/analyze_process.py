@@ -14,6 +14,15 @@ from functions.utils import is_audio_file, get_default_model_path
 from scripts import functions
 from scripts.classifier import Classifier
 
+try:
+    from ctypes import windll  # Only exists on Windows.
+
+    myappid = "Luomus.BirdIdentifier"
+    windll.shell32.SetCurrentProcessExplicitAppUserModelID(myappid)
+except ImportError:
+    pass
+
+
 BIRDNET_MODEL_PATH = str(get_default_model_path("BirdNET_GLOBAL_6K_V2.4_Model_FP32.tflite"))
 TFLITE_THREADS = 1
 CLIP_DURATION = 3.0

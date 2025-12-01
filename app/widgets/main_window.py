@@ -1,7 +1,9 @@
 from PySide6.QtCore import QSize
-from PySide6.QtWidgets import QMainWindow, QVBoxLayout, QWidget, QTabBar
+from PySide6.QtWidgets import QMainWindow, QVBoxLayout, QWidget, QTabBar, QFrame
 from PySide6.QtGui import QCloseEvent
 
+from version import __version__
+from widgets.info_bar import InfoBar
 from widgets.model_config_tab import ModelConfigTab
 from widgets.multiple_files_tab import MultipleFilesTab
 from widgets.single_file_tab import SingleFileTab
@@ -37,6 +39,14 @@ class MainWindow(QMainWindow):
         self.layout.addWidget(self.model_config_tab)
 
         self.on_tab_change(0)
+
+        line = QFrame()
+        line.setFrameShape(QFrame.Shape.HLine)
+        line.setFrameShadow(QFrame.Shadow.Sunken)
+        self.layout.addWidget(line)
+
+        self.info_bar = InfoBar(__version__, "https://info.laji.fi/en/sound-identification/")
+        self.layout.addWidget(self.info_bar)
 
     def on_tab_change(self, active_idx: int):
         if active_idx == 0:

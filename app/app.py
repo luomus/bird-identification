@@ -8,7 +8,7 @@ import resources  # noqa
 try:
     from ctypes import windll  # Only exists on Windows.
 
-    myappid = "fi.laji.birdIdentification.0.1.0"
+    myappid = "Luomus.BirdIdentifier"
     windll.shell32.SetCurrentProcessExplicitAppUserModelID(myappid)
 except ImportError:
     pass
