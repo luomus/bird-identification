@@ -81,3 +81,15 @@ coll = COLLECT(
     upx_exclude=[],
     name='birdIdentifier',
 )
+
+app = BUNDLE(
+    coll,
+    name='birdIdentifier.app',
+    icon=None,
+    bundle_identifier='fi.laji.birdIdentifier',
+    version='{{ version }}',
+    info_plist={
+        'CFBundleName': 'Bird Identifier',
+        'NSHumanReadableCopyright': '© 2025 Luomus - Finnish Museum of Natural History'
+    }    
+)

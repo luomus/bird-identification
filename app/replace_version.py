@@ -1,6 +1,6 @@
 from version import __version__
 
-file_paths = ["version_info.txt", "version_info_analyze.txt", "app.ifp"]
+file_paths = ["app.spec", "version_info.txt", "version_info_analyze.txt", "app.ifp", "build_dmg.sh"]
 
 version_parts = __version__.split(".")
 major = version_parts[0]
