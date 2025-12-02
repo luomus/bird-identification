@@ -16,7 +16,7 @@
 
 3. Install dependencies specific to the desktop app
     ```
-    pip install -r requirements.txt
+    pip install -r requirements.txt && pip install -r requirements_tf.txt
     ```
    
 4. Add BirdNET model to models/default folder

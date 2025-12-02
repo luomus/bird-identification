@@ -40,6 +40,7 @@ jobs:
         python -m pip install --upgrade pip
         pip install ..
         pip install -r requirements.txt
+        pip install -r requirements_tf_mac.txt
         pip install pyinstaller
       working-directory: ./app
 
