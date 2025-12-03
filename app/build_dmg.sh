@@ -12,5 +12,6 @@ create-dmg \
   --window-size 600 300 \
   --hide-extension "birdIdentifier.app" \
   --app-drop-link 425 120 \
+  --format ULMO \
   "dist/birdIdentifier-{{ version }}.dmg" \
   "dist/dmg/"

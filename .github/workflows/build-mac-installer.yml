@@ -2,7 +2,6 @@ name: Build Mac Installer
 
 on:
   push:
-    branches: [ desktop-app ]
     tags:
       - 'v*'
 
@@ -23,8 +22,8 @@ jobs:
 
     - name: Move data to correct places
       run: |
-        rm -rf app/models/default
-        mv private-data/default-models app/models/default
+        rm -rf app/models
+        mv private-data/default-models app/models
 
     - name: Install create-dmg
       run: |

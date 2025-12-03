@@ -22,8 +22,8 @@ jobs:
 
     - name: Move data to correct places
       run: |
-        Remove-Item -Recurse -Force app\models\default
-        Move-Item private-data\default-models app\models\default 
+        Remove-Item -Recurse -Force app\models
+        Move-Item private-data\default-models app\models
         Expand-Archive -Path private-data\InstallForge.zip -DestinationPath app
 
     - name: Set up Python

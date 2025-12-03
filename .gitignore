@@ -11,6 +11,7 @@ app/models/*
 !app/models/default
 app/models/default/*
 !app/models/default/.gitkeep
+app/custom_models/
 
 app/InstallForge/
 

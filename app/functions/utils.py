@@ -15,14 +15,14 @@ def is_audio_file(file_name: str) -> bool:
     return file_name.lower().endswith((".wav", ".mp3", ".flac"))
 
 def get_default_model_path(model_name: str) -> Path:
-    return get_models_folder_path("default") / model_name
+    return get_default_models_folder_path() / model_name
 
 def get_custom_model_path(model_name: str) -> Path:
-    return get_models_folder_path("custom") / model_name
+    return get_custom_models_folder_path() / model_name
 
 def get_available_models(model_type: Optional[str] = None) -> List[Path]:
-    default_models = get_models_folder_path("default")
-    custom_models = get_models_folder_path("custom")
+    default_models = get_default_models_folder_path()
+    custom_models = get_custom_models_folder_path()
 
     result = []
 
@@ -33,12 +33,21 @@ def get_available_models(model_type: Optional[str] = None) -> List[Path]:
 
     return result
 
-def get_models_folder_path(model_type: str) -> Path:
+def get_default_models_folder_path():
     bundle_dir = Path(__file__).parent.parent
 
-    base_path = Path.cwd() / bundle_dir / "models"
+    return Path.cwd() / bundle_dir / "models"
 
-    return base_path / model_type
+def get_custom_models_folder_path() -> Path:
+    if getattr(sys, "frozen", False):
+        if sys.platform == "win32":
+            return Path(os.getenv("LOCALAPPDATA")) / "Bird Identifier" / "models"
+        elif sys.platform == "darwin":
+            return Path.home() / "Library" / "Application Support" / "Bird Identifier" / "models"
+
+    bundle_dir = Path(__file__).parent.parent
+
+    return Path.cwd() / bundle_dir / "custom_models"
 
 def get_analyze_process() -> Tuple[str, List[str]]:
     if not getattr(sys, "frozen", False):

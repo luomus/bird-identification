@@ -6,7 +6,7 @@ main_a = Analysis(
     pathex=[],
     binaries=[],
     datas=[
-        ('./models/default', 'models/default'),
+        ('./models', 'models'),
     ],
     hiddenimports=[],
     hookspath=[],
