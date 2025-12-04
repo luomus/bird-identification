@@ -1,7 +1,7 @@
 #!/bin/sh
 mkdir -p dist/dmg
 test -f dist/dmg/* && rm -r dist/dmg/*
-cp -r dist/birdIdentifier.app dist/dmg
+mv dist/birdIdentifier.app dist/dmg/
 test -f dist/birdIdentifier-*.dmg && rm dist/birdIdentifier-*.dmg
 # add volicon
 # add icon-size
