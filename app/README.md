@@ -14,12 +14,12 @@
     pip install -e .. --config-settings editable_mode=compat
     ```
 
-3. Install dependencies specific to the desktop app
+3. Install other dependencies
     ```
     pip install -r requirements.txt && pip install -r requirements_tf.txt
     ```
    
-4. Add BirdNET model to models/default folder
+4. Add BirdNET model to models folder
 
 5. Start the app
     ```

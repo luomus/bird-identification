@@ -21,6 +21,7 @@ class ModelForm(QGroupBox):
         self.setTitle("Add new model")
 
         form_layout = QFormLayout()
+        form_layout.setFieldGrowthPolicy(QFormLayout.FieldGrowthPolicy.AllNonFixedFieldsGrow)
         self.setLayout(form_layout)
 
         self.model_folder_select = FileSelect(QFileDialog.FileMode.Directory)
