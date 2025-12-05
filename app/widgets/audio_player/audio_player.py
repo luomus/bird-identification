@@ -1,5 +1,5 @@
-from typing import Optional, Union
-import numpy as np
+from pathlib import Path
+from typing import Optional
 
 from PySide6.QtCore import Signal
 from PySide6.QtWidgets import QWidget, QVBoxLayout, QSizePolicy
@@ -25,14 +25,10 @@ class AudioPlayer(QWidget):
         self.main_view = MainAudioPlayer()
         layout.addWidget(self.main_view)
 
-    def set_loading(self, loading: bool):
-        self.main_view.set_loading(loading)
-
-    def set_file_name(self, file_name: Optional[str]):
-        self.top_bar.set_file_name(file_name)
-
-    def set_audio_data(self, file_path: str, audio_data: np.ndarray, sample_rate: Union[int, float]):
-        self.main_view.set_audio_data(file_path, audio_data, sample_rate)
+    def set_file_path(self, file_path: str):
+        self.top_bar.set_file_name(Path(file_path).name)
+        self.main_view.set_file_path(file_path)
 
     def clear_audio(self):
+        self.top_bar.set_file_name(None)
         self.main_view.clear_audio()

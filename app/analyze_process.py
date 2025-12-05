@@ -185,6 +185,9 @@ def load_default_params(model_file_paths: dict[str, str]) -> dict[str, Any]:
 
 def audio_to_chunks(file_path: str, chunk_size: int = 600) -> Generator[tuple[int, int, float], None, None]:
     duration = librosa.get_duration(path=file_path)
+    if duration == 0:
+        raise ValueError("Failed to load audio")
+
     offset = 0
 
     while offset < duration:

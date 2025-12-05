@@ -1,6 +1,3 @@
-from typing import Union
-import numpy as np
-
 from PySide6.QtCore import Qt, QUrl
 from PySide6.QtMultimedia import QMediaPlayer, QAudioOutput
 from PySide6.QtWidgets import QWidget, QVBoxLayout, QLabel, QHBoxLayout
@@ -21,6 +18,7 @@ class MainAudioPlayer(QWidget):
 
         self.waveform = WaveformView()
         self.waveform.setFixedHeight(50)
+        self.waveform.waveformReady.connect(self.on_waveform_ready)
         self.waveform.timeClicked.connect(self.on_time_click)
         layout.addWidget(self.waveform)
 
@@ -54,25 +52,21 @@ class MainAudioPlayer(QWidget):
         self.player.playingChanged.connect(self.on_playing_changed)
         self.player.positionChanged.connect(self.on_play_time_changed)
 
-    def set_loading(self, loading: bool):
-        self.play_button.setEnabled(not loading)
-        self.waveform.set_loading(loading)
-
-    def set_audio_data(self, file_path: str, audio_data: np.ndarray, sample_rate: Union[int, float]):
+    def set_file_path(self, file_path: str):
         self.player.setSource(QUrl.fromLocalFile(file_path))
-        self.waveform.set_audio(audio_data, sample_rate)
-        self.play_button.setEnabled(True)
+        self.waveform.set_file_path(file_path)
 
-        duration = len(audio_data) / sample_rate
+    def clear_audio(self):
+        self.waveform.clear_audio()
+        self.play_button.setEnabled(False)
+        self.end_time_label.setText("00:00:00")
+
+    def on_waveform_ready(self, duration):
         hours, remainder = divmod(duration, 3600)
         minutes, seconds = divmod(remainder, 60)
         end_time = "{:02}:{:02}:{:02}".format(int(hours), int(minutes), int(seconds))
         self.end_time_label.setText(end_time)
-
-    def clear_audio(self):
-        self.waveform.set_audio(None, None)
-        self.play_button.setEnabled(False)
-        self.end_time_label.setText("00:00:00")
+        self.play_button.setEnabled(True)
 
     def on_play_button_click(self):
         if self.player.isPlaying():

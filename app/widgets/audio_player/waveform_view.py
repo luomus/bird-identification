@@ -1,62 +1,121 @@
 from math import floor
+import librosa
+from typing import Optional, Tuple
+from threading import Event
+from numpy import interp
 
 import numpy as np
 from PySide6 import QtGui
-from PySide6.QtWidgets import QWidget, QGraphicsView, QGraphicsScene, QGraphicsLineItem, QVBoxLayout
+from PySide6.QtWidgets import QWidget, QGraphicsView, QGraphicsScene, QGraphicsLineItem, QVBoxLayout, QLabel
 from PySide6.QtCore import Qt, QThreadPool, Signal
-from PySide6.QtGui import QColor, QPen, QPalette
-
-from numpy import interp
+from PySide6.QtGui import QColor, QPen
 
 from functions.worker import Worker
 from widgets.common.spinner import WaitingSpinner
 
 
-def _get_samples_per_pixel(audio_data: np.ndarray, width: int) -> float:
-    total_samples = len(audio_data)
-    return total_samples / float(width)
+def _calculate_peaks(file_path: str, width: int, height: int, cancel_requested: Event, target_chunk_sec = 600) -> Tuple[np.ndarray, float, float]:
+    peak_table = np.ndarray((width, 2), dtype=np.float32)
 
+    duration = librosa.get_duration(path=file_path)
+    sr = librosa.get_samplerate(file_path)
 
-def _calculate_lines(audio_data: np.ndarray, width: int, height: int, **kwargs) -> np.ndarray:
-    lines = np.ndarray(shape=(width, 4))
+    samples_per_pixel = max(round(sr * duration / width), 1)
 
-    y_middle = height / 2
+    target_samples_per_chunk = target_chunk_sec * sr
+    pixels_per_chunk = max(round(target_samples_per_chunk / samples_per_pixel), 1)
+    samples_per_chunk = pixels_per_chunk * samples_per_pixel
+    chunk_sec = samples_per_chunk / sr
 
-    samples_per_pixel = _get_samples_per_pixel(audio_data, width)
+    total_max = 0.0
+    total_min = 0.0
 
-    total_max = np.max(audio_data)
-    total_min = np.min(audio_data)
+    pixel = 0
+    offset = 0.0
 
-    start = 0
+    while offset < duration and pixel < width:
+        if cancel_requested.is_set():
+            raise ValueError("Cancel requested")
 
-    for pixel in range(width):
-        end = round((pixel + 1) * samples_per_pixel)
+        y, _ = librosa.load(
+            file_path,
+            sr=sr,
+            mono=True,
+            offset=offset,
+            duration=chunk_sec
+        )
 
-        values = audio_data[start:end]
-        min_value = np.min(values)
-        max_value = np.max(values)
+        start = 0
 
-        start_y = min(interp(min_value, [total_min, total_max], [0, height]), y_middle)
-        end_y = max(interp(max_value, [total_min, total_max], [0, height]), y_middle)
+        while start < len(y) and pixel < width:
+            end = start + samples_per_pixel
+            values = y[start:end]
 
-        lines[pixel] = [pixel, start_y, pixel, end_y]
+            if values.size == 0:
+                break
 
-        start = end
+            min_value = values.min()
+            max_value = values.max()
 
-    return lines
+            peak_table[pixel] = [min_value, max_value]
 
+            total_min = min(total_min, min_value)
+            total_max = max(total_max, max_value)
+
+            start = end
+            pixel += 1
+
+        offset += chunk_sec
+
+    peak_table[:, 0] = interp(peak_table[:, 0], [total_min, total_max], [0, height - 1])
+    peak_table[:, 1] = interp(peak_table[:, 1], [total_min, total_max], [0, height - 1])
+
+    return peak_table, duration, sr
+
+def _resample_peaks_for_width(peaks: np.ndarray, width: int):
+    result = np.ndarray((width, 2), dtype=np.float32)
+
+    step = len(peaks) / width
+
+    for x in range(width):
+        i1 = int(x * step)
+        i2 = int((x + 1) * step)
+        segment = peaks[i1:i2]
+        result[x, 0] = segment[:, 0].min()
+        result[x, 1] = segment[:, 1].max()
+
+    return result
+
+def _play_time_as_pixel(time: int, duration: float, sample_rate: float, width: int):
+    samples = round(time * sample_rate / 1000)
+    total_samples = int(duration * sample_rate)
+    pixel = round(samples * width / total_samples)
+    return pixel
+
+def _pixel_as_play_time(pixel: int, duration: float, sample_rate: float, width: int):
+    total_samples = int(duration * sample_rate)
+    samples = (pixel * total_samples) / width
+    time = round(samples / sample_rate * 1000)
+    return time
 
 class WaveformView(QWidget):
+    waveformReady = Signal(float)
     timeClicked = Signal(int)
 
     default_pen = QtGui.QPen(QtGui.QColor("#777"))
     active_pen = QPen(QColor(15, 89, 138))
 
-    audio_data = None
-    sample_rate = None
+    file_path: Optional[str] = None
 
     lines = []
-    samples_per_pixel = 0
+
+    peaks: np.ndarray = np.array([])
+    duration = 0
+    sample_rate = 0
+
+    play_time = 0
+
+    worker: Optional[Worker] = None
 
     def __init__(self):
         super().__init__()
@@ -65,7 +124,7 @@ class WaveformView(QWidget):
         layout.setContentsMargins(0, 0, 0, 0)
         self.setLayout(layout)
 
-        self.scene = QGraphicsScene(0, 0, 700, 50)
+        self.scene = QGraphicsScene()
         self.view = QGraphicsView(self.scene)
         self.view.setFixedHeight(50)
         self.view.setStyleSheet("background: transparent; border: none")
@@ -75,7 +134,91 @@ class WaveformView(QWidget):
         self.loading_spinner.hide()
         layout.addWidget(self.loading_spinner, alignment=Qt.AlignmentFlag.AlignCenter)
 
+        self.error_label = QLabel("Failed to load audio")
+        self.error_label.hide()
+        layout.addWidget(self.error_label, alignment=Qt.AlignmentFlag.AlignCenter)
+
         self.threadpool = QThreadPool()
+
+    def set_file_path(self, file_path: str):
+        self.clear_audio()
+        self.file_path = file_path
+        self.calculate_peaks()
+
+    def clear_audio(self):
+        if self.worker:
+            self.worker.cancel()
+
+        self.file_path = None
+        self.lines = []
+        self.peaks = np.array([])
+        self.duration = 0
+        self.sample_rate = 0
+        self.play_time = 0
+
+        self.error_label.hide()
+        self.set_loading(False)
+
+    def set_play_time(self, time):
+        self.play_time = time
+
+        if len(self.lines) == 0:
+            return
+
+        pixel = _play_time_as_pixel(time, self.duration, self.sample_rate, len(self.lines))
+
+        for i, line in enumerate(self.lines):
+            if i <= pixel:
+                line.setPen(self.active_pen)
+            else:
+                line.setPen(self.default_pen)
+
+    def resizeEvent(self, event: QtGui.QMouseEvent):
+        self.draw()
+
+    def mousePressEvent(self, event: QtGui.QMouseEvent):
+        if len(self.lines) == 0:
+            return
+
+        pixel = int(self.view.mapToScene(event.pos()).x())
+        time = _pixel_as_play_time(pixel, self.duration, self.sample_rate, len(self.lines))
+
+        self.timeClicked.emit(time)
+
+    def calculate_peaks(self):
+        if self.file_path is None:
+            return
+
+        self.worker = Worker(_calculate_peaks, self.file_path, 200000, int(self.view.height()))
+        self.worker.signals.result.connect(self.on_peaks_calculated)
+        self.worker.signals.error.connect(self.on_error)
+
+        self.set_loading(True)
+        self.threadpool.start(self.worker)
+
+    def on_peaks_calculated(self, result: Tuple[np.ndarray, float, float, int]):
+        if self.worker.is_canceled():
+            return
+
+        self.set_loading(False)
+
+        peaks, duration, sr = result
+
+        self.peaks = peaks
+        self.duration = duration
+        self.sample_rate = sr
+
+        self.draw()
+
+        self.waveformReady.emit(duration)
+
+    def on_error(self):
+        if self.worker.is_canceled():
+            return
+
+        self.set_loading(False)
+        self.view.hide()
+        self.error_label.show()
 
     def set_loading(self, loading: bool):
         if loading:
@@ -87,61 +230,29 @@ class WaveformView(QWidget):
             self.loading_spinner.hide()
             self.view.show()
 
-    def resizeEvent(self, event: QtGui.QMouseEvent):
-        self.view.fitInView(self.scene.sceneRect())
+    def draw(self):
+        self.scene.clear()
 
-    def mousePressEvent(self, event: QtGui.QMouseEvent):
-        if len(self.lines) == 0:
+        width = self.view.width()
+        height = self.view.height()
+        self.scene.setSceneRect(0, 0, width, height)
+
+        if len(self.peaks) == 0:
             return
 
-        pixel = self.view.mapToScene(event.pos()).x()
-        samples = pixel * self.samples_per_pixel
-        time = round(samples / self.sample_rate * 1000)
+        self.lines = []
 
-        self.timeClicked.emit(time)
+        peaks = _resample_peaks_for_width(self.peaks, width)
+        pixel = _play_time_as_pixel(self.play_time, self.duration, self.sample_rate, width)
 
-    def set_audio(self, audio_data, sample_rate):
-        self.audio_data = audio_data
-        self.sample_rate = sample_rate
-        self._draw()
-
-    def set_play_time(self, time):
-        if len(self.lines) == 0:
-            return
-
-        nbr_of_samples = round(time * self.sample_rate / 1000)
-        nbr_of_pixels = floor(nbr_of_samples / self.samples_per_pixel)
-
-        for i, line in enumerate(self.lines):
-            if i < nbr_of_pixels:
+        for i, peak in enumerate(peaks):
+            line = QGraphicsLineItem(i, peak[0], i, peak[1])
+            if i <= pixel:
                 line.setPen(self.active_pen)
             else:
                 line.setPen(self.default_pen)
 
-    def _draw(self):
-        self.scene.clear()
-
-        self.lines = []
-
-        if self.audio_data is None or self.sample_rate is None:
-            return
-
-        width = int(self.scene.width())
-        height = int(self.scene.height())
-
-        self.samples_per_pixel = _get_samples_per_pixel(self.audio_data, width)
-
-        worker = Worker(_calculate_lines, self.audio_data, width, height)
-        worker.signals.result.connect(self.on_lines_calculated)
-
-        self.threadpool.start(worker)
-
-    def on_lines_calculated(self, result: np.ndarray):
-        for line_data in result:
-            line = QGraphicsLineItem(*line_data)
-            line.setPen(self.default_pen)
-
             self.lines.append(line)
             self.scene.addItem(line)
 
-            self.view.fitInView(self.scene.sceneRect())
+        self.view.fitInView(self.scene.sceneRect())

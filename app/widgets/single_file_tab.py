@@ -2,15 +2,11 @@ import base64
 import pickle
 
 import pandas as pd
-from PySide6.QtCore import QThreadPool
 from PySide6.QtWidgets import QVBoxLayout, QGroupBox, QWidget
-from typing import Tuple, Union, Optional, Any
-import numpy as np
-from pathlib import Path
+from typing import Optional, Any
 
 from functions.process_worker import ProcessWorker
-from functions.worker import Worker
-from functions.utils import load_audio, get_analyze_process
+from functions.utils import get_analyze_process
 from functions.gui_utils import show_alert
 from widgets.common.main_button import MainButton
 from widgets.common.audio_drag_and_drop import AudioDragAndDrop
@@ -22,7 +18,6 @@ from widgets.detector_settings import DetectorSettings
 
 class SingleFileTab(QWidget):
     file_path = None
-    audio_data: Optional[Tuple[np.ndarray, Union[int, float]]] = None
 
     results: Optional[pd.DataFrame] = None
 
@@ -70,8 +65,6 @@ class SingleFileTab(QWidget):
         self.analyze_worker.workError.connect(self.on_work_error)
         self.analyze_worker.workFinished.connect(self.on_work_finished)
 
-        self.threadpool = QThreadPool()
-
     def update_models(self):
         self.detector_settings.update_models()
 
@@ -80,17 +73,10 @@ class SingleFileTab(QWidget):
 
     def on_file_selected(self, file_path):
         self.file_path = file_path
-        self.audio_player.set_file_name(Path(file_path).name)
+        self.audio_player.set_file_path(file_path)
 
         self.drag_and_drop.hide()
         self.audio_player.show()
-        self.audio_player.set_loading(True)
-
-        worker = Worker(load_audio, file_path)
-        worker.signals.result.connect(self.on_audio_load)
-        worker.signals.error.connect(self.on_audio_load_error)
-
-        self.threadpool.start(worker)
 
         self._clear_results()
 
@@ -99,22 +85,9 @@ class SingleFileTab(QWidget):
         self.drag_and_drop.show()
 
         self.file_path = None
-        self.audio_data = None
-        self.audio_player.set_file_name(None)
         self.audio_player.clear_audio()
 
         self._clear_results()
-
-    def on_audio_load(self, data: Tuple[np.ndarray, Union[int, float]]):
-        self.audio_player.set_audio_data(self.file_path, data[0], data[1])
-        self.audio_player.set_loading(False)
-
-        self.audio_data = data
-
-    def on_audio_load_error(self):
-        show_alert(self, "Loading audio failed!")
-
-        self.on_file_removed()
 
     def on_analyze_click(self):
         self._clear_results()

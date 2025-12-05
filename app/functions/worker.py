@@ -88,7 +88,11 @@ class Worker(QRunnable):
             if not self.cancel_requested.is_set():
                 self.signals.result.emit(result)
         finally:
-            self.signals.finished.emit()
+            if not self.cancel_requested.is_set():
+                self.signals.finished.emit()
 
     def cancel(self):
         self.cancel_requested.set()
+
+    def is_canceled(self):
+        return self.cancel_requested.is_set()
