@@ -63,9 +63,12 @@ class MultipleFilesTab(QWidget):
         input_folder_path = self.input_folder_select.selected_file_path()
         output_folder_path = self.output_folder_select.selected_file_path()
 
-        if input_folder_path is None or output_folder_path is None:
-            show_alert(self, "Please select input and output folders first")
+        if not input_folder_path:
+            show_alert(self, "Please select input folder first")
             return
+
+        if not output_folder_path:
+            output_folder_path = input_folder_path
 
         model_path = self.detector_settings.active_model()
         threshold = self.detector_settings.threshold()
