@@ -14,6 +14,9 @@ def load_audio(file_path: str, sample_rate: Optional[str] = 24000) -> Tuple[np.n
 def is_audio_file(file_name: str) -> bool:
     return file_name.lower().endswith((".wav", ".mp3", ".flac"))
 
+def get_result_file_name(input_file_path: str, model_name: str) -> str:
+    return "{}.{}.results.csv".format(Path(input_file_path).stem, model_name)
+
 def get_default_model_path(model_name: str) -> Path:
     return get_default_models_folder_path() / model_name
 

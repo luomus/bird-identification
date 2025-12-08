@@ -1,12 +1,13 @@
 import base64
 import pickle
+from pathlib import Path
 
 import pandas as pd
-from PySide6.QtWidgets import QVBoxLayout, QGroupBox, QWidget
+from PySide6.QtWidgets import QVBoxLayout, QGroupBox, QWidget, QPushButton, QFileDialog
 from typing import Optional, Any
 
 from functions.process_worker import ProcessWorker
-from functions.utils import get_analyze_process
+from functions.utils import get_analyze_process, get_result_file_name
 from functions.gui_utils import show_alert
 from widgets.common.main_button import MainButton
 from widgets.common.audio_drag_and_drop import AudioDragAndDrop
@@ -19,6 +20,7 @@ from widgets.detector_settings import DetectorSettings
 class SingleFileTab(QWidget):
     file_path = None
 
+    default_result_file_name = ""
     results: Optional[pd.DataFrame] = None
 
     def __init__(self):
@@ -51,6 +53,11 @@ class SingleFileTab(QWidget):
         self.progress_label = ProgressLabel()
         self.progress_label.cancelClicked.connect(self.on_cancel_analyze_click)
         self.layout.addWidget(self.progress_label)
+
+        self.download_results_button = QPushButton("Download results")
+        self.download_results_button.clicked.connect(self.on_download_results_click)
+        self.download_results_button.hide()
+        self.layout.addWidget(self.download_results_button)
 
         self.result_table = Datatable()
         self.result_table.setMinimumHeight(150)
@@ -89,6 +96,25 @@ class SingleFileTab(QWidget):
 
         self._clear_results()
 
+    def on_download_results_click(self):
+        file_path, _ = QFileDialog.getSaveFileName(
+            self,
+            "Save csv",
+            self.default_result_file_name,
+            "csv (*.csv)"
+        )
+
+        if not file_path:
+            return
+
+        if not file_path.lower().endswith(".csv"):
+            file_path += ".csv"
+
+        try:
+            self.results.to_csv(file_path, index=False)
+        except Exception:
+            show_alert(self, "Could not save the file")
+
     def on_analyze_click(self):
         self._clear_results()
 
@@ -111,10 +137,13 @@ class SingleFileTab(QWidget):
         self.progress_label.start_processing()
         self.progress_label.set_text("Starting worker...")
 
+        self.default_result_file_name = get_result_file_name(self.file_path, Path(model_path).name)
+
     def on_work_result(self, result: Any):
         raw = base64.b64decode(result)
         df = pickle.loads(raw)
         self.results = df
+        self.download_results_button.show()
         self.result_table.set_data(df)
         self.result_table.show()
 
@@ -135,5 +164,6 @@ class SingleFileTab(QWidget):
 
     def _clear_results(self):
         self.results = None
+        self.download_results_button.hide()
         self.result_table.set_data(None)
         self.result_table.hide()

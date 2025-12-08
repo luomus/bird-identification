@@ -10,7 +10,7 @@ import numpy as np
 import pandas as pd
 import librosa
 
-from functions.utils import is_audio_file, get_default_model_path
+from functions.utils import is_audio_file, get_default_model_path, get_result_file_name
 from scripts import functions
 from scripts.classifier import Classifier
 
@@ -131,7 +131,7 @@ def analyze_multiple_files(input_folder_path: str, output_folder_path: str, clas
 
             results = rename_result_columns(results)
 
-            result_file_path = get_result_file_path(file_path, input_folder_path, output_folder_path)
+            result_file_path = get_result_file_path(file_path, input_folder_path, output_folder_path, Path(model_folder_path).name)
 
             os.makedirs(os.path.dirname(result_file_path), exist_ok=True)
             results.to_csv(result_file_path, index=False)
@@ -265,9 +265,9 @@ def rename_result_columns(df: pd.DataFrame) -> pd.DataFrame:
 
     return pd.DataFrame(columns=columns)
 
-def get_result_file_path(file_path: str, input_folder_path: str, output_folder_path: str) -> str:
+def get_result_file_path(file_path: str, input_folder_path: str, output_folder_path: str, model_name: str) -> str:
     dir_rel_path = os.path.relpath(os.path.dirname(file_path), input_folder_path)
-    result_file_name = Path(file_path).stem + ".Muuttolinnut.results.csv"
+    result_file_name = get_result_file_name(file_path, model_name)
     return os.path.join(output_folder_path, dir_rel_path, result_file_name)
 
 if __name__ == "__main__":
