@@ -1,12 +1,11 @@
 from typing import Any
 
-from PySide6.QtWidgets import QVBoxLayout, QFileDialog, QGroupBox, QWidget
+from PySide6.QtWidgets import QVBoxLayout, QFileDialog, QGroupBox, QWidget, QFormLayout
 
 from functions.process_worker import ProcessWorker
 from functions.gui_utils import show_alert
 from functions.utils import get_analyze_process
 from widgets.common.file_select import FileSelect
-from widgets.common.input_with_label import InputWithLabel
 from widgets.common.main_button import MainButton
 from widgets.common.progress_label import ProgressLabel
 from widgets.detector_settings import DetectorSettings
@@ -22,15 +21,17 @@ class MultipleFilesTab(QWidget):
         self.setLayout(self.layout)
 
         box = QGroupBox()
-        box_layout = QVBoxLayout()
-        box.setLayout(box_layout)
+        form_layout = QFormLayout()
+        form_layout.setRowWrapPolicy(QFormLayout.RowWrapPolicy.WrapAllRows)
+        form_layout.setFieldGrowthPolicy(QFormLayout.FieldGrowthPolicy.AllNonFixedFieldsGrow)
+        box.setLayout(form_layout)
         self.layout.addWidget(box)
 
         self.input_folder_select = FileSelect(QFileDialog.FileMode.Directory)
-        box_layout.addWidget(InputWithLabel("Input folder", self.input_folder_select))
+        form_layout.addRow("Input folder", self.input_folder_select)
 
         self.output_folder_select = FileSelect(QFileDialog.FileMode.Directory)
-        box_layout.addWidget(InputWithLabel("Output folder", self.output_folder_select))
+        form_layout.addRow("Output folder", self.output_folder_select)
 
         self.detector_settings = DetectorSettings()
         self.layout.addWidget(self.detector_settings)

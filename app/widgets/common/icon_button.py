@@ -1,22 +1,20 @@
 from typing import Optional
 
 from PySide6.QtCore import QSize, Qt
-from PySide6.QtWidgets import QPushButton, QApplication
+from PySide6.QtWidgets import QToolButton, QApplication
 from PySide6.QtGui import QIcon
 
 
-class IconButton(QPushButton):
+class IconButton(QToolButton):
     icon_path: Optional[str] = None
     dark_icon_path: Optional[str] = None
 
     def __init__(self, icon_path: Optional[str] = None, dark_icon_path: Optional[str] = None):
-        super().__init__("")
+        super().__init__()
 
         self.set_icon(icon_path, dark_icon_path)
-
-        self.setIconSize(QSize(25, 25))
-        self.setMinimumSize(32, 32)
-        self.setMaximumSize(32, 32)
+        self.setToolButtonStyle(Qt.ToolButtonStyle.ToolButtonIconOnly)
+        self.setIconSize(QSize(20, 20))
 
         QApplication.styleHints().colorSchemeChanged.connect(self.on_color_scheme_change)
 

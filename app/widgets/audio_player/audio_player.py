@@ -15,6 +15,7 @@ class AudioPlayer(QWidget):
         super().__init__()
 
         layout = QVBoxLayout()
+        layout.setContentsMargins(0, 0, 0, 0)
         self.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Fixed)
         self.setLayout(layout)
 
