@@ -1,25 +1,45 @@
-from PySide6.QtCore import Qt
-from PySide6.QtWidgets import QPushButton, QApplication
-from PySide6.QtGui import QPalette, QColor, QFont
+import sys
+
+from PySide6.QtWidgets import QPushButton
 
 
 class MainButton(QPushButton):
     def __init__(self, text: str):
         super().__init__(text)
 
-        self._update_palette()
-        font = self.font()
-        font.setPointSize(13)
-        font.setWeight(QFont.Weight.Medium)
-        self.setFont(font)
         self.setFixedHeight(40)
 
-        QApplication.instance().paletteChanged.connect(self._update_palette, Qt.ConnectionType.QueuedConnection)
+        if sys.platform == "darwin":
+            platform = "mac"
+        elif sys.platform == "win32":
+            platform = "win"
+        else:
+            platform = "linux"
 
-    def _update_palette(self):
-        palette = self.palette()
-        palette.setColor(QPalette.ColorRole.Button, QColor("#0f598a"))
-        palette.setColor(QPalette.ColorRole.ButtonText, QColor("white"))
-        palette.setColor(QPalette.ColorGroup.Disabled, QPalette.ColorRole.Button, palette.window().color())
-        palette.setColor(QPalette.ColorGroup.Disabled, QPalette.ColorRole.ButtonText, QColor("#73828c"))
-        self.setPalette(palette)
+        self.setProperty("platform", platform)
+
+        self.setStyleSheet("""
+            QPushButton {
+                border: 1px solid rgb(24, 96, 143);
+                border-radius: 6px;
+                
+                background-color: rgb(34, 131, 195);
+                color: white;
+                font-size: 13pt;
+                font-weight: 600;
+            }
+            
+            QPushButton[platform="mac"] {
+                border: none;
+            }
+            
+            QPushButton:pressed {
+                background-color: rgb(24, 96, 143);
+            }
+            
+            QPushButton:disabled {
+                border: 1px solid rgb(221, 225, 227);
+                background-color: transparent;
+                color: #73828c;
+            }
+        """)
