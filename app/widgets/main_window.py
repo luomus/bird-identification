@@ -45,7 +45,12 @@ class MainWindow(QMainWindow):
         line.setFrameShadow(QFrame.Shadow.Sunken)
         self.layout.addWidget(line)
 
-        self.info_bar = InfoBar(__version__, "https://info.laji.fi/en/sound-identification/")
+        self.info_bar = InfoBar(
+            "Finnish Biodiversity Information Facility",
+            __version__,
+            "https://info.laji.fi/en/sound-identification/",
+            "https://info.laji.fi/sound-identification-licenses/"
+        )
         self.layout.addWidget(self.info_bar)
 
     def on_tab_change(self, active_idx: int):
