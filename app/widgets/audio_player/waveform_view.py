@@ -27,8 +27,7 @@ def _calculate_peaks(file_path: str, width: int, height: int, cancel_requested: 
     samples_per_chunk = pixels_per_chunk * samples_per_pixel
     chunk_sec = samples_per_chunk / sr
 
-    total_max = 0.0
-    total_min = 0.0
+    max_abs_value = 0.0
 
     pixel = 0
     offset = 0.0
@@ -59,16 +58,15 @@ def _calculate_peaks(file_path: str, width: int, height: int, cancel_requested: 
 
             peak_table[pixel] = [min_value, max_value]
 
-            total_min = min(total_min, min_value)
-            total_max = max(total_max, max_value)
+            max_abs_value = max(max_abs_value, abs(max_value), abs(min_value))
 
             start = end
             pixel += 1
 
         offset += chunk_sec
 
-    peak_table[:, 0] = interp(peak_table[:, 0], [total_min, total_max], [0, height - 1])
-    peak_table[:, 1] = interp(peak_table[:, 1], [total_min, total_max], [0, height - 1])
+    peak_table[:, 0] = interp(peak_table[:, 0], [-max_abs_value, max_abs_value], [0, height - 1])
+    peak_table[:, 1] = interp(peak_table[:, 1], [-max_abs_value, max_abs_value], [0, height - 1])
 
     return peak_table, duration, sr
 
