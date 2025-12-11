@@ -47,7 +47,7 @@ class Classifier():
         self.INTERPRETER.invoke()
         features = self.INTERPRETER.get_tensor(self.OUTPUT_LAYER_INDEX)
         return features
-    
+
     def classify(self, data_path, overlap=1.0, max_pred=True):
         # Start timing
         start = time.time()

@@ -8,6 +8,7 @@ services:
       - ./models:/app/models
       - ./input:/app/input
       - ./tests:/app/tests
+      - ./config:/app/config
     ports:
       - "8000:8000"
     stdin_open: true
