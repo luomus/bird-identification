@@ -40,3 +40,10 @@ If you add/delete resources, remember to update file resources.qrc
 ```
 pyinstaller app.spec
 ```
+
+## Third party licenses
+You can use this command to generate third party licenses:
+```
+pip-licenses --ignore-packages scripts --format=plain-vertical --with-license-file --no-license-path --output-file=THIRD_PARTY_LICENSES.txt
+```
+It can't find all license texts automatically so you have to manually fill in those.

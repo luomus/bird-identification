@@ -7,6 +7,8 @@ main_a = Analysis(
     binaries=[],
     datas=[
         ('./models', 'models'),
+        ('LICENSE.txt', '.'),
+        ('THIRD_PARTY_LICENSES.txt', '.')
     ],
     hiddenimports=[],
     hookspath=[],
