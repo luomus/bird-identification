@@ -5,9 +5,9 @@
 import argparse
 import sys
 import os
-import run_model
-from pydantic_parameters import AnalysisParameters, Metadata
-import functions
+from scripts import run_model
+from scripts.pydantic_parameters import AnalysisParameters, Metadata
+from scripts.utils import read_metadata
 
 def main():
     # Set up argument parser
@@ -66,13 +66,13 @@ def main():
 
 
     # Check that directory exists
-    data_directory = "../input/" + args.dir
+    data_directory = "./input/" + args.dir
     if not os.path.exists(data_directory):
         print(f"Error: Directory {data_directory} does not exist", file=sys.stderr)
         return
 
     # Read metadata first
-    metadata = functions.read_metadata(data_directory)
+    metadata = read_metadata(data_directory)
     if metadata is None:
         print(f"Error: Proper metadata file not found at {data_directory}", file=sys.stderr)
         return

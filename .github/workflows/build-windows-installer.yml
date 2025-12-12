@@ -1,0 +1,62 @@
+name: Build Windows Installer
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+jobs:
+  build:
+    runs-on: windows-latest
+
+    steps:
+    - name: Checkout repo
+      uses: actions/checkout@v6
+
+    - name: Get data from private repo
+      uses: actions/checkout@v6
+      with:
+        repository: luomus/bird-identification-app-data
+        token: ${{ secrets.PERSONAL_ACCESS_TOKEN }}
+        path: private-data
+
+    - name: Move data to correct places
+      run: |
+        Remove-Item -Recurse -Force app\models
+        Move-Item private-data\default-models app\models
+        Expand-Archive -Path private-data\InstallForge.zip -DestinationPath app
+
+    - name: Set up Python
+      uses: actions/setup-python@v6
+      with:
+        python-version: '3.9'
+
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install ..
+        pip install -r requirements.txt
+        pip install -r requirements_tf.txt
+        pip install pyinstaller
+      working-directory: ./app
+
+    - name: Set correct version numbers
+      run: |
+        python replace_version.py
+      working-directory: ./app
+
+    - name: Build executable with PyInstaller
+      run: |
+        pyinstaller app.spec --noconfirm
+      working-directory: ./app
+
+    - name: Build installer with InstallForge
+      run: |
+        .\ifbuildx86.exe -i ..\..\app.ifp
+      working-directory: ./app/InstallForge/bin
+
+    - name: Upload installer
+      uses: actions/upload-artifact@v4
+      with:
+        name: Windows-Installer
+        path: .\app\dist\birdIdentifier-*-Setup.exe

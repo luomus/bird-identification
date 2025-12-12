@@ -1,6 +1,6 @@
 from fastapi import HTTPException, status, Depends
 from fastapi.security import APIKeyQuery
-from settings import settings
+from scripts.settings import settings
 
 api_key_scheme = APIKeyQuery(name="access_token")
 

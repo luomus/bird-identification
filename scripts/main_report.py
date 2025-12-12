@@ -5,11 +5,8 @@
 import argparse
 import sys
 import os
-from pydantic_parameters import ReportParameters
-import handle_files
-from typing import Optional, Dict
-import functions
-
+from scripts.pydantic_parameters import ReportParameters
+from scripts import handle_files
 
 def main():
     # Set up argument parser
@@ -52,7 +49,7 @@ def main():
         return
 
     # Check that directory exists
-    data_directory = "../input/" + args.dir
+    data_directory = args.dir
     if not os.path.exists(data_directory):
         print(f"Error: Directory {data_directory} does not exist", file=sys.stderr)
         return

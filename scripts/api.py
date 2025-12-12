@@ -12,6 +12,7 @@ Examine:
 
 import logging
 from fastapi import FastAPI, File, UploadFile, Depends
+from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from typing import List, Optional
 from datetime import datetime
@@ -19,14 +20,13 @@ import numpy as np
 import pandas as pd
 import librosa
 import soundfile as sf
-from security import api_key_auth
-from settings import settings
+from scripts.security import api_key_auth
+from scripts.settings import settings
 import tempfile
 import os
-from classifier import Classifier
-from run_model import process_audio_segment
-from pydantic_parameters import Metadata, AnalysisParameters
-from fastapi.middleware.cors import CORSMiddleware
+from scripts.classifier import Classifier
+from scripts.run_model import process_audio_segment
+from scripts.pydantic_parameters import Metadata, AnalysisParameters
 
 # Configure logging
 logging.basicConfig(
@@ -49,16 +49,16 @@ app.add_middleware(
 )
 
 # Initialize classifier with same parameters as run_model.py
-MODEL_PATH = "../models/model_v3_5.keras"
+MODEL_PATH = "models/model_v3_5.keras"
+BIRDNET_MODEL_PATH = "models/BirdNET_GLOBAL_6K_V2.4_Model_FP32.tflite"
 TFLITE_THREADS = 1
 CLIP_DURATION = 3.0
 audio_classifier = Classifier(
     path_to_mlk_model=MODEL_PATH,
+    path_to_birdnet_model=BIRDNET_MODEL_PATH,
     sr=48000,
     clip_dur=CLIP_DURATION,
-    TFLITE_THREADS=TFLITE_THREADS,
-    offset=0,
-    dur=0
+    TFLITE_THREADS=TFLITE_THREADS
 )
 
 def get_current_day_of_year() -> int:
@@ -138,9 +138,9 @@ async def classify_audio_file(
 
     # Load required data
     logger.info("Loading calibration and migration parameters")
-    calibration_params = np.load("Pred_adjustment/calibration_params.npy")
-    migration_params = np.load("Pred_adjustment/migration_params.npy")
-    species_name_list = pd.read_csv("classes.csv")
+    calibration_params = np.load("models/Pred_adjustment/calibration_params.npy")
+    migration_params = np.load("models/Pred_adjustment/migration_params.npy")
+    species_name_list = pd.read_csv("models/classes.csv")
     logger.debug("Loaded species list with %d entries", len(species_name_list))
 
     # Create temporary directory for chunks

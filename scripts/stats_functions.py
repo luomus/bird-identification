@@ -3,8 +3,6 @@ import pandas as pd
 import matplotlib.pyplot as plt
 import os
 
-from typing import Optional
-
 def generate_histograms(df: pd.DataFrame, threshold: float, output_directory: str) -> bool:
     """
     Generates histograms for each species in a DataFrame.

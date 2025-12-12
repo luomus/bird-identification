@@ -4,11 +4,14 @@ services:
     build: .
     restart: unless-stopped
     volumes:
+      - ./main.py:/app/main.py
       - ./scripts:/app/scripts
       - ./models:/app/models
       - ./input:/app/input
       - ./tests:/app/tests
       - ./config:/app/config
+      # ← Bind-mount the Windows folder directly (WSL path syntax):
+      - /mnt/c/Users/mikko/Documents/Audiomoth_2025:/app/input/host:cached
     ports:
       - "8000:8000"
     stdin_open: true

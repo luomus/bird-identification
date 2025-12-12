@@ -3,16 +3,14 @@ import numpy as np
 from datetime import datetime
 import os
 import yaml
-from scripts.functions import (
+from scripts.utils import (
     get_day_of_year_from_filename,
     get_date_and_time_from_filepath,
-    threshold_filter,
-    split_signal,
-    pad,
     make_output_file_path,
     get_audio_file_names,
     read_metadata
 )
+from scripts.functions import threshold_filter, split_signal, pad
 
 # Test get_day_of_year_from_filename
 class TestGetDayOfYear:

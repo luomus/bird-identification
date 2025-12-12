@@ -71,7 +71,7 @@ day_of_year: 152 # Note: this will be overridden if audio file names include a d
 
 - Expects that
   - Audio filenames are in format `[part1].[extension]`
-  - Extension is `wav`, `mp3` or `flac`
+  - Extension is `wav`, `mp3` or `flac`, case-insensitive
 - If classification stops with message "Killed", try restarting the Docker container. It's unclear what causes this issue.
 - The model and/or classifier has limitations:
   - Segments can't be too long. 10 minutes seem to work fine, 30 minutes are too long.
