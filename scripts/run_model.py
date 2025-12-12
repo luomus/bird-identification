@@ -10,7 +10,6 @@ import tempfile
 
 from typing import Dict, Any
 
-
 def process_audio_segment(
     segment_path: str,
     classifier,
@@ -27,7 +26,7 @@ def process_audio_segment(
     overlap: float
 ) -> pd.DataFrame:
     """Process an audio segment and return predictions as a DataFrame.
-    
+
     Args:
         segment_path: Path to audio segment file
         classifier: Audio classifier instance
@@ -41,23 +40,23 @@ def process_audio_segment(
         day_of_year: Day of year
         species_name_list: DataFrame with species names
         start_time: Start time of segment in original file
-        
+
     Returns:
         DataFrame with columns: start_time, end_time, scientific_name, common_name, confidence
     """
     # Get predictions from classifier
     species_predictions, detection_timestamps = classifier.classify(segment_path, overlap=overlap, max_pred=False)
-    
+
     if len(species_predictions) == 0:
         return pd.DataFrame()
-    
+
     # Convert to numpy arrays
     species_predictions = np.array(species_predictions)
     detection_timestamps = np.array(detection_timestamps)
-    
+
     # Adjust timestamps relative to original file
     detection_timestamps += start_time
-    
+
     # Calibrate predictions
     if calibration_params is not None:
         for i in range(len(species_predictions)):
@@ -72,7 +71,7 @@ def process_audio_segment(
         detection_timestamps,
         threshold
     )
-    
+
     # Apply species distribution model adjustment
     if include_sdm and len(species_predictions) > 0:
         species_predictions = functions.adjust(
@@ -83,7 +82,15 @@ def process_audio_segment(
             lon,
             day_of_year
         )
-    
+
+        # Apply threshold filter after adjustments to discard new values below threshold
+        species_predictions, species_class_indices, detection_timestamps = functions.second_stage_threshold_filter(
+            species_predictions,
+            species_class_indices,
+            detection_timestamps,
+            threshold
+        )
+
     # Build DataFrame with results
     return functions.predictions_to_dataframe(
         species_predictions,
@@ -93,7 +100,6 @@ def process_audio_segment(
         classifier.clip_dur,
         include_noise
     )
-
 
 def write_inference_metadata(output_path: str, metadata_dict: Dict[str, Any]) -> None:
     """Write model inference metadata to a YAML file with timestamp in the filename.
@@ -107,7 +113,6 @@ def write_inference_metadata(output_path: str, metadata_dict: Dict[str, Any]) ->
     with open(f"{output_path}/inference_{date_string}.yaml", "w") as f:
         for key, value in metadata_dict.items():
             f.write(f"{key}: {value}\n")
-
 
 def analyze_directory(input_path, parameters):
     metadata = parameters["metadata"]
@@ -184,7 +189,7 @@ def analyze_directory(input_path, parameters):
             # Load audio file
             audio_data, sample_rate = librosa.load(file_path, sr=None)
             duration = librosa.get_duration(y=audio_data, sr=sample_rate)
-            
+
             # Create temporary directory for segments
             with tempfile.TemporaryDirectory() as temp_dir:
                 # Split into segments
@@ -195,18 +200,18 @@ def analyze_directory(input_path, parameters):
                 for start_time in range(0, int(duration), SEGMENT_LENGTH):
                     # Calculate end time for segment
                     end_time = min(start_time + SEGMENT_LENGTH, duration)
-                    
+
                     # Convert time to samples
                     start_sample = int(start_time * sample_rate)
                     end_sample = int(end_time * sample_rate)
-                    
+
                     # Extract segment
                     segment = audio_data[start_sample:end_sample]
-                    
+
                     # Create temporary file for segment
                     temp_file_path = os.path.join(temp_dir, f"segment_{start_time}.wav")
                     sf.write(temp_file_path, segment, sample_rate)
-                    
+
                     # Process audio segment and get predictions as DataFrame
                     predictions_df = process_audio_segment(
                         temp_file_path,
@@ -223,18 +228,18 @@ def analyze_directory(input_path, parameters):
                         start_time,
                         OVERLAP
                     )
-                    
+
                     if not predictions_df.empty:
                         # Append results to output file
                         predictions_df.to_csv(output_file_path, mode='a', header=False, index=False)
                         print(f"Wrote predictions to {output_file_path}")
-                    
+
                 # After each file
                 gc.collect()
                 analyzed_files_count += 1
 
         # Handle exceptions
-        except Exception as e: 
+        except Exception as e:
             print(f"Error: Error analyzing {file_name}!")
             print(f"Error details: {str(e)}")
             raise

@@ -1,6 +1,6 @@
 "species_code","common_name","scientific_name","luomus_name","suomenkielinen_nimi","class"
-"nobird","No bird","No bird",,"ei lintu",0
-"human","Human","Human",,"ihminen",1
+"nobird","No bird","No bird","No bird","ei lintu",0
+"human","Human","Human","Human","ihminen",1
 "lotduc","Long-tailed Duck","Clangula hyemalis","Clangula hyemalis","alli",2
 "merlin","Merlin","Falco columbarius","Falco columbarius","ampuhaukka",3
 "palhar1","Pallid Harrier","Circus macrourus","Circus macrourus","arosuohaukka",4

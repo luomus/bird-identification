@@ -2,7 +2,6 @@ import numpy as np
 import pandas as pd
 from scipy.stats import norm
 
-
 # calibrate prediction
 def calibrate(species_predictions, calibration_parameters):
     """
@@ -48,16 +47,16 @@ def adjust(species_predictions, species_class_indices, migration_parameters, lat
         # Probability that species has migrated to Finland
         sp_migration_parameters = migration_parameters[species_class_index, :]
         migration_probability = np.min((norm.cdf(day_of_year, loc=sp_migration_parameters[0]+sp_migration_parameters[1]*lat, scale=sp_migration_parameters[4]/2), 
-              1-norm.cdf(day_of_year, loc=sp_migration_parameters[2]+sp_migration_parameters[3]*lat, scale=sp_migration_parameters[5]/2)))
-        
+            1-norm.cdf(day_of_year, loc=sp_migration_parameters[2]+sp_migration_parameters[3]*lat, scale=sp_migration_parameters[5]/2)))
+
         # Probability that species occurs in given area
-        with rasterio.open('Pred_adjustment/distribution_maps/'+ str(species_class_index)+ '_a.tif') as src:
-            for value in src.sample([(lon, lat)]): 
+        with rasterio.open('models/Pred_adjustment/distribution_maps/'+ str(species_class_index)+ '_a.tif') as src:
+            for value in src.sample([(lon, lat)]):
                 geo_presence_probability = value
         geo_presence_probability = geo_presence_probability[0]
         if np.isnan(geo_presence_probability): # if no information from given location, species is considered possible
             geo_presence_probability=1
-        
+
         # Use additional map for given time of the year:
         time_presence_probability = 0
         use_map_b = 0
@@ -67,10 +66,10 @@ def adjust(species_predictions, species_class_indices, migration_parameters, lat
         if(sp_migration_parameters[6]>sp_migration_parameters[7]):
             if((day_of_year>=sp_migration_parameters[6]) or (day_of_year<=sp_migration_parameters[7])):
                 use_map_b = 1
-        
+
         if use_map_b==1:
-            with rasterio.open('Pred_adjustment/distribution_maps/'+ str(species_class_index)+ '_b.tif') as src:
-                for value in src.sample([(lon, lat)]): 
+            with rasterio.open('models/Pred_adjustment/distribution_maps/'+ str(species_class_index)+ '_b.tif') as src:
+                for value in src.sample([(lon, lat)]):
                     time_presence_probability = value
             time_presence_probability = time_presence_probability[0]
             if np.isnan(time_presence_probability):
@@ -121,9 +120,16 @@ def threshold_filter(species_predictions, detection_timestamps, threshold = 0.5)
     filtered_predictions = species_predictions[threshold_indices]
     class_indices = threshold_indices[1]
     filtered_timestamps = detection_timestamps[threshold_indices[0]]
-
     return filtered_predictions, class_indices, filtered_timestamps
 
+def second_stage_threshold_filter(species_predictions, class_indices, detection_timestamps, threshold = 0.5):
+    pred_filter = np.where(species_predictions>threshold)
+
+    filtered_predictions = species_predictions[pred_filter]
+    filtered_indices = class_indices[pred_filter]
+    filtered_timestamps = detection_timestamps[pred_filter]
+
+    return filtered_predictions, filtered_indices, filtered_timestamps
 
 def predictions_to_dataframe(species_predictions, species_class_indices, detection_timestamps, species_name_list, clip_dur, include_noise = False):
     results = []
@@ -145,9 +151,9 @@ def predictions_to_dataframe(species_predictions, species_class_indices, detecti
 
 # pad too short signal with zeros
 def pad(signal, x1, x2, target_len=3*48000, sr=48000):
-    # signal: input audio signal, x1: starting point in seconds x2: ending point in seconds, 
+    # signal: input audio signal, x1: starting point in seconds x2: ending point in seconds,
     # target_len: target length for signal, sr: sampling rate
-    sig_out = np.zeros(target_len) 
+    sig_out = np.zeros(target_len)
     sig_out[int(x1*sr):int(x2*sr)] = signal[int(x1*sr):int(x2*sr)]
     return sig_out
 
@@ -171,7 +177,7 @@ def split_signal(input_signal, sample_rate, chunk_duration_s, overlap_duration_s
         chunk = input_signal[i:i + int(chunk_duration_s * sample_rate)]
 
         if len(chunk) < int(chunk_duration_s * sample_rate): # Pad if clip is too short
-            chunk = pad(chunk, 0, len(chunk)/sample_rate, target_len=int(chunk_duration_s*sample_rate), sr=sample_rate)     
+            chunk = pad(chunk, 0, len(chunk)/sample_rate, target_len=int(chunk_duration_s*sample_rate), sr=sample_rate)
         signal_chunks.append(chunk)
 
     return signal_chunks

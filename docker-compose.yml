@@ -9,6 +9,7 @@ services:
       - ./models:/app/models
       - ./input:/app/input
       - ./tests:/app/tests
+      - ./config:/app/config
       # ← Bind-mount the Windows folder directly (WSL path syntax):
       - /mnt/c/Users/mikko/Documents/Audiomoth_2025:/app/input/host:cached
     ports:
