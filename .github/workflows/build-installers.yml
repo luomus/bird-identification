@@ -12,6 +12,7 @@ jobs:
     strategy:
       matrix:
         os: [ windows-latest, macos-latest ]
+        requirements_tf: [ requirements_tf.txt, requirements_tf_mac.txt ]
 
     steps:
     - name: Checkout repo
@@ -47,7 +48,7 @@ jobs:
         python -m pip install --upgrade pip
         pip install ..
         pip install -r requirements.txt
-        pip install -r requirements_tf.txt
+        pip install -r ${{ requirements_tf }}
         pip install pyinstaller
       working-directory: ./app
 
