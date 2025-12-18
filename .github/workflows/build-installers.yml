@@ -18,13 +18,13 @@ jobs:
             requirements_tf: requirements_tf_mac.txt
 
     steps:
+    - name: Checkout repo
+      uses: actions/checkout@v6
+        
     - name: Write release version
       run: |
         VERSION=${GITHUB_REF_NAME#v}
         echo "VERSION=$VERSION" >> $GITHUB_ENV    
-
-    - name: Checkout repo
-      uses: actions/checkout@v6
 
     - name: Get data from private repo
       uses: actions/checkout@v6
