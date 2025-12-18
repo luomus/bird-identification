@@ -1,13 +1,17 @@
-name: Build Windows Installer
+name: Build Installers
 
 on:
   push:
     tags:
-      - 'v*'
+      - 'v[0-9]+.[0-9]+.[0-9]+'
 
 jobs:
   build:
-    runs-on: windows-latest
+    runs-on: ${{ matrix.os }}
+
+    strategy:
+      matrix:
+        os: [ windows-latest, macos-latest ]
 
     steps:
     - name: Checkout repo
@@ -20,11 +24,18 @@ jobs:
         token: ${{ secrets.PERSONAL_ACCESS_TOKEN }}
         path: private-data
 
-    - name: Move data to correct places
+    - name: Move data to correct places (Windows)
+      if: matrix.os == 'windows-latest'
       run: |
         Remove-Item -Recurse -Force app\models
         Move-Item private-data\default-models app\models
         Expand-Archive -Path private-data\InstallForge.zip -DestinationPath app
+
+    - name: Move data to correct places (macOS)
+      if: matrix.os == 'macos-latest'
+      run: |
+        rm -rf app/models
+        mv private-data/default-models app/models
 
     - name: Set up Python
       uses: actions/setup-python@v6
@@ -42,7 +53,7 @@ jobs:
 
     - name: Set correct version numbers
       run: |
-        python replace_version.py
+        python replace_version.py ${GITHUB_REF_NAME#v}
       working-directory: ./app
 
     - name: Build executable with PyInstaller
@@ -50,13 +61,28 @@ jobs:
         pyinstaller app.spec --noconfirm
       working-directory: ./app
 
-    - name: Build installer with InstallForge
+    - name: Build Windows installer with InstallForge
+      if: matrix.os == 'windows-latest'
       run: |
         .\ifbuildx86.exe -i ..\..\app.ifp
       working-directory: ./app/InstallForge/bin
 
-    - name: Upload installer
+    - name: Build macOS Disk Image with create-dmg
+      if: matrix.os == 'macos-latest'
+      run: |
+        ./build_dmg.sh
+      working-directory: ./app
+
+    - name: Upload installer (Windows)
+      if: matrix.os == 'windows-latest'
       uses: actions/upload-artifact@v4
       with:
         name: Windows-Installer
         path: .\app\dist\birdIdentifier-*-Setup.exe
+
+    - name: Upload installer (macOS)
+      if: matrix.os == 'macos-latest'
+      uses: actions/upload-artifact@v4
+      with:
+        name: MacOS-Installer
+        path: ./app/dist/birdIdentifier-*.dmg
