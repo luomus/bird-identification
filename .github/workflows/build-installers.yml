@@ -47,6 +47,11 @@ jobs:
         rm -rf app/models
         mv private-data/default-models app/models
 
+    - name: Install create-dmg (macOS)
+      if: matrix.os == 'macos-latest'
+      run: |
+        brew install create-dmg
+
     - name: Set up Python
       uses: actions/setup-python@v6
       with:
