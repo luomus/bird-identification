@@ -20,11 +20,12 @@ jobs:
     steps:
     - name: Checkout repo
       uses: actions/checkout@v6
-        
+
     - name: Write release version
+      shell: bash
       run: |
-        VERSION=${GITHUB_REF_NAME#v}
-        echo "VERSION=$VERSION" >> $GITHUB_ENV    
+        VERSION="${GITHUB_REF_NAME#v}"
+        echo "VERSION=$VERSION" >> "$GITHUB_ENV"
 
     - name: Get data from private repo
       uses: actions/checkout@v6
