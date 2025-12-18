@@ -18,6 +18,11 @@ jobs:
             requirements_tf: requirements_tf_mac.txt
 
     steps:
+    - name: Write release version
+      run: |
+        VERSION=${GITHUB_REF_NAME#v}
+        echo "VERSION=$VERSION" >> $GITHUB_ENV    
+
     - name: Checkout repo
       uses: actions/checkout@v6
 
@@ -57,7 +62,7 @@ jobs:
 
     - name: Set correct version numbers
       run: |
-        python replace_version.py ${GITHUB_REF_NAME#v}
+        python replace_version.py ${VERSION}
       working-directory: ./app
 
     - name: Build executable with PyInstaller
