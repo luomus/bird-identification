@@ -1,5 +1,5 @@
 from fastapi import HTTPException, status, Depends
-from fastapi.security import APiKeyHeader
+from fastapi.security import APIKeyHeader
 from scripts.settings import settings
 
 api_key_scheme = APIKeyHeader(name="x-key")
