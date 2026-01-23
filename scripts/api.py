@@ -35,7 +35,7 @@ logger = logging.getLogger(__name__)
 app = FastAPI()
 
 # Initialize classifier with same parameters as run_model.py
-MODEL_PATH = "../models/model_v3_5.keras"
+MODEL_PATH = "../models/model_v4_4.keras"
 TFLITE_THREADS = 1
 CLIP_DURATION = 3.0
 audio_classifier = Classifier(

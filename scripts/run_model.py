@@ -139,7 +139,7 @@ def analyze_directory(input_path, parameters):
 
     # Standard settings
     output_path = input_path
-    MODEL_PATH = "../models/model_v3_5.keras"
+    MODEL_PATH = "../models/model_v4_4.keras"
     TFLITE_THREADS = 1
 
     # Load classification model
