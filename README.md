@@ -19,9 +19,7 @@ This repository provides tools for automated bird species detection from audio r
 - Git
 - The following AI models:
   - BirdNET, included in this repository
-  - BSG – Finnish Birds Model, not included in this repository, available at
-    - [https://github.com/luomus/BSG](https://github.com/luomus/BSG)
-    - [https://github.com/plauha/BSG_classifier_builder/tree/main/Run%20BSG%20models/models/Finland](https://github.com/plauha/BSG_classifier_builder/tree/main/Run%20BSG%20models/models/Finland)
+  - BSG – Finnish Birds Model in keras format, available at [https://github.com/plauha/BSG_classifier_builder/tree/main/Run%20BSG%20models/models/Finland](https://github.com/plauha/BSG_classifier_builder/tree/main/Run%20BSG%20models/models/Finland)
 
 ### Installation
 
