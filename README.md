@@ -17,9 +17,9 @@ This repository provides tools for automated bird species detection from audio r
 
 - Docker
 - Git
-- The following AI models (available on request):
-  - BirdNET
-  - Muuttolintujen kevät
+- The following AI models:
+  - BirdNET, included in this repository
+  - BSG – Finnish Birds Model, not included in this repository, available at https://github.com/luomus/BSG
 
 ### Installation
 

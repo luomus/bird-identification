@@ -1,8 +1,10 @@
 
-models/*
 input/*
-!models/readme.txt
 !input/readme.txt
+
+models/model_v3.5.keras
+models/model*.keras
+
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
