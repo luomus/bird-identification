@@ -61,6 +61,10 @@ class ProcessWorker(QObject):
                 print(line)
                 continue
 
+            if not isinstance(msg, dict):
+                print(line)
+                continue
+
             if "status" in msg:
                 self.workStatus.emit(msg["status"])
 

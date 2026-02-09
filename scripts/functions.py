@@ -1,3 +1,4 @@
+import librosa
 import numpy as np
 import pandas as pd
 from scipy.stats import norm
@@ -134,15 +135,14 @@ def second_stage_threshold_filter(species_predictions, class_indices, detection_
 def predictions_to_dataframe(species_predictions, species_class_indices, detection_timestamps, species_name_list, clip_dur, include_noise = False):
     results = []
     for i in range(len(species_predictions)):
-        # Skip noise/human detections if configured
-        if species_class_indices[i] <= 1 and not include_noise:
+        if species_name_list['noise'].iloc[species_class_indices[i]] is True and not include_noise:
             continue
 
         results.append({
             'start_time': detection_timestamps[i],
             'end_time': detection_timestamps[i] + clip_dur,
-            'scientific_name': species_name_list['luomus_name'].iloc[species_class_indices[i]],
-            'common_name': species_name_list['common_name'].iloc[species_class_indices[i]],
+            'scientific_name': species_name_list['scientific_name'].iloc[species_class_indices[i]],
+            'common_name': species_name_list['common_name'].iloc[species_class_indices[i]] if 'common_name' in species_name_list else None,
             'confidence': round(float(species_predictions[i]), 4)
         })
 
@@ -181,3 +181,59 @@ def split_signal(input_signal, sample_rate, chunk_duration_s, overlap_duration_s
         signal_chunks.append(chunk)
 
     return signal_chunks
+
+
+def wav_to_spectrogram_chunks(sig, sr, ntime, nfreq, nhop, n_fft, hop_length, n_mels, fmin, fmax):
+    S = librosa.feature.melspectrogram(
+        y=sig, sr=sr, n_fft=n_fft, hop_length=hop_length,
+        n_mels=n_mels, fmin=fmin, fmax=fmax
+    ).T
+    n = int(np.max((np.ceil((len(S) - ntime) / nhop), 1)))
+    data = np.ndarray((n, ntime, nfreq), dtype='float32')
+
+    if len(S) < ntime:
+        # recording shorter than desired segment length, do zero padding
+        X = np.zeros((ntime, nfreq), dtype='float32')
+        X[:len(S), :nfreq] = S[:, :nfreq]
+        data[0] = X
+    else:
+        # chop into segments every nhop frames
+        for i in range(n):
+            start_i = i * nhop
+            if start_i + ntime <= len(S):
+                segment = S[start_i:start_i + ntime, :nfreq]
+            else:
+                # last segment too short, include data from left
+                start_i = len(S) - ntime
+                segment = S[start_i:start_i + ntime, :nfreq]
+
+            data[i] = segment
+
+    return data
+
+
+def log_transform(x, base=10, epsilon=1e-6):
+    x = x + epsilon
+    if base == 10:
+        return np.log10(x)
+    elif base == 2:
+        return np.log2(x)
+    else:
+        return np.log(x) / np.log(base)
+
+
+def standardize_transform(x):
+    return (x - np.mean(x)) / np.std(x)
+
+
+def center_transform(x, method="mean", axis=0):
+    if method == "mean":
+        return x - np.mean(x, axis=axis)
+    elif method == "median":
+        return x - np.median(x, axis=axis)
+    else:
+        raise ValueError(f"Unknown method: {method}")
+
+
+def clip_transform(x, a_min, a_max):
+    return np.clip(x, a_min, a_max)

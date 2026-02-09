@@ -1,84 +1,184 @@
 import numpy as np
 import librosa
-from scripts.functions import split_signal
+
+from scripts.classifier_config import ClassifierConfig, ResultFormat, LogPreprocessing, StandardizePreprocessing, \
+    CenterPreprocessing, ClipPreprocessing
+from scripts.functions import split_signal, wav_to_spectrogram_chunks,log_transform, \
+    standardize_transform, center_transform, clip_transform
 import time
 
 from tensorflow import lite as tflite, keras
+from tensorflow.nn import softmax
 
 # Classifier
 
-class Classifier():
-    def __init__(self, path_to_mlk_model='', path_to_birdnet_model='', sr=48000, clip_dur=3.0, TFLITE_THREADS = 1):
-        self.sr = sr
-        self.clip_dur = clip_dur
-        self.MLK_MODEL_PATH = path_to_mlk_model
-        self.BIRDNED_MODEL_PATH = path_to_birdnet_model
-        self.TFLITE_THREADS = TFLITE_THREADS # can be as high as number of CPUs
-        ######################################
-        # Initialize BirdNET feature extractor
-        ######################################
+class Classifier:
+    config = ClassifierConfig()
+    keras_model = None
+    tflite_interpreter = None
+    birdnet_interpreter = None
 
-        self.INTERPRETER = tflite.Interpreter(model_path=self.BIRDNED_MODEL_PATH, num_threads=self.TFLITE_THREADS)
-        self.INTERPRETER.allocate_tensors()
-        # Get input and output tensors.
-        input_details = self.INTERPRETER.get_input_details()
-        output_details = self.INTERPRETER.get_output_details()
-        # Get input tensor index
-        self.INPUT_LAYER_INDEX = input_details[0]["index"]
-        # Get classification output or feature embeddings
-        self.OUTPUT_LAYER_INDEX = output_details[0]["index"] - 1
-        ################################
-        # Initialize classification head
-        ################################
-        if self.MLK_MODEL_PATH:
-            self.model = keras.models.load_model(self.MLK_MODEL_PATH)
-        else:
-            self.model = None
+    def __init__(self, config: ClassifierConfig):
+        self.set_config(config)
 
-    def set_model_path(self, path_to_mlk_model):
-        if path_to_mlk_model != self.MLK_MODEL_PATH:
-            self.MLK_MODEL_PATH = path_to_mlk_model
-            self.model = keras.models.load_model(path_to_mlk_model)
+    def set_config(self, config: ClassifierConfig):
+        if config.model_path != self.config.model_path:
+            self.keras_model = None
+            self.tflite_interpreter = None
 
-    def interpret(self, sample):
-        current_shape = self.INTERPRETER.get_input_details()[self.INPUT_LAYER_INDEX]["shape"]
+            if config.model_path:
+                if not config.model_path.endswith('.tflite'):
+                    self.keras_model = keras.models.load_model(config.model_path)
+                else:
+                    self.tflite_interpreter = tflite.Interpreter(model_path=config.model_path, num_threads=config.tflite_threads)
+                    self.tflite_interpreter.allocate_tensors()
 
-        if list(current_shape) != list(sample.shape):
-            self.INTERPRETER.resize_tensor_input(self.INPUT_LAYER_INDEX, sample.shape)
-            self.INTERPRETER.allocate_tensors()
+        if config.raw_config.birdnet_model_path != self.config.raw_config.birdnet_model_path:
+            if config.raw_config.birdnet_model_path:
+                self.birdnet_interpreter = tflite.Interpreter(model_path=config.raw_config.birdnet_model_path, num_threads=config.tflite_threads)
+                self.birdnet_interpreter.allocate_tensors()
+            else:
+                self.birdnet_interpreter = None
 
-        self.INTERPRETER.set_tensor(self.INPUT_LAYER_INDEX, sample)
-        self.INTERPRETER.invoke()
-        return self.INTERPRETER.get_tensor(self.OUTPUT_LAYER_INDEX)
+        self.config = config
 
     def classify(self, data_path, overlap=1.0, max_pred=True, offset=None, duration=None):
-        if self.model is None:
-            raise ValueError("Model path is not set")
+        if self.config.model_path is None:
+            raise RuntimeError("Model path is not set")
 
-        # Start timing
         start = time.time()
-
         print(f"Using overlap: {overlap}")
 
         print(f"Loading file {data_path}")
-        sig, sr = librosa.load(data_path, sr=self.sr, mono=True, res_type='kaiser_fast', offset=offset, duration=duration)
-        samples = split_signal(sig, self.sr, self.clip_dur, overlap)
-        X = np.array(samples, dtype='float32')
+        sig, sr = librosa.load(data_path, sr=self.config.sample_rate, mono=True, res_type='kaiser_fast', offset=offset, duration=duration)
 
-        print(f"Classifying segment")
-        X = self.interpret(X)
-        X = self.model(X)
-        X = X.numpy()
+        print("Classifying segment")
+        if not self.config.requires_spectrogram:
+            pred, t = self._classify_raw_waveform(sig, overlap, max_pred)
+        else:
+            pred, t = self._classify_spectrogram(sig, overlap, max_pred)
+
+        if self.config.result_format == ResultFormat.LOGITS:
+            pred = softmax(pred, axis=-1).numpy()
+
         print("Segment classification done")
-
-        # End timing
         end = time.time()
         print(f"Classification took {round(end - start, 1)} seconds")
 
-        if max_pred: # return maximum prediction for each species
-            pred = list(map(max, zip(*X))) # return max predictions for each class
-            t = np.argmax(X, 0)*(self.clip_dur-overlap) # return timepoints of max prediction
-        else:
-            pred = X
-            t = np.array(range(len(X)))*(self.clip_dur-overlap)
         return pred, t
+
+    def _classify_raw_waveform(self, sig, overlap, max_pred):
+        samples = split_signal(sig, self.config.sample_rate, self.config.raw_config.clip_duration, overlap)
+        x = np.array(samples, dtype='float32')
+        x = self._apply_preprocessing(x)
+
+        if self.config.raw_config.requires_birdnet:
+            x = self._interpret(x, self.birdnet_interpreter, -1)
+
+        y = self._run_model(x)
+
+        if max_pred: # return maximum prediction for each species
+            pred = list(map(max, zip(*y))) # return max predictions for each class
+            t = np.argmax(y, axis=0) * (self.config.raw_config.clip_duration - overlap) # return timepoints of max prediction
+        else:
+            pred = y
+            t = np.arange(len(y)) * (self.config.raw_config.clip_duration - overlap)
+
+        return pred, t
+
+    def _classify_spectrogram(self, sig, overlap, max_pred):
+        s_config = self.config.spectrogram_config
+        overlap_frames = round(overlap * self.config.sample_rate / s_config.hop_length)
+
+        spectrograms = wav_to_spectrogram_chunks(
+            sig,
+            self.config.sample_rate,
+            s_config.input_height,
+            s_config.input_width,
+            overlap_frames,
+            s_config.n_fft,
+            s_config.hop_length,
+            s_config.n_mels,
+            s_config.fmin,
+            s_config.fmax
+        )
+        spectrograms = self._apply_preprocessing(spectrograms)
+
+        if s_config.channels_first:
+            x = spectrograms[:, np.newaxis, :, :]
+        else:
+            x = spectrograms[:, :, :, np.newaxis]
+
+        y = self._run_model(x)
+        spec_step = overlap_frames * (s_config.hop_length / self.config.sample_rate)
+
+        if max_pred:
+            pred = list(map(max, zip(*y)))
+            t = np.argmax(y, axis=0) * spec_step
+        else:
+            pred = y
+            t = np.arange(len(y)) * spec_step
+
+        return pred, t
+
+    def _apply_preprocessing(self, chunks):
+        for i in range(len(chunks)):
+            for step in self.config.preprocessing:
+                if isinstance(step, LogPreprocessing):
+                    chunks[i] = log_transform(chunks[i], step.base, step.epsilon)
+                elif isinstance(step, StandardizePreprocessing):
+                    chunks[i] = standardize_transform(chunks[i])
+                elif isinstance(step, CenterPreprocessing):
+                    chunks[i] = center_transform(chunks[i], method=step.method, axis=step.axis)
+                elif isinstance(step, ClipPreprocessing):
+                    chunks[i] = clip_transform(chunks[i], step.range[0], step.range[1])
+                else:
+                    raise TypeError(f"Unknown preprocessing step: {type(step)}")
+
+        return chunks
+
+    def _run_model(self, x):
+        input_shape_signature = self.keras_model.input_shape if self.keras_model else self.tflite_interpreter.get_input_details()[0]["shape_signature"]
+        output_shape = self.keras_model.output_shape if self.keras_model else self.tflite_interpreter.get_output_details()[0]["shape"]
+
+        batch_size = input_shape_signature[0] if input_shape_signature[0] is not None else len(x)
+        n = len(x)
+        result = np.zeros((n, output_shape[1]))
+
+        for i in range(0, n, batch_size):
+            batch = x[i:i + batch_size]
+            # Pad last batch if needed
+            if len(batch) < batch_size:
+                pad = batch_size - len(batch)
+                pad_width = [(0, pad)] + [(0, 0)] * (batch.ndim - 1)
+                batch = np.pad(
+                    batch,
+                    pad_width,
+                    mode="constant"
+                )
+
+            if self.keras_model is not None:
+                y = self.keras_model(batch).numpy()
+            else:
+                y = self._interpret(batch, self.tflite_interpreter)
+
+            result[i:i + batch_size] = y[:min(batch_size, n - i)]
+
+        return result
+
+    def _interpret(self, sample, interpreter, output_layer_offset = 0):
+        input_details = interpreter.get_input_details()
+        output_details = interpreter.get_output_details()
+
+        input_layer_index = input_details[0]['index']
+        output_layer_index = output_details[0]['index'] + output_layer_offset
+
+        current_shape = input_details[input_layer_index]["shape"]
+
+        if list(current_shape) != list(sample.shape):
+            interpreter.resize_tensor_input(input_layer_index, sample.shape)
+            interpreter.allocate_tensors()
+
+        interpreter.set_tensor(input_layer_index, sample)
+        interpreter.invoke()
+        return interpreter.get_tensor(output_layer_index)

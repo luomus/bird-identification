@@ -20,6 +20,8 @@ import numpy as np
 import pandas as pd
 import librosa
 import soundfile as sf
+
+from scripts.classifier_config import ClassifierConfig, RawConfig
 from scripts.security import api_key_auth
 from scripts.settings import settings
 import tempfile
@@ -54,11 +56,16 @@ BIRDNET_MODEL_PATH = "models/BirdNET_GLOBAL_6K_V2.4_Model_FP32.tflite"
 TFLITE_THREADS = 1
 CLIP_DURATION = 3.0
 audio_classifier = Classifier(
-    path_to_mlk_model=MODEL_PATH,
-    path_to_birdnet_model=BIRDNET_MODEL_PATH,
-    sr=48000,
-    clip_dur=CLIP_DURATION,
-    TFLITE_THREADS=TFLITE_THREADS
+    ClassifierConfig(
+        model_path=MODEL_PATH,
+        sample_rate=48000,
+        tflite_threads=TFLITE_THREADS,
+        raw_config=RawConfig(
+            clip_duration=CLIP_DURATION,
+            requires_birdnet=True,
+            birdnet_model_path=BIRDNET_MODEL_PATH,
+        )
+    )
 )
 
 def get_current_day_of_year() -> int:

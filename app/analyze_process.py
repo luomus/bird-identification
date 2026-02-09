@@ -4,7 +4,7 @@ import pickle
 import sys, json
 from math import ceil
 from pathlib import Path
-from typing import Optional, Generator, Any
+from typing import Optional, Generator, Any, Dict
 
 import numpy as np
 import pandas as pd
@@ -13,6 +13,7 @@ import librosa
 from functions.utils import is_audio_file, get_default_model_path, get_result_file_name
 from scripts import functions
 from scripts.classifier import Classifier
+from scripts.classifier_config import ClassifierConfig, RawConfig
 
 try:
     from ctypes import windll  # Only exists on Windows.
@@ -22,19 +23,10 @@ try:
 except ImportError:
     pass
 
-
 BIRDNET_MODEL_PATH = str(get_default_model_path("BirdNET_GLOBAL_6K_V2.4_Model_FP32.tflite"))
-TFLITE_THREADS = 1
-CLIP_DURATION = 3.0
-
 
 def main():
-    classifier = Classifier(
-        path_to_birdnet_model=BIRDNET_MODEL_PATH,
-        sr=48000,
-        clip_dur=CLIP_DURATION,
-        TFLITE_THREADS=TFLITE_THREADS,
-    )
+    classifier = Classifier(ClassifierConfig(raw_config=RawConfig(birdnet_model_path=BIRDNET_MODEL_PATH)))
 
     for line in sys.stdin:
         try:
@@ -81,8 +73,8 @@ def analyze_single_file(file_path: str, classifier: Classifier, model_folder_pat
 
     results = pd.DataFrame()
 
-    model_path, classes, calibration_params = get_model_data(model_folder_path)
-    classifier.set_model_path(model_path)
+    model_path, classes, calibration_params, config = get_model_data(model_folder_path)
+    classifier.set_config(config)
 
     for offset, chunk_size, total_duration in audio_to_chunks(file_path):
         send({"status": "Processing chunk {}/{}".format(int(offset / chunk_size) + 1, ceil(total_duration / chunk_size))})
@@ -101,8 +93,8 @@ def analyze_multiple_files(input_folder_path: str, output_folder_path: str, clas
     successes = 0
     errors = 0
 
-    model_path, classes, calibration_params = get_model_data(model_folder_path)
-    classifier.set_model_path(model_path)
+    model_path, classes, calibration_params, config = get_model_data(model_folder_path)
+    classifier.set_config(config)
 
     send({"status": "Collecting audio files..."})
 
@@ -146,7 +138,7 @@ def analyze_multiple_files(input_folder_path: str, output_folder_path: str, clas
         "errors": errors
     }
 
-def get_model_data(model_folder_path: str) -> (str, pd.DataFrame, Optional[np.ndarray]):
+def get_model_data(model_folder_path: str) -> (str, pd.DataFrame, Optional[np.ndarray], Dict[str, Any]):
     model_folder_path = Path(model_folder_path)
     metadata_path = model_folder_path / "metadata.json"
 
@@ -160,7 +152,11 @@ def get_model_data(model_folder_path: str) -> (str, pd.DataFrame, Optional[np.nd
     if "calibration_file" in metadata:
         calibration_params = np.load(model_folder_path / metadata["calibration_file"])
 
-    return model_path, classes, calibration_params
+    config = ClassifierConfig.from_dict(metadata.get("config", {}))
+    config.model_path = model_path
+    config.raw_config.birdnet_model_path = BIRDNET_MODEL_PATH
+
+    return model_path, classes, calibration_params, config
 
 def load_default_params(model_file_paths: dict[str, str]) -> dict[str, Any]:
     calibration_params = None
@@ -253,7 +249,7 @@ def analyze(
         species_class_indices,
         detection_timestamps,
         classes,
-        classifier.clip_dur
+        classifier.config.clip_duration
     )
 
 def rename_result_columns(df: pd.DataFrame) -> pd.DataFrame:

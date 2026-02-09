@@ -3,6 +3,7 @@ import numpy as np
 import os
 import gc
 from scripts import functions, utils
+from scripts.classifier_config import ClassifierConfig, RawConfig
 
 import librosa
 import soundfile as sf
@@ -143,7 +144,18 @@ def analyze_directory(input_path, parameters):
     # Load classification model
     # TFLITE_THREADS can be as high as number of CPUs available, the rest of the parameters should not be changed
     CLIP_DURATION = 3.0
-    audio_classifier = Classifier(path_to_mlk_model=MODEL_PATH, path_to_birdnet_model=BIRDNET_MODEL_PATH, sr=48000, clip_dur=CLIP_DURATION, TFLITE_THREADS=TFLITE_THREADS)
+    audio_classifier = Classifier(
+        ClassifierConfig(
+            model_path=MODEL_PATH,
+            sample_rate=48000,
+            tflite_threads=TFLITE_THREADS,
+            raw_config=RawConfig(
+                clip_duration=CLIP_DURATION,
+                requires_birdnet=True,
+                birdnet_model_path=BIRDNET_MODEL_PATH,
+            )
+        )
+    )
 
     # Load species name list and post-processing tables for prediction calibration
     species_name_list = pd.read_csv("models/classes.csv")

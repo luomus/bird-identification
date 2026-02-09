@@ -12,7 +12,7 @@ class TableModel(QAbstractTableModel):
     def data(self, index, role):
         if role == Qt.ItemDataRole.DisplayRole:
             value = self._data.iloc[index.row(), index.column()]
-            return str(value)
+            return str(value) if value is not None else ""
 
     def rowCount(self, index):
         return self._data.shape[0]

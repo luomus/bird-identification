@@ -108,6 +108,7 @@ class MultipleFilesTab(QWidget):
         self.progress_label.set_text(msg)
 
     def on_work_error(self, error: str):
+        print(error)
         show_alert(self, "An error occurred while analyzing the audio!")
         self.progress_label.set_text("")
 
