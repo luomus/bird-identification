@@ -1,4 +1,7 @@
+from typing import Union, Optional, Sequence, Tuple, cast, List
+
 import numpy as np
+from numpy.typing import NDArray
 import librosa
 
 from scripts.classifier_config import ClassifierConfig, ResultFormat, LogPreprocessing, StandardizePreprocessing, \
@@ -42,7 +45,7 @@ class Classifier:
 
         self.config = config
 
-    def classify(self, data_path, overlap=1.0, max_pred=True, offset=None, duration=None):
+    def classify(self, data_path: str, overlap: Union[int, float] = 1.0, max_pred: bool = True, offset: float = 0.0, duration: Optional[float] = None) -> Tuple[NDArray, NDArray]:
         if self.config.model_path is None:
             raise RuntimeError("Model path is not set")
 
@@ -67,7 +70,7 @@ class Classifier:
 
         return pred, t
 
-    def _classify_raw_waveform(self, sig, overlap, max_pred):
+    def _classify_raw_waveform(self, sig: NDArray, overlap: Union[int, float], max_pred: bool) -> Tuple[NDArray, NDArray]:
         samples = split_signal(sig, self.config.sample_rate, self.config.raw_config.clip_duration, overlap)
         x = np.array(samples, dtype='float32')
         x = self._apply_preprocessing(x)
@@ -86,7 +89,7 @@ class Classifier:
 
         return pred, t
 
-    def _classify_spectrogram(self, sig, overlap, max_pred):
+    def _classify_spectrogram(self, sig: NDArray, overlap: Union[int, float], max_pred: bool) -> Tuple[NDArray, NDArray]:
         s_config = self.config.spectrogram_config
         overlap_frames = round(overlap * self.config.sample_rate / s_config.hop_length)
 
@@ -121,7 +124,7 @@ class Classifier:
 
         return pred, t
 
-    def _apply_preprocessing(self, chunks):
+    def _apply_preprocessing(self, chunks: NDArray) -> NDArray:
         for i in range(len(chunks)):
             for step in self.config.preprocessing:
                 if isinstance(step, LogPreprocessing):
@@ -137,7 +140,7 @@ class Classifier:
 
         return chunks
 
-    def _run_model(self, x):
+    def _run_model(self, x: NDArray) -> NDArray:
         input_shape_signature = self.keras_model.input_shape if self.keras_model else self.tflite_interpreter.get_input_details()[0]["shape_signature"]
         output_shape = self.keras_model.output_shape if self.keras_model else self.tflite_interpreter.get_output_details()[0]["shape"]
 
@@ -150,7 +153,7 @@ class Classifier:
             # Pad last batch if needed
             if len(batch) < batch_size:
                 pad = batch_size - len(batch)
-                pad_width = [(0, pad)] + [(0, 0)] * (batch.ndim - 1)
+                pad_width = np.array([[0, pad]] + [[0, 0]] * (batch.ndim - 1), dtype=int)
                 batch = np.pad(
                     batch,
                     pad_width,
@@ -166,7 +169,7 @@ class Classifier:
 
         return result
 
-    def _interpret(self, sample, interpreter, output_layer_offset = 0):
+    def _interpret(self, sample: NDArray, interpreter: tflite.Interpreter, output_layer_offset: int = 0) -> NDArray:
         input_details = interpreter.get_input_details()
         output_details = interpreter.get_output_details()
 

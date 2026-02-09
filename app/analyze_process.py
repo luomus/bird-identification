@@ -4,7 +4,7 @@ import pickle
 import sys, json
 from math import ceil
 from pathlib import Path
-from typing import Optional, Generator, Any, Dict
+from typing import Optional, Generator, Any
 
 import numpy as np
 import pandas as pd
@@ -138,7 +138,7 @@ def analyze_multiple_files(input_folder_path: str, output_folder_path: str, clas
         "errors": errors
     }
 
-def get_model_data(model_folder_path: str) -> (str, pd.DataFrame, Optional[np.ndarray], Dict[str, Any]):
+def get_model_data(model_folder_path: str) -> (str, pd.DataFrame, Optional[np.ndarray], ClassifierConfig):
     model_folder_path = Path(model_folder_path)
     metadata_path = model_folder_path / "metadata.json"
 

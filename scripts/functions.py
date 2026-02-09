@@ -1,5 +1,6 @@
 import librosa
 import numpy as np
+from numpy.typing import NDArray
 import pandas as pd
 from scipy.stats import norm
 
@@ -183,7 +184,7 @@ def split_signal(input_signal, sample_rate, chunk_duration_s, overlap_duration_s
     return signal_chunks
 
 
-def wav_to_spectrogram_chunks(sig, sr, ntime, nfreq, nhop, n_fft, hop_length, n_mels, fmin, fmax):
+def wav_to_spectrogram_chunks(sig: NDArray, sr: int, ntime: int, nfreq: int, nhop: int, n_fft: int, hop_length: int, n_mels: int, fmin: int, fmax: int) -> NDArray:
     S = librosa.feature.melspectrogram(
         y=sig, sr=sr, n_fft=n_fft, hop_length=hop_length,
         n_mels=n_mels, fmin=fmin, fmax=fmax
@@ -212,7 +213,7 @@ def wav_to_spectrogram_chunks(sig, sr, ntime, nfreq, nhop, n_fft, hop_length, n_
     return data
 
 
-def log_transform(x, base=10, epsilon=1e-6):
+def log_transform(x: NDArray, base: int = 10, epsilon: float = 1e-6) -> NDArray:
     x = x + epsilon
     if base == 10:
         return np.log10(x)
@@ -222,11 +223,11 @@ def log_transform(x, base=10, epsilon=1e-6):
         return np.log(x) / np.log(base)
 
 
-def standardize_transform(x):
+def standardize_transform(x: NDArray) -> NDArray:
     return (x - np.mean(x)) / np.std(x)
 
 
-def center_transform(x, method="mean", axis=0):
+def center_transform(x: NDArray, method: str = "mean", axis: int = 0) -> NDArray:
     if method == "mean":
         return x - np.mean(x, axis=axis)
     elif method == "median":
@@ -235,5 +236,5 @@ def center_transform(x, method="mean", axis=0):
         raise ValueError(f"Unknown method: {method}")
 
 
-def clip_transform(x, a_min, a_max):
+def clip_transform(x: NDArray, a_min: float, a_max: float) -> NDArray:
     return np.clip(x, a_min, a_max)
