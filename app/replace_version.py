@@ -3,12 +3,12 @@ import sys
 import re
 
 if len(sys.argv) < 2:
-    raise NameError("Missing version number argument")
+    raise TypeError("Missing version number argument")
 
 version = sys.argv[1]
 
 if not re.compile("^\d+\.\d+\.\d+$").match(version):
-    raise NameError("Invalid version number {}".format(version))
+    raise ValueError("Invalid version number {}".format(version))
 
 path = Path("version.py")
 path.write_text("__version__ = \"{}\"".format(version))

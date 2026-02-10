@@ -10,6 +10,7 @@ from PySide6.QtWidgets import QWidget, QGraphicsView, QGraphicsScene, QGraphicsL
 from PySide6.QtCore import Qt, QThreadPool, Signal
 from PySide6.QtGui import QColor, QPen
 
+from functions.exceptions import CancelRequested
 from functions.worker import Worker
 from widgets.common.spinner import WaitingSpinner
 
@@ -19,6 +20,9 @@ def _calculate_peaks(file_path: str, width: int, height: int, cancel_requested: 
 
     duration = librosa.get_duration(path=file_path)
     sr = librosa.get_samplerate(file_path)
+
+    if duration == 0 or sr == 0:
+        raise ValueError("Failed to load audio")
 
     samples_per_pixel = max(round(sr * duration / width), 1)
 
@@ -34,7 +38,7 @@ def _calculate_peaks(file_path: str, width: int, height: int, cancel_requested: 
 
     while offset < duration and pixel < width:
         if cancel_requested.is_set():
-            raise ValueError("Cancel requested")
+            raise CancelRequested()
 
         y, _ = librosa.load(
             file_path,

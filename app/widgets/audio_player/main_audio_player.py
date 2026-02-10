@@ -53,7 +53,10 @@ class MainAudioPlayer(QWidget):
         self.player.setAudioOutput(self.audio_output)
         self.player.playingChanged.connect(self.on_playing_changed)
         self.player.positionChanged.connect(self.on_play_time_changed)
-        self.player.errorOccurred.connect(self.on_audio_error)
+        self.player.errorOccurred.connect(self.on_error_occurred)
+        self.player.mediaStatusChanged.connect(self.on_media_status_changed)
+
+        self.playing_started = False
 
         notifications.warnings.connect(self.on_warning_message)
 
@@ -79,26 +82,39 @@ class MainAudioPlayer(QWidget):
         if self.player.isPlaying():
             self.player.pause()
         else:
-            self.player.play()
+            self._play()
 
     def on_playing_changed(self, playing: bool):
         if playing:
             self.play_button.set_icon(":/icons/pause-solid-full.svg", ":/icons/pause-solid-full-dark.svg")
         else:
             self.play_button.set_icon(":/icons/play-solid-full.svg", ":/icons/play-solid-full-dark.svg")
+            self.playing_started = False
 
     def on_play_time_changed(self, duration: int):
         self.waveform.set_play_time(duration)
 
     def on_time_click(self, time: int):
         self.player.setPosition(time)
-        self.player.play()
+        self._play()
 
-    def on_audio_error(self):
-        show_alert(self, "Playing audio failed!")
+    def on_error_occurred(self):
+        if self.playing_started:
+            show_alert(self, "Playing audio failed!")
+
+    def on_media_status_changed(self, status: QMediaPlayer.MediaStatus):
+        if self.playing_started and status == QMediaPlayer.MediaStatus.InvalidMedia:
+            show_alert(self, "Playing audio failed!")
 
     def on_warning_message(self, message: str):
         if "QAudioFormat not supported by QAudioDevice" in message:
             self.player.stop()
             self.player.setPosition(0)
             show_alert(self, "Audio format is not supported by the audio player!")
+
+    def _play(self):
+        if self.player.error() != QMediaPlayer.Error.NoError or self.player.mediaStatus() == QMediaPlayer.MediaStatus.InvalidMedia:
+            show_alert(self, "Playing audio failed!")
+        else:
+            self.playing_started = True
+            self.player.play()

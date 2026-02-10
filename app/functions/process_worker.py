@@ -13,8 +13,9 @@ class ProcessWorker(QObject):
     process: Optional[QProcess] = None
 
     work_started = False
-    cancelled = False
-    stopped = False
+    work_cancelled = False
+    work_error_msg = ""
+    process_stopped = False
 
     def __init__(self, process: Tuple[str, List[str]]):
         super().__init__()
@@ -37,12 +38,12 @@ class ProcessWorker(QObject):
 
     def cancel_work(self):
         if self.process:
-            self.cancelled = True
+            self.work_cancelled = True
             self.process.kill()
 
     def start_work(self, cmd: Dict[str, Any]):
         if self.work_started:
-            raise ValueError("Work already started")
+            raise RuntimeError("Work already started")
 
         self.work_started = True
 
@@ -70,35 +71,41 @@ class ProcessWorker(QObject):
 
             if "result" in msg:
                 self.workResult.emit(msg["result"])
-                self.workFinished.emit()
-                self.work_started = False
+                self._set_work_finished()
 
             if "error" in msg:
                 self.workError.emit(msg["error"])
-                self.workFinished.emit()
-                self.work_started = False
+                self._set_work_finished()
 
     def on_stderr(self):
         err = self.process.readAllStandardError().data().decode()
-        print(err)
+        self.work_error_msg += err
 
     def on_process_error(self, error: QProcess.ProcessError):
-        if self.work_started and not self.stopped and not self.cancelled:
+        if self.work_started and not self.process_stopped and not self.work_cancelled:
             self.workError.emit(str(error))
 
     def on_process_finished(self):
-        if not self.stopped:
+        if not self.process_stopped:
             if self.work_started:
-                self.workFinished.emit()
-                self.work_started = False
+                if not self.work_cancelled:
+                    error_msg = self.work_error_msg if self.work_error_msg is not None else "Process finished before outputting result"
+                    self.workError.emit(error_msg)
 
-            if self.cancelled:
+                self._set_work_finished()
+
+            if self.work_cancelled:
                 self.start_process()
-                self.cancelled = False
+                self.work_cancelled = False
 
     def stop_process(self):
-        self.stopped = True
+        self.process_stopped = True
 
         if self.process and self.process.state() != QProcess.ProcessState.NotRunning:
             self.process.kill()
             self.process.waitForFinished(3000)
+
+    def _set_work_finished(self):
+        self.workFinished.emit()
+        self.work_started = False
+        self.work_error_msg = ""
