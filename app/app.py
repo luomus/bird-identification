@@ -1,9 +1,11 @@
 from PySide6.QtWidgets import QApplication, QSplashScreen
-from PySide6.QtCore import Qt, Signal, QSize, QTimer
+from PySide6.QtCore import Qt, Signal, QSize, QTimer, qInstallMessageHandler
 from PySide6.QtGui import QPixmap, QIcon
 
 import sys
 import resources  # noqa
+import logging
+from functions.qt_message_handler import qt_message_handler
 
 try:
     from ctypes import windll  # Only exists on Windows.
@@ -26,7 +28,10 @@ class SplashScreen(QSplashScreen):
             QTimer.singleShot(0, self.isReady)
             self.is_ready = True
 
+
 app = QApplication([])
+qInstallMessageHandler(qt_message_handler)
+
 app_icon = QIcon()
 app_icon.addFile(":/icons/bird16x16.png", QSize(16, 16))
 app_icon.addFile(":/icons/bird24x24.png", QSize(24, 24))
@@ -40,6 +45,7 @@ splash.setEnabled(False)  # clicking doesn't close it
 
 window = None
 
+
 def show_main_window():
     global window
 
@@ -49,7 +55,8 @@ def show_main_window():
     splash.finish(window)
     window.show()
 
-splash.isReady.connect(show_main_window) # ensure that the splash screen is shown first
+
+splash.isReady.connect(show_main_window)  # ensure that the splash screen is shown first
 splash.show()
 
 sys.exit(app.exec())

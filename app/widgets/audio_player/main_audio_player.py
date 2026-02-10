@@ -3,6 +3,8 @@ from PySide6.QtMultimedia import QMediaPlayer, QAudioOutput
 from PySide6.QtWidgets import QWidget, QVBoxLayout, QLabel, QHBoxLayout
 from PySide6.QtGui import QPalette
 
+from functions.gui_utils import show_alert
+from functions.global_notifications import notifications
 from widgets.audio_player.waveform_view import WaveformView
 from widgets.common.icon_button import IconButton
 
@@ -51,12 +53,17 @@ class MainAudioPlayer(QWidget):
         self.player.setAudioOutput(self.audio_output)
         self.player.playingChanged.connect(self.on_playing_changed)
         self.player.positionChanged.connect(self.on_play_time_changed)
+        self.player.errorOccurred.connect(self.on_audio_error)
+
+        notifications.warnings.connect(self.on_warning_message)
 
     def set_file_path(self, file_path: str):
         self.player.setSource(QUrl.fromLocalFile(file_path))
         self.waveform.set_file_path(file_path)
 
     def clear_audio(self):
+        self.player.stop()
+        self.player.setSource(QUrl())
         self.waveform.clear_audio()
         self.play_button.setEnabled(False)
         self.end_time_label.setText("00:00:00")
@@ -86,3 +93,12 @@ class MainAudioPlayer(QWidget):
     def on_time_click(self, time: int):
         self.player.setPosition(time)
         self.player.play()
+
+    def on_audio_error(self):
+        show_alert(self, "Playing audio failed!")
+
+    def on_warning_message(self, message: str):
+        if "QAudioFormat not supported by QAudioDevice" in message:
+            self.player.stop()
+            self.player.setPosition(0)
+            show_alert(self, "Audio format is not supported by the audio player!")
