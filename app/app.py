@@ -4,7 +4,6 @@ from PySide6.QtGui import QPixmap, QIcon
 
 import sys
 import resources  # noqa
-import logging
 from functions.qt_message_handler import qt_message_handler
 
 try:
