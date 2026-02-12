@@ -5,11 +5,23 @@ import os
 import librosa
 import numpy as np
 
-def load_audio(file_path: str, sample_rate: Optional[str] = 24000) -> Tuple[np.ndarray, Union[int, float]]:
-    y, sr = librosa.load(file_path, sr=sample_rate)
+def load_audio(file_path: str, sr: Optional[float] = 24000, mono: Optional[bool] = None, offset: Optional[float] = None, duration: Optional[float] = None) -> Tuple[np.ndarray, Union[int, float]]:
+    y, sr = librosa.load(file_path, sr=sr, mono=mono, offset=offset, duration=duration)
     if len(y) == 0:
-        raise ValueError("Invalid audio file")
+        raise ValueError("Failed to load audio")
     return y, sr
+
+def get_duration(file_path: str) -> float:
+    duration = librosa.get_duration(path=file_path)
+    if duration == 0:
+        raise ValueError("Failed to load audio")
+    return duration
+
+def get_sample_rate(file_path: str) -> float:
+    sample_rate = librosa.get_samplerate(file_path)
+    if sample_rate == 0:
+        raise ValueError("Failed to load audio")
+    return sample_rate
 
 def is_audio_file(file_name: str) -> bool:
     return file_name.lower().endswith((".wav", ".mp3", ".flac"))

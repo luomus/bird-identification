@@ -8,9 +8,8 @@ from typing import Optional, Generator, Any
 
 import numpy as np
 import pandas as pd
-import librosa
 
-from functions.utils import is_audio_file, get_default_model_path, get_result_file_name
+from functions.utils import is_audio_file, get_default_model_path, get_result_file_name, get_duration
 from scripts import functions
 from scripts.classifier import Classifier
 from scripts.classifier_config import ClassifierConfig, RawConfig
@@ -180,10 +179,7 @@ def load_default_params(model_file_paths: dict[str, str]) -> dict[str, Any]:
     }
 
 def audio_to_chunks(file_path: str, chunk_size: int = 600) -> Generator[tuple[int, int, float], None, None]:
-    duration = librosa.get_duration(path=file_path)
-    if duration == 0:
-        raise ValueError("Failed to load audio")
-
+    duration = get_duration(file_path)
     offset = 0
 
     while offset < duration:

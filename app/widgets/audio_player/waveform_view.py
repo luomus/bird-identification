@@ -1,5 +1,4 @@
 from math import floor
-import librosa
 from typing import Optional, Tuple
 from threading import Event
 from numpy import interp
@@ -11,6 +10,7 @@ from PySide6.QtCore import Qt, QThreadPool, Signal
 from PySide6.QtGui import QColor, QPen
 
 from functions.exceptions import CancelRequested
+from functions.utils import get_duration, get_sample_rate, load_audio
 from functions.worker import Worker
 from widgets.common.spinner import WaitingSpinner
 
@@ -18,11 +18,8 @@ from widgets.common.spinner import WaitingSpinner
 def _calculate_peaks(file_path: str, width: int, height: int, cancel_requested: Event, target_chunk_sec = 600) -> Tuple[np.ndarray, float, float]:
     peak_table = np.ndarray((width, 2), dtype=np.float32)
 
-    duration = librosa.get_duration(path=file_path)
-    sr = librosa.get_samplerate(file_path)
-
-    if duration == 0 or sr == 0:
-        raise ValueError("Failed to load audio")
+    duration = get_duration(file_path)
+    sr = get_sample_rate(file_path)
 
     samples_per_pixel = max(round(sr * duration / width), 1)
 
@@ -40,7 +37,7 @@ def _calculate_peaks(file_path: str, width: int, height: int, cancel_requested: 
         if cancel_requested.is_set():
             raise CancelRequested()
 
-        y, _ = librosa.load(
+        y, _ = load_audio(
             file_path,
             sr=sr,
             mono=True,
