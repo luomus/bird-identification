@@ -59,6 +59,8 @@ def get_custom_models_folder_path() -> Path:
             return Path(os.getenv("LOCALAPPDATA")) / "Bird Identifier" / "models"
         elif sys.platform == "darwin":
             return Path.home() / "Library" / "Application Support" / "Bird Identifier" / "models"
+        else:
+            return Path(os.getenv("XDG_DATA_HOME", Path.home() / ".local" / "share")) / "Bird Identifier" / "models"
 
     bundle_dir = Path(__file__).parent.parent
 
