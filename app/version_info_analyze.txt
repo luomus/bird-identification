@@ -32,10 +32,10 @@ VSVersionInfo(
         [StringStruct('CompanyName', 'Luomus'),
         StringStruct('FileDescription', 'A tool for identifying birds from audio recordings.'),
         StringStruct('FileVersion', '{{ version }}.0'),
-        StringStruct('InternalName', 'birdIdentifierAnalyze'),
+        StringStruct('InternalName', 'sirkkuAnalyze'),
         StringStruct('LegalCopyright', '© 2025 Luomus - Finnish Museum of Natural History'),
-        StringStruct('OriginalFilename', 'birdIdentifierAnalyze.exe'),
-        StringStruct('ProductName', 'Bird Identifier'),
+        StringStruct('OriginalFilename', 'sirkkuAnalyze.exe'),
+        StringStruct('ProductName', 'Sirkku'),
         StringStruct('ProductVersion', '{{ version }}.0')])
       ]),
     VarFileInfo([VarStruct('Translation', [1033, 1200])])

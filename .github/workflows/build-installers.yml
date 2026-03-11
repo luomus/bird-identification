@@ -94,11 +94,11 @@ jobs:
       uses: actions/upload-artifact@v4
       with:
         name: Windows-Installer
-        path: .\app\dist\birdIdentifier-*-Setup.exe
+        path: .\app\dist\sirkku-*-setup.exe
 
     - name: Upload installer (macOS)
       if: matrix.os == 'macos-latest'
       uses: actions/upload-artifact@v4
       with:
         name: MacOS-Installer
-        path: ./app/dist/birdIdentifier-*.dmg
+        path: ./app/dist/sirkku-*.dmg

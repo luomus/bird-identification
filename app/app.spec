@@ -24,7 +24,7 @@ main_exe = EXE(
     main_a.scripts,
     [],
     exclude_binaries=True,
-    name='birdIdentifier',
+    name='sirkku',
     debug=False,
     bootloader_ignore_signals=False,
     strip=False,
@@ -35,7 +35,8 @@ main_exe = EXE(
     target_arch=None,
     codesign_identity=None,
     entitlements_file=None,
-    version='version_info.txt'
+    version='version_info.txt',
+    icon='icons/sirkku-logo.ico'
 )
 
 analyze_a = Analysis(
@@ -57,7 +58,7 @@ analyze_exe = EXE(
     analyze_a.scripts,
     [],
     exclude_binaries=True,
-    name='birdIdentifierAnalyze',
+    name='sirkkuAnalyze',
     debug=False,
     bootloader_ignore_signals=False,
     strip=False,
@@ -81,17 +82,17 @@ coll = COLLECT(
     strip=False,
     upx=True,
     upx_exclude=[],
-    name='birdIdentifier',
+    name='sirkku',
 )
 
 app = BUNDLE(
     coll,
-    name='birdIdentifier.app',
-    icon=None,
-    bundle_identifier='fi.laji.birdIdentifier',
+    name='sirkku.app',
+    icon='icons/sirkku-logo.icns',
+    bundle_identifier='fi.laji.sirkku',
     version='{{ version }}',
     info_plist={
-        'CFBundleName': 'Bird Identifier',
+        'CFBundleName': 'Sirkku',
         'NSHumanReadableCopyright': '© 2025 Luomus - Finnish Museum of Natural History'
     }    
 )

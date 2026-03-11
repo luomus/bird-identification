@@ -1,17 +1,17 @@
 #!/bin/sh
 mkdir -p dist/dmg
-test -f dist/dmg/* && rm -r dist/dmg/*
-mv dist/birdIdentifier.app dist/dmg/
-test -f dist/birdIdentifier-*.dmg && rm dist/birdIdentifier-*.dmg
-# add volicon
-# add icon-size
-# add icon
+[ -d dist/dmg ] && rm -rf dist/dmg/*
+mv dist/sirkku.app dist/dmg/
+test -f dist/sirkku-*.dmg && rm dist/sirkku-*.dmg
 create-dmg \
-  --volname "Bird Identifier" \
+  --volname "Sirkku" \
+  --volicon "icons/sirkku-logo.icns" \
+  --icon-size 128 \
+  --icon "sirkku.app" 175 120 \
   --window-pos 200 120 \
   --window-size 600 300 \
-  --hide-extension "birdIdentifier.app" \
+  --hide-extension "sirkku.app" \
   --app-drop-link 425 120 \
   --format ULMO \
-  "dist/birdIdentifier-{{ version }}.dmg" \
+  "dist/sirkku-{{ version }}.dmg" \
   "dist/dmg/"

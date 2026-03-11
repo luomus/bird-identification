@@ -9,7 +9,7 @@ from functions.qt_message_handler import qt_message_handler
 try:
     from ctypes import windll  # Only exists on Windows.
 
-    myappid = "Luomus.BirdIdentifier"
+    myappid = "Luomus.Sirkku"
     windll.shell32.SetCurrentProcessExplicitAppUserModelID(myappid)
 except ImportError:
     pass
@@ -32,14 +32,13 @@ app = QApplication([])
 qInstallMessageHandler(qt_message_handler)
 
 app_icon = QIcon()
-app_icon.addFile(":/icons/bird16x16.png", QSize(16, 16))
-app_icon.addFile(":/icons/bird24x24.png", QSize(24, 24))
-app_icon.addFile(":/icons/bird32x32.png", QSize(32, 32))
-app_icon.addFile(":/icons/bird48x48.png", QSize(48, 48))
-app_icon.addFile(":/icons/bird256x256.png", QSize(256, 256))
+app_icon.addFile(":/icons/sirkku-logo16x16.png", QSize(16, 16))
+app_icon.addFile(":/icons/sirkku-logo32x32.png", QSize(32, 32))
+app_icon.addFile(":/icons/sirkku-logo48x48.png", QSize(48, 48))
+app_icon.addFile(":/icons/sirkku-logo256x256.png", QSize(256, 256))
 app.setWindowIcon(app_icon)
 
-splash = SplashScreen(QPixmap(":/icons/splash.png"), Qt.WindowType.WindowStaysOnTopHint)
+splash = SplashScreen(QPixmap(":/icons/sirkku-logo-splash.png"), Qt.WindowType.WindowStaysOnTopHint)
 splash.setEnabled(False)  # clicking doesn't close it
 
 window = None

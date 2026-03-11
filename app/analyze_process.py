@@ -17,7 +17,7 @@ from scripts.classifier_config import ClassifierConfig, RawConfig
 try:
     from ctypes import windll  # Only exists on Windows.
 
-    myappid = "Luomus.BirdIdentifier"
+    myappid = "Luomus.Sirkku"
     windll.shell32.SetCurrentProcessExplicitAppUserModelID(myappid)
 except ImportError:
     pass

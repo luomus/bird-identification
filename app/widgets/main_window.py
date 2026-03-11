@@ -13,7 +13,7 @@ class MainWindow(QMainWindow):
     def __init__(self):
         super().__init__()
 
-        self.setWindowTitle("Bird Identifier")
+        self.setWindowTitle("Sirkku")
 
         widget = QWidget()
         self.setCentralWidget(widget)

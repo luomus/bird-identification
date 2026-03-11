@@ -56,11 +56,11 @@ def get_default_models_folder_path():
 def get_custom_models_folder_path() -> Path:
     if getattr(sys, "frozen", False):
         if sys.platform == "win32":
-            return Path(os.getenv("LOCALAPPDATA")) / "Bird Identifier" / "models"
+            return Path(os.getenv("LOCALAPPDATA")) / "Sirkku" / "models"
         elif sys.platform == "darwin":
-            return Path.home() / "Library" / "Application Support" / "Bird Identifier" / "models"
+            return Path.home() / "Library" / "Application Support" / "Sirkku" / "models"
         else:
-            return Path(os.getenv("XDG_DATA_HOME", Path.home() / ".local" / "share")) / "Bird Identifier" / "models"
+            return Path(os.getenv("XDG_DATA_HOME", Path.home() / ".local" / "share")) / "Sirkku" / "models"
 
     bundle_dir = Path(__file__).parent.parent
 
@@ -70,7 +70,7 @@ def get_analyze_process() -> Tuple[str, List[str]]:
     if not getattr(sys, "frozen", False):
         return sys.executable, ["analyze_process.py"]
 
-    file_name = "birdIdentifierAnalyze"
+    file_name = "sirkkuAnalyze"
 
     if sys.platform == "win32":
         file_name += ".exe"
