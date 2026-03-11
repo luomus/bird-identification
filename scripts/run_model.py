@@ -98,7 +98,7 @@ def process_audio_segment(
         species_class_indices,
         detection_timestamps,
         species_name_list,
-        classifier.clip_dur,
+        classifier.config.clip_duration,
         include_noise
     )
 
