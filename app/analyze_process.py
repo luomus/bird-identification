@@ -260,7 +260,7 @@ def rename_result_columns(df: pd.DataFrame) -> pd.DataFrame:
 def get_result_file_path(file_path: str, input_folder_path: str, output_folder_path: str, model_name: str) -> str:
     dir_rel_path = os.path.relpath(os.path.dirname(file_path), input_folder_path)
     result_file_name = get_result_file_name(file_path, model_name)
-    return os.path.join(output_folder_path, dir_rel_path, result_file_name)
+    return os.path.normpath(os.path.join(output_folder_path, dir_rel_path, result_file_name))
 
 if __name__ == "__main__":
     main()

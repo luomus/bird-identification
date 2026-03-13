@@ -136,7 +136,7 @@ def second_stage_threshold_filter(species_predictions, class_indices, detection_
 def predictions_to_dataframe(species_predictions, species_class_indices, detection_timestamps, species_name_list, clip_dur, include_noise = False):
     results = []
     for i in range(len(species_predictions)):
-        if species_name_list['noise'].iloc[species_class_indices[i]] is True and not include_noise:
+        if species_name_list['noise'].iloc[species_class_indices[i]] == True and not include_noise:
             continue
 
         results.append({

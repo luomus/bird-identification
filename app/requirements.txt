@@ -7,3 +7,5 @@ scipy==1.13.*
 pandas==2.2.*
 resampy==0.4.*
 pip-licenses==5.5.0
+pytest-qt==4.5.0
+pytest-mock==3.15.1

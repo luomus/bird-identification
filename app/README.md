@@ -41,6 +41,12 @@ If you add/delete resources, remember to update file resources.qrc
 pyinstaller app.spec
 ```
 
+## Run tests
+To run tests, you need to have a model in the models folder that can identify something in the test file (tests/bird.mp3), otherwise some tests will fail.
+```
+QT_QPA_PLATFORM=offscreen python -m pytest tests -v
+```
+
 ## Third party licenses
 You can use this command to generate third party licenses:
 ```

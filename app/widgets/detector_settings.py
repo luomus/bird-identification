@@ -11,7 +11,7 @@ class DetectorSettings(QGroupBox):
     model_paths: List[Path] = []
     model_names: List[str] = []
 
-    def __init__(self):
+    def __init__(self, default_threshold: float = 0.6, default_overlap: float = 0.5):
         super().__init__()
 
         self.setTitle("Detector Settings")
@@ -33,13 +33,11 @@ class DetectorSettings(QGroupBox):
         h_box_layout.setContentsMargins(0, 0, 0, 0)
         row_widget.setLayout(h_box_layout)
 
-        self.threshold_setting = NumberSetting(0, 1, 0.6, "Threshold")
+        self.threshold_setting = NumberSetting(0, 1, default_threshold, "Threshold")
         h_box_layout.addWidget(self.threshold_setting)
 
-        self.overlap_setting = NumberSetting(0, 2, 0.5, "Segment overlap")
+        self.overlap_setting = NumberSetting(0, 2, default_overlap, "Segment overlap")
         h_box_layout.addWidget(self.overlap_setting)
-
-
 
     def active_model(self) -> str:
         index = self.model_names.index(self.model_select.currentText())
