@@ -13,5 +13,5 @@ create-dmg \
   --hide-extension "sirkku.app" \
   --app-drop-link 425 120 \
   --format ULMO \
-  "dist/sirkku-{{ version }}.dmg" \
+  "dist/sirkku-{{ version }}-{{ architecture }}.dmg" \
   "dist/dmg/"

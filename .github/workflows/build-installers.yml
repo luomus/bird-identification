@@ -14,8 +14,10 @@ jobs:
         include:
           - os: windows-latest
             requirements_tf: requirements_tf.txt
+            architecture: windows-x64
           - os: macos-latest
             requirements_tf: requirements_tf_mac.txt
+            architecture: macos-arm64
 
     steps:
     - name: Checkout repo
@@ -35,20 +37,20 @@ jobs:
         path: private-data
 
     - name: Move data to correct places (Windows)
-      if: matrix.os == 'windows-latest'
+      if: startsWith(matrix.os, 'windows-')
       run: |
         Remove-Item -Recurse -Force app\models
         Move-Item private-data\default-models app\models
         Expand-Archive -Path private-data\InstallForge.zip -DestinationPath app
 
     - name: Move data to correct places (macOS)
-      if: matrix.os == 'macos-latest'
+      if: startsWith(matrix.os, 'macos-')
       run: |
         rm -rf app/models
         mv private-data/default-models app/models
 
     - name: Install create-dmg (macOS)
-      if: matrix.os == 'macos-latest'
+      if: startsWith(matrix.os, 'macos-')
       run: |
         brew install create-dmg
 
@@ -69,7 +71,7 @@ jobs:
     - name: Set correct version numbers
       shell: bash
       run: |
-        python replace_version.py ${VERSION}
+        python replace_version.py "${VERSION}" "${{ matrix.architecture }}"
       working-directory: ./app
 
     - name: Build executable with PyInstaller
@@ -78,27 +80,27 @@ jobs:
       working-directory: ./app
 
     - name: Build Windows installer with InstallForge
-      if: matrix.os == 'windows-latest'
+      if: startsWith(matrix.os, 'windows-')
       run: |
         .\ifbuildx86.exe -i ..\..\app.ifp
       working-directory: ./app/InstallForge/bin
 
     - name: Build macOS Disk Image with create-dmg
-      if: matrix.os == 'macos-latest'
+      if: startsWith(matrix.os, 'macos-')
       run: |
         ./build_dmg.sh
       working-directory: ./app
 
     - name: Upload installer (Windows)
-      if: matrix.os == 'windows-latest'
+      if: startsWith(matrix.os, 'windows-')
       uses: actions/upload-artifact@v4
       with:
-        name: Windows-Installer
+        name: ${{ matrix.architecture }}-installer
         path: .\app\dist\sirkku-*-setup.exe
 
     - name: Upload installer (macOS)
-      if: matrix.os == 'macos-latest'
+      if: startsWith(matrix.os, 'macos-')
       uses: actions/upload-artifact@v4
       with:
-        name: MacOS-Installer
+        name: ${{ matrix.architecture }}-installer
         path: ./app/dist/sirkku-*.dmg

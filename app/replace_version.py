@@ -2,13 +2,17 @@ from pathlib import Path
 import sys
 import re
 
-if len(sys.argv) < 2:
-    raise TypeError("Missing version number argument")
+if len(sys.argv) < 3:
+    raise TypeError("Missing arguments: version number and architecture")
 
 version = sys.argv[1]
+architecture = sys.argv[2]
 
 if not re.compile("^\d+\.\d+\.\d+$").match(version):
     raise ValueError("Invalid version number {}".format(version))
+
+if not re.compile(r"^[A-Za-z0-9_-]+$").match(architecture):
+    raise ValueError("Invalid architecture {}".format(architecture))
 
 path = Path("version.py")
 path.write_text("__version__ = \"{}\"".format(version))
@@ -28,6 +32,7 @@ for file_path in file_paths:
     content = content.replace("{{ major }}", major)
     content = content.replace("{{ minor }}", minor)
     content = content.replace("{{ patch }}", patch)
+    content = content.replace("{{ architecture }}", architecture)
 
     with open(file_path, "w") as f:
         f.write(content)
