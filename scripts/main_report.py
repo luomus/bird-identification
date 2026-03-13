@@ -49,7 +49,7 @@ def main():
         return
 
     # Check that directory exists
-    data_directory = args.dir
+    data_directory = "../input/" + args.dir
     if not os.path.exists(data_directory):
         print(f"Error: Directory {data_directory} does not exist", file=sys.stderr)
         return

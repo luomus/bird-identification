@@ -137,7 +137,7 @@ def analyze_directory(input_path, parameters):
 
     # Standard settings
     output_path = input_path
-    MODEL_PATH = "models/model_v3_5.keras"
+    MODEL_PATH = "models/model_v4_4.keras"
     BIRDNET_MODEL_PATH = "models/BirdNET_GLOBAL_6K_V2.4_Model_FP32.tflite"
     TFLITE_THREADS = 1
 

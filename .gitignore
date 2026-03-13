@@ -1,10 +1,13 @@
 
-models/*
 input/*
+!input/readme.txt
+
+models/*
 !models/readme.txt
 !models/Pred_adjustment
 !models/classes.csv
-!input/readme.txt
+!models/license_birdnet.txt
+!models/BirdNET_GLOBAL_6K_V2.4_Model_FP32.tflite
 
 app/models/*
 !app/models/.gitkeep

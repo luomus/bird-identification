@@ -51,7 +51,7 @@ app.add_middleware(
 )
 
 # Initialize classifier with same parameters as run_model.py
-MODEL_PATH = "models/model_v3_5.keras"
+MODEL_PATH = "models/model_v4_4.keras"
 BIRDNET_MODEL_PATH = "models/BirdNET_GLOBAL_6K_V2.4_Model_FP32.tflite"
 TFLITE_THREADS = 1
 CLIP_DURATION = 3.0
