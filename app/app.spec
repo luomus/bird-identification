@@ -36,7 +36,7 @@ main_exe = EXE(
     codesign_identity=None,
     entitlements_file=None,
     version='version_info.txt',
-    icon='icons/sirkku-logo.ico'
+    icon='icons/logo/sirkku-logo.ico'
 )
 
 analyze_a = Analysis(
