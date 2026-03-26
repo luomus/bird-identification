@@ -5,7 +5,7 @@ mv dist/sirkku.app dist/dmg/
 test -f dist/sirkku-*.dmg && rm dist/sirkku-*.dmg
 create-dmg \
   --volname "Sirkku" \
-  --volicon "icons/sirkku-logo.icns" \
+  --volicon "icons/logo/sirkku-logo.icns" \
   --icon-size 128 \
   --icon "sirkku.app" 175 120 \
   --window-pos 200 120 \
