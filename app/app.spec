@@ -1,15 +1,20 @@
 # -*- mode: python ; coding: utf-8 -*-
+import sys
 
+datas = [
+    ('./models', 'models'),
+    ('LICENSE.txt', '.'),
+    ('THIRD_PARTY_LICENSES.txt', '.'),
+]
+
+if sys.platform == 'darwin':
+    datas.append(('icons/logo/Assets.car', '.'))
 
 main_a = Analysis(
     ['app.py'],
     pathex=[],
     binaries=[],
-    datas=[
-        ('./models', 'models'),
-        ('LICENSE.txt', '.'),
-        ('THIRD_PARTY_LICENSES.txt', '.')
-    ],
+    datas=datas,
     hiddenimports=[],
     hookspath=[],
     hooksconfig={},
@@ -88,11 +93,12 @@ coll = COLLECT(
 app = BUNDLE(
     coll,
     name='sirkku.app',
-    icon='icons/sirkku-logo.icns',
+    icon='icons/logo/sirkku-logo.icns',
     bundle_identifier='fi.laji.sirkku',
     version='{{ version }}',
     info_plist={
         'CFBundleName': 'Sirkku',
-        'NSHumanReadableCopyright': '© 2025 Luomus - Finnish Museum of Natural History'
+        'NSHumanReadableCopyright': '© 2025 Luomus - Finnish Museum of Natural History',
+        'CFBundleIconName': 'AppIcon'
     }    
 )

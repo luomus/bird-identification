@@ -71,7 +71,7 @@ convert icons/ico-logo-iconset/*.png icons/logo/sirkku-logo.ico
 
 Update splash screen icon
 ```
-mv sirkku.png icons/logo/sirkku-logo-splash.png
+cp sirkku.png icons/logo/sirkku-logo-splash.png
 ```
 
 Remember to compile resources when making changes to icons.

@@ -19,4 +19,4 @@ for SIZE in 16 32 48 256; do
 done
 
 echo "Icons created in $DEST_DIR:"
-ls -1 "$DEST_DIR"/sirkku-logo*.png
+ls -1 "$DEST_DIR"/sirkku-logo*x*.png
