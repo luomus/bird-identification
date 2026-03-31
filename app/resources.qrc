@@ -1,10 +1,6 @@
 <!DOCTYPE RCC>
 <RCC version="1.0">
     <qresource prefix="icons">
-        <file alias="logo/sirkku-logo16x16.png">icons/logo/sirkku-logo16x16.png</file>
-        <file alias="logo/sirkku-logo32x32.png">icons/logo/sirkku-logo32x32.png</file>
-        <file alias="logo/sirkku-logo48x48.png">icons/logo/sirkku-logo48x48.png</file>
-        <file alias="logo/sirkku-logo256x256.png">icons/logo/sirkku-logo256x256.png</file>
         <file alias="headphones-solid-full.svg">icons/headphones-solid-full.svg</file>
         <file alias="pause-solid-full.svg">icons/pause-solid-full.svg</file>
         <file alias="pause-solid-full-dark.svg">icons/pause-solid-full-dark.svg</file>

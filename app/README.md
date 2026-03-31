@@ -58,15 +58,10 @@ It can't find all license texts automatically so you have to manually fill in th
 
 You can use the script resize_icons.sh to create icon sets. The first argument is the path to the source image and the second argument is the path to the output folder.
 
-Create app icons
-```
-./resize_icons.sh sirkku.png icons/logo
-```
-
 Create Windows .ico file
 ```
-./resize_icons.sh sirkku.png icons/ico-logo-iconset
-convert icons/ico-logo-iconset/*.png icons/logo/sirkku-logo.ico
+./resize_icons.sh sirkku.png icons/logo/ico-iconset
+convert icons/logo/ico-iconset/*.png icons/logo/sirkku-logo.ico
 ```
 
 Update splash screen icon
