@@ -9,7 +9,7 @@
     source env/bin/activate # (or .\env\Scripts\activate in Windows)
     ```
 
-2. Install scripts in editable mode, the option editable_mode=compat is needed for pyinstaller to work. If this command fails, upgrade pip to a newer version
+2. Install shared package in editable mode, the option editable_mode=compat is needed for pyinstaller to work. If this command fails, upgrade pip to a newer version
     ```
     pip install -e .. --config-settings editable_mode=compat
     ```
@@ -50,7 +50,7 @@ QT_QPA_PLATFORM=offscreen python -m pytest tests -v
 ## Third party licenses
 You can use this command to generate third party licenses:
 ```
-pip-licenses --ignore-packages scripts --format=plain-vertical --with-license-file --no-license-path --output-file=THIRD_PARTY_LICENSES.txt
+pip-licenses --ignore-packages shared --format=plain-vertical --with-license-file --no-license-path --output-file=THIRD_PARTY_LICENSES.txt
 ```
 It can't find all license texts automatically so you have to manually fill in those.
 

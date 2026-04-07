@@ -1,6 +1,6 @@
 import pytest
 
-from scripts.classifier_config import (
+from shared.classifier_config import (
     ClassifierConfig,
     RawConfig,
     SpectrogramConfig,

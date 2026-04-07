@@ -1,11 +1,11 @@
 [project]
-name = "scripts"
+name = "shared"
 version = "0.1.0"
-description = "Scripts for bird identification"
+description = "Shared code for bird identification"
 
 [build-system]
 requires = ["setuptools", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [tool.setuptools]
-packages = ["scripts"]
+packages = ["shared"]

@@ -45,7 +45,7 @@ share/python-wheels/
 .installed.cfg
 *.egg
 MANIFEST
-config/*_local.json
+api/config/*_local.json
 
 # PyInstaller
 #  Usually these files are written by a python script from a template
@@ -183,4 +183,4 @@ cython_debug/
 .idea/
 
 run/*
-config/uvicorn_start
+api/config/uvicorn_start

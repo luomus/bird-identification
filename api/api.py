@@ -21,14 +21,14 @@ import pandas as pd
 import librosa
 import soundfile as sf
 
-from scripts.classifier_config import ClassifierConfig, RawConfig
-from scripts.security import api_key_auth
-from scripts.settings import settings
+from shared.classifier_config import ClassifierConfig, RawConfig
+from api.security import api_key_auth
+from api.settings import settings
 import tempfile
 import os
-from scripts.classifier import Classifier
-from scripts.run_model import process_audio_segment
-from scripts.pydantic_parameters import Metadata, AnalysisParameters
+from shared.classifier import Classifier
+from shared.run_model import process_audio_segment
+from shared.pydantic_parameters import Metadata, AnalysisParameters
 
 # Configure logging
 logging.basicConfig(

@@ -5,9 +5,9 @@
 import argparse
 import sys
 import os
-from scripts import run_model
-from scripts.pydantic_parameters import AnalysisParameters, Metadata
-from scripts.utils import read_metadata
+from cli import analyze_directory
+from shared.pydantic_parameters import AnalysisParameters, Metadata
+from cli.utils import read_metadata
 
 def main():
     # Set up argument parser
@@ -97,7 +97,7 @@ def main():
     # Main analysis
     try:
         print("Starting analysis")
-        success = run_model.analyze_directory(parameters.directory, parameters.to_dict())
+        success = analyze_directory.analyze_directory(parameters.directory, parameters.to_dict())
     except Exception as e:
         print(f"Error: An error occurred during analysis: {str(e)}", file=sys.stderr)
         raise

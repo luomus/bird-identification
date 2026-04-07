@@ -4,9 +4,9 @@ import numpy as np
 from numpy.typing import NDArray
 import librosa
 
-from scripts.classifier_config import ClassifierConfig, ResultFormat, LogPreprocessing, StandardizePreprocessing, \
+from shared.classifier_config import ClassifierConfig, ResultFormat, LogPreprocessing, StandardizePreprocessing, \
     CenterPreprocessing, ClipPreprocessing
-from scripts.functions import split_signal, wav_to_spectrogram_chunks,log_transform, \
+from shared.functions import split_signal, wav_to_spectrogram_chunks,log_transform, \
     standardize_transform, center_transform, clip_transform
 import time
 

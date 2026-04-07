@@ -10,9 +10,9 @@ import numpy as np
 import pandas as pd
 
 from functions.utils import is_audio_file, get_default_model_path, get_result_file_name, get_duration
-from scripts import functions
-from scripts.classifier import Classifier
-from scripts.classifier_config import ClassifierConfig, RawConfig
+from shared import functions
+from shared.classifier import Classifier
+from shared.classifier_config import ClassifierConfig, RawConfig
 
 try:
     from ctypes import windll  # Only exists on Windows.

@@ -7,8 +7,7 @@ LOG_LEVEL=error
 
 cd $DIR
 source $VENV
-cd scripts
 
-exec uvicorn api:app \
+exec uvicorn api.api:app \
 --uds=$BIND \
---log-level=$LOG_LEVEL \
+--log-level=$LOG_LEVEL

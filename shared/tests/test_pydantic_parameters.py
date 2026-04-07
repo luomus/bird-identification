@@ -1,7 +1,7 @@
 import pytest
 from pathlib import Path
 from pydantic import ValidationError
-from scripts.pydantic_parameters import BaseParameters, Metadata, AnalysisParameters, ReportParameters
+from shared.pydantic_parameters import BaseParameters, Metadata, AnalysisParameters, ReportParameters
 
 # Fixture for temporary directory
 @pytest.fixture
