@@ -1,14 +1,10 @@
 # -*- mode: python ; coding: utf-8 -*-
-import sys
 
 datas = [
     ('./models', 'models'),
     ('LICENSE.txt', '.'),
     ('THIRD_PARTY_LICENSES.txt', '.'),
 ]
-
-if sys.platform == 'darwin':
-    datas.append(('icons/logo/Assets.car', '.'))
 
 main_a = Analysis(
     ['app.py'],
@@ -98,7 +94,6 @@ app = BUNDLE(
     version='{{ version }}',
     info_plist={
         'CFBundleName': 'Sirkku',
-        'NSHumanReadableCopyright': '© 2025 Luomus - Finnish Museum of Natural History',
-        'CFBundleIconName': 'AppIcon'
+        'NSHumanReadableCopyright': '© 2025 Luomus - Finnish Museum of Natural History'
     }    
 )

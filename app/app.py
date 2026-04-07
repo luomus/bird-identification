@@ -31,6 +31,14 @@ class SplashScreen(QSplashScreen):
 app = QApplication([])
 qInstallMessageHandler(qt_message_handler)
 
+if sys.platform != "darwin":
+    app_icon = QIcon()
+    app_icon.addFile(":/icons/logo/iconset/sirkku-logo16x16.png", QSize(16, 16))
+    app_icon.addFile(":/icons/logo/iconset/sirkku-logo32x32.png", QSize(32, 32))
+    app_icon.addFile(":/icons/logo/iconset/sirkku-logo48x48.png", QSize(48, 48))
+    app_icon.addFile(":/icons/logo/iconset/sirkku-logo256x256.png", QSize(256, 256))
+    app.setWindowIcon(app_icon)
+
 splash_pixmap = QPixmap(":/icons/logo/sirkku-logo-splash.png")
 splash_pixmap = splash_pixmap.scaled(350, 350, Qt.AspectRatioMode.KeepAspectRatio, Qt.TransformationMode.SmoothTransformation)
 

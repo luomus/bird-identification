@@ -8,6 +8,10 @@
         <file alias="play-solid-full-dark.svg">icons/play-solid-full-dark.svg</file>
         <file alias="xmark-solid-full.svg">icons/xmark-solid-full.svg</file>
         <file alias="xmark-solid-full-dark.svg">icons/xmark-solid-full-dark.svg</file>
+        <file alias="logo/iconset/sirkku-logo16x16.png">icons/logo/iconset/sirkku-logo16x16.png</file>
+        <file alias="logo/iconset/sirkku-logo32x32.png">icons/logo/iconset/sirkku-logo32x32.png</file>
+        <file alias="logo/iconset/sirkku-logo48x48.png">icons/logo/iconset/sirkku-logo48x48.png</file>
+        <file alias="logo/iconset/sirkku-logo256x256.png">icons/logo/iconset/sirkku-logo256x256.png</file>
         <file alias="logo/sirkku-logo-splash.png">icons/logo/sirkku-logo-splash.png</file>
     </qresource>
 </RCC>
