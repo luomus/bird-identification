@@ -1,0 +1,11 @@
+[project]
+name = "shared"
+version = "0.1.0"
+description = "Shared code for bird identification"
+
+[build-system]
+requires = ["setuptools", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools]
+packages = ["shared"]

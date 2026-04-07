@@ -1,15 +1,17 @@
 services:
-  tensorflow:
-    container_name: bird-identification
-    build: .
+  api:
+    container_name: bird-identification-api
+    build:
+      context: .
+      dockerfile: api/Dockerfile
     restart: unless-stopped
     volumes:
-      - ./scripts:/app/scripts
+      - ./shared:/app/shared
+      - ./api/api.py:/app/api/api.py
+      - ./api/security.py:/app/api/security.py
+      - ./api/settings.py:/app/api/settings.py
       - ./models:/app/models
-      - ./input:/app/input
-      - ./tests:/app/tests
-      # ← Bind-mount the Windows folder directly (WSL path syntax):
-      - /mnt/c/Users/mikko/Documents/Audiomoth_2025:/app/input/host:cached
+      - ./api/config:/app/config
     ports:
       - "8000:8000"
     stdin_open: true
@@ -19,11 +21,27 @@ services:
         max-size: 100m
         max-file: "3"
 
+  cli:
+    container_name: bird-identification-cli
+    build:
+      context: .
+      dockerfile: cli/Dockerfile
+    volumes:
+      - ./shared:/app/shared
+      - ./cli:/app/cli
+      - ./models:/app/models
+      - ./input:/app/input
+      # ← Bind-mount the Windows folder directly (WSL path syntax):
+      - /mnt/c/Users/mikko/Documents/Audiomoth_2025:/app/input/host:cached
+    stdin_open: true
+    tty: true
+
   test:
     container_name: test-bird-identification
-    build: .
+    build:
+      context: .
+      dockerfile: cli/Dockerfile
     volumes:
-      - ./scripts:/app/scripts
-      - ./tests:/app/tests
-    command: pytest /app/tests -v
-
+      - ./shared:/app/shared
+      - ./cli:/app/cli
+    command: pytest /app/shared/tests /app/cli/tests -v
