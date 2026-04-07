@@ -144,7 +144,10 @@ class Classifier:
         input_shape_signature = self.keras_model.input_shape if self.keras_model else self.tflite_interpreter.get_input_details()[0]["shape_signature"]
         output_shape = self.keras_model.output_shape if self.keras_model else self.tflite_interpreter.get_output_details()[0]["shape"]
 
-        batch_size = input_shape_signature[0] if input_shape_signature[0] is not None else len(x)
+        batch_size = input_shape_signature[0]
+        if batch_size is None or batch_size < 1:
+            batch_size = len(x)
+
         n = len(x)
         result = np.zeros((n, output_shape[1]))
 
@@ -176,7 +179,7 @@ class Classifier:
         input_layer_index = input_details[0]['index']
         output_layer_index = output_details[0]['index'] + output_layer_offset
 
-        current_shape = input_details[input_layer_index]["shape"]
+        current_shape = input_details[0]["shape"]
 
         if list(current_shape) != list(sample.shape):
             interpreter.resize_tensor_input(input_layer_index, sample.shape)
