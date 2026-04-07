@@ -39,15 +39,7 @@ jobs:
     - name: Move data to correct places (Windows)
       if: startsWith(matrix.os, 'windows-')
       run: |
-        Remove-Item -Recurse -Force app\models
-        Move-Item private-data\default-models app\models
         Expand-Archive -Path private-data\InstallForge.zip -DestinationPath app
-
-    - name: Move data to correct places (macOS)
-      if: startsWith(matrix.os, 'macos-')
-      run: |
-        rm -rf app/models
-        mv private-data/default-models app/models
 
     - name: Install create-dmg (macOS)
       if: startsWith(matrix.os, 'macos-')

@@ -10,10 +10,9 @@ models/*
 !models/BirdNET_GLOBAL_6K_V2.4_Model_FP32.tflite
 
 app/models/*
-!app/models/.gitkeep
-!app/models/default
-app/models/default/*
-!app/models/default/.gitkeep
+!app/models/BSG_birds_Finland_v4_4
+!app/models/BirdNET_GLOBAL_6K_V2.4_Model_FP32.tflite
+!app/models/license_birdnet.txt
 app/custom_models/
 
 app/InstallForge/

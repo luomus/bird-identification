@@ -1,0 +1,12 @@
+{
+  "model_file": "model_v4_4.tflite",
+  "classes_file": "classes.csv",
+  "calibration_file": "calibration_params.npy",
+  "config": {
+    "sample_rate": 48000,
+    "raw_config": {
+      "requires_birdnet": true,
+      "clip_duration": 3
+    }
+  }
+}
