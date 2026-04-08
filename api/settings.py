@@ -8,7 +8,7 @@ from pydantic_settings import (
 from typing import Tuple, Type
 
 class Settings(BaseSettings):
-    model_config = SettingsConfigDict(json_file=("config/config_global.json", "config/config_local.json"), json_encoding="utf-8")
+    model_config = SettingsConfigDict(json_file=("api/config/config_global.json", "api/config/config_local.json"), json_encoding="utf-8")
     access_tokens: list[str]
 
     @classmethod
