@@ -29,17 +29,10 @@ jobs:
         VERSION="${GITHUB_REF_NAME#v}"
         echo "VERSION=$VERSION" >> "$GITHUB_ENV"
 
-    - name: Get data from private repo
-      uses: actions/checkout@v6
-      with:
-        repository: luomus/bird-identification-app-data
-        token: ${{ secrets.PERSONAL_ACCESS_TOKEN }}
-        path: private-data
-
-    - name: Move data to correct places (Windows)
+    - name: Extract InstallForge (Windows)
       if: startsWith(matrix.os, 'windows-')
       run: |
-        Expand-Archive -Path private-data\InstallForge.zip -DestinationPath app
+        Expand-Archive -Path app\tools\InstallForge.zip -DestinationPath app\tools
 
     - name: Install create-dmg (macOS)
       if: startsWith(matrix.os, 'macos-')
@@ -74,8 +67,8 @@ jobs:
     - name: Build Windows installer with InstallForge
       if: startsWith(matrix.os, 'windows-')
       run: |
-        .\ifbuildx86.exe -i ..\..\app.ifp
-      working-directory: ./app/InstallForge/bin
+        .\ifbuildx86.exe -i ..\..\..\app.ifp
+      working-directory: ./app/tools/InstallForge/bin
 
     - name: Build macOS Disk Image with create-dmg
       if: startsWith(matrix.os, 'macos-')
