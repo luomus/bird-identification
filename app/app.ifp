@@ -31,9 +31,9 @@
       <VisualStyle isEnabled="true"/>
     </UserInterface>
     <InstallationFiles defaultInstallationPath="[UserLocalAppData]\Programs\&lt;AppName&gt;\" isDefaultInstallationPathAlterable ="true">
-      <InstallationFile size="26 MB" type="exe">..\..\dist\sirkku\sirkku.exe</InstallationFile>
-      <InstallationFile size="23.3 MB" type="exe">..\..\dist\sirkku\sirkkuAnalyze.exe</InstallationFile>
-      <InstallationFile size="N/A" type="[Folder]">..\..\dist\sirkku\_internal\</InstallationFile>
+      <InstallationFile size="26 MB" type="exe">..\..\..\dist\sirkku\sirkku.exe</InstallationFile>
+      <InstallationFile size="23.3 MB" type="exe">..\..\..\dist\sirkku\sirkkuAnalyze.exe</InstallationFile>
+      <InstallationFile size="N/A" type="[Folder]">..\..\..\dist\sirkku\_internal\</InstallationFile>
     </InstallationFiles>
     <Languages/>
     <Variables>
@@ -76,7 +76,7 @@
     <Program executableFilePath="" isLaunchEnabled="false" isTerminationEnabled="false"/>
   </VisualUpdateConfiguration>
   <BuildConfiguration>
-    <SetupFilePath>..\..\dist\sirkku-{{ version }}-{{ architecture }}-setup.exe</SetupFilePath>
+    <SetupFilePath>..\..\..\dist\sirkku-{{ version }}-{{ architecture }}-setup.exe</SetupFilePath>
     <SetupIconPath>..\icons\ancient.ico</SetupIconPath>
     <UninstallerIconPath>..\icons\ancient.ico</UninstallerIconPath>
     <Compression method="0" level="2"/>
