@@ -2,6 +2,10 @@
 
 This repository provides tools for automated bird species detection from audio recordings and for generating quality control reports. It supports local processing and API-based workflows and is built on an AI model developed at the University of Jyväskylä as part of the [Muuttolintujen kevät -project](https://www.jyu.fi/en/research/muuttolintujen-kevat).
 
+## Desktop App
+
+The desktop application built from this repository is called **Sirkku** and is published by the [Finnish Biodiversity Information Facility (FinBIF / Suomen Lajitietokeskus)](https://laji.fi/about/9219). It allows users to identify Finnish bird species from audio recordings directly on their own computer, without any data leaving the device.
+
 ## Project Structure
 
 - `shared/` — Shared code: classifier and functions
@@ -37,6 +41,8 @@ This repository provides tools for automated bird species detection from audio r
 - `docker compose up cli --build # start only cli`
 - `docker compose up api --build # start only api`
 - Desktop app has another setup, see [app/README.md](app/README.md)
+
+
 
 ### Running unit tests
 
