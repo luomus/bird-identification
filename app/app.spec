@@ -88,7 +88,7 @@ coll = COLLECT(
 
 app = BUNDLE(
     coll,
-    name='sirkku.app',
+    name='Sirkku.app',
     icon='icons/logo/sirkku-logo.icns',
     bundle_identifier='fi.laji.sirkku',
     version='{{ version }}',
