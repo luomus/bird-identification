@@ -13,5 +13,6 @@ create-dmg \
   --hide-extension "Sirkku.app" \
   --app-drop-link 425 120 \
   --format ULMO \
+  --codesign "$MACOS_CERTIFICATE_ID" \
   "dist/sirkku-{{ version }}-{{ architecture }}.dmg" \
   "dist/dmg/"

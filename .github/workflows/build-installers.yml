@@ -34,6 +34,29 @@ jobs:
       run: |
         Expand-Archive -Path app\tools\InstallForge.zip -DestinationPath app\tools
 
+    - name: Import MacOS certificate
+      if: startsWith(matrix.os, 'macos-')
+      env:
+        MACOS_CERTIFICATE: ${{ secrets.MACOS_CERTIFICATE }}
+        MACOS_CERTIFICATE_PWD: ${{ secrets.MACOS_CERTIFICATE_PWD }}
+      run: |
+        echo $MACOS_CERTIFICATE | base64 —decode > certificate.p12
+        
+        # create a temporary keychain
+        security create-keychain -p "" build.keychain
+        security default-keychain -s build.keychain
+        security unlock-keychain -p "" build.keychain
+        security set-keychain-settings -t 3600 -u build.keychain
+        
+        # import the certificate to the keychain and allow codesign to access it without prompting for password
+        security import certificate.p12 -k build.keychain -P $MACOS_CERTIFICATE_PWD -T /usr/bin/codesign
+        security set-key-partition-list -S apple-tool:,apple:,codesign: -s -k "" build.keychain
+        
+        # verify the certificate was imported correctly
+        security find-identity -v -p codesigning build.keychain
+        
+        echo "MACOS_CERTIFICATE_ID=${{ secrets.MACOS_CERTIFICATE_ID }}" >> "$GITHUB_ENV"
+
     - name: Install create-dmg (macOS)
       if: startsWith(matrix.os, 'macos-')
       run: |

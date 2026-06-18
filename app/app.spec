@@ -1,4 +1,5 @@
 # -*- mode: python ; coding: utf-8 -*-
+import os
 
 datas = [
     ('./models', 'models'),
@@ -34,8 +35,8 @@ main_exe = EXE(
     disable_windowed_traceback=False,
     argv_emulation=False,
     target_arch=None,
-    codesign_identity=None,
-    entitlements_file=None,
+    codesign_identity=os.environ.get('MACOS_CERTIFICATE_ID', None),
+    entitlements_file='entitlements.plist',
     version='version_info.txt',
     icon='icons/logo/sirkku-logo.ico'
 )
@@ -68,8 +69,8 @@ analyze_exe = EXE(
     disable_windowed_traceback=False,
     argv_emulation=False,
     target_arch=None,
-    codesign_identity=None,
-    entitlements_file=None,
+    codesign_identity=os.environ.get('MACOS_CERTIFICATE_ID', None),
+    entitlements_file='entitlements.plist',
     version='version_info_analyze.txt'
 )
 
