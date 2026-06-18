@@ -34,7 +34,7 @@ jobs:
       run: |
         Expand-Archive -Path app\tools\InstallForge.zip -DestinationPath app\tools
 
-    - name: Import MacOS certificate
+    - name: Import certificate (MacOS)
       if: startsWith(matrix.os, 'macos-')
       env:
         MACOS_CERTIFICATE: ${{ secrets.MACOS_CERTIFICATE }}
@@ -56,6 +56,20 @@ jobs:
         security find-identity -v -p codesigning build.keychain
         
         echo "MACOS_CERTIFICATE_ID=${{ secrets.MACOS_CERTIFICATE_ID }}" >> "$GITHUB_ENV"
+
+    - name: Store notarytool credentials (MacOS)
+      if: startsWith(matrix.os, 'macos-')
+      env:
+        APPLE_ID: ${{ secrets.APPLE_ID }}
+        APPLE_APP_PASSWORD: ${{ secrets.APPLE_APP_PASSWORD }}
+        APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
+      run: |
+        xcrun notarytool store-credentials "notary-profile" \
+          --apple-id "$APPLE_ID" \
+          --password "$APPLE_APP_PASSWORD" \
+          --team-id "$APPLE_TEAM_ID"
+        
+        echo "NOTARY_PROFILE=notary-profile" >> "$GITHUB_ENV"
 
     - name: Install create-dmg (macOS)
       if: startsWith(matrix.os, 'macos-')

@@ -14,5 +14,6 @@ create-dmg \
   --app-drop-link 425 120 \
   --format ULMO \
   --codesign "$MACOS_CERTIFICATE_ID" \
+  --notarize "$NOTARY_PROFILE" \
   "dist/sirkku-{{ version }}-{{ architecture }}.dmg" \
   "dist/dmg/"
