@@ -36,7 +36,7 @@ jobs:
       run: |
         unzip ./app/tools/InstallForge.zip -d ./app/tools
 
-    - name: Import certificate (MacOS)
+    - name: Import certificate (macOS)
       if: startsWith(matrix.os, 'macos-')
       env:
         MACOS_CERTIFICATE: ${{ secrets.MACOS_CERTIFICATE }}
@@ -59,7 +59,7 @@ jobs:
         
         echo "MACOS_CERTIFICATE_ID=${{ secrets.MACOS_CERTIFICATE_ID }}" >> "$GITHUB_ENV"
 
-    - name: Store notarytool credentials (MacOS)
+    - name: Store notarytool credentials (macOS)
       if: startsWith(matrix.os, 'macos-')
       env:
         APPLE_ID: ${{ secrets.APPLE_ID }}
@@ -167,7 +167,7 @@ jobs:
       run: |
         mv ./app/dist/signed/sirkku-setup-unsigned.exe ./app/dist/sirkku-${VERSION}-${{ matrix.architecture }}-setup.exe
 
-    - name: Build macOS Disk Image with create-dmg
+    - name: Build Disk Image with create-dmg (macOS)
       if: startsWith(matrix.os, 'macos-')
       run: |
         ./build_dmg.sh
