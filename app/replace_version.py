@@ -8,7 +8,7 @@ if len(sys.argv) < 3:
 version = sys.argv[1]
 architecture = sys.argv[2]
 
-if not re.compile("^\d+\.\d+\.\d+$").match(version):
+if not re.compile("^\d+\.\d+\.\d+(-.*)?$").match(version):
     raise ValueError("Invalid version number {}".format(version))
 
 if not re.compile(r"^[A-Za-z0-9_-]+$").match(architecture):
@@ -22,7 +22,7 @@ file_paths = ["app.spec", "version_info.txt", "version_info_analyze.txt", "app.i
 version_parts = version.split(".")
 major = version_parts[0]
 minor = version_parts[1]
-patch = version_parts[2]
+patch = version_parts[2].split("-")[0]
 
 for file_path in file_paths:
     with open(file_path, "r") as f:
