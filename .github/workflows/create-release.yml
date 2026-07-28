@@ -221,4 +221,5 @@ jobs:
         name: ${{ github.ref_name }}
         tag_name: ${{ github.ref_name }}
         prerelease: ${{ env.PRERELEASE == 'true' }}
+        draft: ${{ env.PRERELEASE == 'true' }}
         files: ./artifacts/*
