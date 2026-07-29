@@ -137,18 +137,13 @@ jobs:
         ./ifbuildx86.exe -i ../../../app.ifp
       working-directory: ./app/tools/InstallForge/bin
 
-    - name: Rename unsigned installer (Windows)
-      if: startsWith(matrix.os, 'windows-')
-      run: |
-        mv ./app/dist/sirkku-${VERSION}-${{ matrix.architecture }}-setup.exe ./app/dist/sirkku-setup-unsigned.exe
-
     - name: Upload unsigned installer (Windows)
       if: startsWith(matrix.os, 'windows-')
       id: upload-unsigned-installer
       uses: actions/upload-artifact@v4
       with:
         name: ${{ matrix.architecture }}-installer-unsigned
-        path: ./app/dist/sirkku-setup-unsigned.exe
+        path: ./app/dist/sirkku-*-setup.exe
 
     - name: Sign installer with SignPath (Windows)
       if: startsWith(matrix.os, 'windows-')
@@ -163,23 +158,18 @@ jobs:
         wait-for-completion: true
         output-artifact-directory: './app/dist/signed'
 
-    - name: Rename signed installer (Windows)
+    - name: Upload installer (Windows)
       if: startsWith(matrix.os, 'windows-')
-      run: |
-        mv ./app/dist/signed/sirkku-setup-unsigned.exe ./app/dist/sirkku-${VERSION}-${{ matrix.architecture }}-setup.exe
+      uses: actions/upload-artifact@v4
+      with:
+        name: ${{ matrix.architecture }}-installer
+        path: ./app/dist/signed/sirkku-*-setup.exe
 
     - name: Build Disk Image with create-dmg (macOS)
       if: startsWith(matrix.os, 'macos-')
       run: |
         ./build_dmg.sh
       working-directory: ./app
-
-    - name: Upload installer (Windows)
-      if: startsWith(matrix.os, 'windows-')
-      uses: actions/upload-artifact@v4
-      with:
-        name: ${{ matrix.architecture }}-installer
-        path: ./app/dist/sirkku-*-setup.exe
 
     - name: Upload installer (macOS)
       if: startsWith(matrix.os, 'macos-')
