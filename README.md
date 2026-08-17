@@ -6,6 +6,15 @@ This repository provides tools for automated bird species detection from audio r
 
 The desktop application built from this repository is called **Sirkku** and is published by the [Finnish Biodiversity Information Facility (FinBIF / Suomen Lajitietokeskus)](https://laji.fi/about/9219). It allows users to identify Finnish bird species from audio recordings directly on their own computer, without any data leaving the device.
 
+### Sponsors
+
+<table>
+  <tr>
+    <td><a href="https://signpath.io/"><img src="https://signpath.org/assets/favicon-50x50.png" alt="SignPath" width="32" /></a></td>
+    <td>Free code signing on Windows provided by <a href="https://about.signpath.io">SignPath.io</a>, certificate by <a href="https://signpath.org">SignPath Foundation</a></td>
+  </tr>
+</table>
+
 ## Project Structure
 
 - `shared/` — Shared code: classifier and functions
