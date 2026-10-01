@@ -48,8 +48,7 @@ class MainWindow(QMainWindow):
         self.info_bar = InfoBar(
             "Finnish Biodiversity Information Facility",
             __version__,
-            "https://info.laji.fi/en/sound-identification/",
-            "https://info.laji.fi/sound-identification-licenses/"
+            "https://laji.fi/theme/sirkku"
         )
         self.layout.addWidget(self.info_bar)
 
